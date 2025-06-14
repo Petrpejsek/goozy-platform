@@ -1,0 +1,330 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// === UŽIVATELÉ A ADMINISTRACE ===
+
+model SuperAdmin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("super_admins")
+}
+
+// === INFLUENCEŘI ===
+
+model Influencer {
+  id                String                 @id @default(cuid())
+  email             String                 @unique
+  password          String?
+  name              String
+  slug              String                 @unique // pro URL jako /influencer/jakub
+  avatar            String?
+  bio               String?
+  phone             String?
+  isApproved        Boolean                @default(false)
+  isActive          Boolean                @default(true)
+  commissionRate    Float                  @default(0.1) // 10% základní provize
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  
+  // Sociální sítě
+  socialNetworks    InfluencerSocial[]
+  
+  // Vybrané produkty pro propagaci
+  selectedProducts  InfluencerProduct[]
+  
+  // Generované kupóny
+  discountCodes     DiscountCode[]
+  
+  // Objednávky přes jejich odkazy
+  orders            Order[]
+  
+  // Vypočítané provize
+  commissions       Commission[]
+  
+  // Kategorie obsahu
+  contentCategories InfluencerCategory[]
+
+  @@map("influencers")
+}
+
+model InfluencerSocial {
+  id           String     @id @default(cuid())
+  influencerId String
+  platform     String     // "instagram", "tiktok", "youtube"
+  username     String
+  followers    Int
+  url          String?
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_socials")
+}
+
+model InfluencerCategory {
+  id           String     @id @default(cuid())
+  influencerId String
+  category     String     // "Fashion", "Lifestyle", "Beauty", etc.
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_categories")
+}
+
+// === ZNAČKY A PARTNEŘI ===
+
+model Brand {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  phone       String?
+  description String?
+  website     String?
+  logo        String?
+  isApproved  Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  
+  // API konfigurace pro integraci
+  apiConfig   BrandApiConfig?
+  
+  // Produkty značky
+  products    Product[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("brands")
+}
+
+model BrandApiConfig {
+  id          String @id @default(cuid())
+  brandId     String @unique
+  apiEndpoint String
+  apiKey      String
+  webhookUrl  String?
+  
+  brand       Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_api_configs")
+}
+
+// === PRODUKTY ===
+
+model Product {
+  id                String              @id @default(cuid())
+  brandId           String
+  externalId        String              // ID v systému značky
+  name              String
+  description       String?
+  price             Float
+  currency          String              @default("EUR")
+  images            String              // JSON string s URL obrázků
+  category          String
+  sizes             String              // JSON string s velikostmi
+  colors            String              // JSON string s barvami
+  sku               String
+  
+  // Inventory management
+  stockQuantity     Int                 @default(0)
+  isAvailable       Boolean             @default(true)
+  availabilityOverride Boolean?         // můžeme manuálně ovlivnit dostupnost
+  
+  brand             Brand               @relation(fields: [brandId], references: [id])
+  
+  // Které influenceři propagují tento produkt
+  influencerProducts InfluencerProduct[]
+  
+  // Objednávky tohoto produktu
+  orderItems        OrderItem[]
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@unique([brandId, externalId])
+  @@map("products")
+}
+
+// === SPOJOVACÍ TABULKA INFLUENCER-PRODUKT ===
+
+model InfluencerProduct {
+  id           String     @id @default(cuid())
+  influencerId String
+  productId    String
+  isActive     Boolean    @default(true)
+  addedAt      DateTime   @default(now())
+  
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([influencerId, productId])
+  @@map("influencer_products")
+}
+
+// === SLEVOVÉ KUPÓNY ===
+
+model DiscountCode {
+  id           String     @id @default(cuid())
+  code         String     @unique
+  influencerId String
+  discountType String     // "percentage" nebo "fixed"
+  discountValue Float     // procenta nebo částka
+  currency     String?    // pro fixed slevy
+  isActive     Boolean    @default(true)
+  usageLimit   Int?       // kolikrát lze použít
+  usageCount   Int        @default(0)
+  expiresAt    DateTime?
+  
+  influencer   Influencer @relation(fields: [influencerId], references: [id])
+  
+  // Objednávky s tímto kupónem
+  orders       Order[]
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("discount_codes")
+}
+
+// === OBJEDNÁVKY ===
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  influencerId    String?
+  discountCodeId  String?
+  
+  // Zákaznické údaje
+  customerEmail   String
+  customerName    String
+  customerPhone   String?
+  
+  // Dodací adresa
+  shippingAddress Json
+  
+  // Fakturační adresa
+  billingAddress  Json?
+  
+  // Finanční údaje
+  subtotal        Float
+  discountAmount  Float         @default(0)
+  shippingCost    Float         @default(0)
+  totalAmount     Float
+  currency        String        @default("EUR")
+  
+  // Status
+  status          String        @default("pending") // pending, confirmed, shipped, delivered, cancelled
+  paymentStatus   String        @default("pending") // pending, paid, refunded
+  paymentIntentId String?       // Stripe payment intent ID
+  
+  // Tracking
+  trackingNumber  String?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  
+  influencer      Influencer?   @relation(fields: [influencerId], references: [id])
+  discountCode    DiscountCode? @relation(fields: [discountCodeId], references: [id])
+  
+  // Položky objednávky
+  items           OrderItem[]
+  
+  // Provize z této objednávky
+  commission      Commission?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  size      String?
+  color     String?
+  price     Float   // cena v době nákupu
+  currency  String  @default("EUR")
+  
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// === PROVIZE ===
+
+model Commission {
+  id              String     @id @default(cuid())
+  orderId         String     @unique
+  influencerId    String
+  amount          Float
+  currency        String     @default("EUR")
+  rate            Float      // použitá provizní sazba
+  status          String     @default("pending") // pending, approved, paid
+  
+  // Vypočítané datum výplaty (14 dní po odeslání)
+  payoutDate      DateTime?
+  paidAt          DateTime?
+  
+  order           Order      @relation(fields: [orderId], references: [id])
+  influencer      Influencer @relation(fields: [influencerId], references: [id])
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("commissions")
+}
+
+// === FORMULÁŘE Z LANDING PAGE ===
+
+model InfluencerApplication {
+  id                 String   @id @default(cuid())
+  name               String
+  email              String
+  password           String   // hashované heslo
+  instagram          String?
+  tiktok             String?  // nové pole
+  youtube            String?  // nové pole
+  followers          String   // "1K-10K", "10K-50K", etc.
+  categories         String   // JSON string s kategoriemi
+  bio                String?  // nové pole
+  collaborationTypes String?  // JSON string s typy spolupráce
+  status             String   @default("pending") // pending, approved, rejected
+  notes              String?  // poznámky od adminů
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("influencer_applications")
+}
+
+model BrandApplication {
+  id          String   @id @default(cuid())
+  brandName   String
+  email       String
+  phone       String?
+  description String?
+  status      String   @default("pending") // pending, approved, rejected
+  notes       String?  // poznámky od adminů
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("brand_applications")
+}

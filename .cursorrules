@@ -1,0 +1,45 @@
+# Goozy Platform Development Rules
+
+## Project Context
+- Multi-functional platform for influencer marketing in fashion
+- Influencers promote clothing with custom URLs and discount codes
+- Brands integrate via API for inventory and shipping
+- Multi-currency support (EUR, GBP, RON, etc.)
+- Stripe payment integration
+
+## Technical Stack
+- Frontend: Next.js 15 + TypeScript + Tailwind CSS
+- Backend: Next.js API Routes + Prisma + PostgreSQL
+- Payment: Stripe
+- Database: PostgreSQL with Prisma ORM
+
+## Database Schema Requirements
+- Influencers (profiles, social media, commission rates)
+- Brands (API configurations, product catalogs)
+- Products (inventory sync, pricing, availability)
+- Orders (multi-currency, tracking, returns)
+- Commissions (14-day payout delay)
+- Discount Codes (influencer-specific, trackable)
+
+## API Integration Patterns
+- External brand inventory APIs
+- Real-time stock synchronization
+- Webhook systems for order updates
+- Stripe webhook handling
+
+## Code Style
+- TypeScript strict mode
+- Functional components with hooks
+- Server actions for form handling
+- Error boundaries and proper error handling
+- Clean, readable code with Czech comments where needed
+
+## Development Priorities
+1. Database schema design
+2. API endpoints for forms
+3. Admin dashboard (super admin + influencer admin)
+4. Influencer personal pages (/influencer/name)
+5. E-commerce functionality
+6. Payment processing
+7. Commission system
+8. Analytics and reporting 
