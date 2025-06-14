@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { useState } from 'react'
 
 interface InfluencerApplication {
   id: string
@@ -9,7 +9,7 @@ interface InfluencerApplication {
   instagram?: string
   tiktok?: string
   youtube?: string
-  followers: number
+  followers: string
   categories: string
   bio?: string
   collaborationTypes: string
@@ -19,13 +19,10 @@ interface InfluencerApplication {
 
 interface BrandApplication {
   id: string
-  name: string
+  brandName: string
   email: string
-  website?: string
-  category: string
+  phone?: string
   description?: string
-  collaborationType: string
-  budget?: string
   status: string
   createdAt: Date
 }
@@ -39,6 +36,36 @@ interface BrandApplicationCardProps {
 }
 
 export function InfluencerApplicationCard({ application }: InfluencerApplicationCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentStatus, setCurrentStatus] = useState(application.status)
+
+  const handleAction = async (action: 'approve' | 'reject') => {
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/admin/applications/influencer/${application.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action })
+      })
+
+      if (response.ok) {
+        const newStatus = action === 'approve' ? 'approved' : 'rejected'
+        setCurrentStatus(newStatus)
+        
+        // Refresh stránky pro aktualizaci statistik
+        window.location.reload()
+      } else {
+        alert('Chyba při zpracování akce')
+      }
+    } catch (error) {
+      alert('Chyba při komunikaci se serverem')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
@@ -67,15 +94,15 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="font-semibold text-black">{application.name}</h3>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
-              {getStatusText(application.status)}
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(currentStatus)}`}>
+              {getStatusText(currentStatus)}
             </span>
           </div>
           
           <p className="text-sm text-gray-600 mb-2">{application.email}</p>
           
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-            <span>{application.followers.toLocaleString()} followerů</span>
+            <span>{application.followers} followerů</span>
             <span>•</span>
             <span>{application.categories}</span>
           </div>
@@ -107,26 +134,60 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
           </p>
         </div>
         
-        <div className="flex gap-2">
-          <Link
-            href={`/api/admin/applications/influencer/${application.id}?action=approve`}
-            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
-          >
-            Schválit
-          </Link>
-          <Link
-            href={`/api/admin/applications/influencer/${application.id}?action=reject`}
-            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
-          >
-            Zamítnout
-          </Link>
-        </div>
+        {currentStatus === 'pending' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAction('approve')}
+              disabled={isLoading}
+              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? '...' : 'Schválit'}
+            </button>
+            <button
+              onClick={() => handleAction('reject')}
+              disabled={isLoading}
+              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? '...' : 'Zamítnout'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
 export function BrandApplicationCard({ application }: BrandApplicationCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentStatus, setCurrentStatus] = useState(application.status)
+
+  const handleAction = async (action: 'approve' | 'reject') => {
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/admin/applications/brand/${application.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action })
+      })
+
+      if (response.ok) {
+        const newStatus = action === 'approve' ? 'approved' : 'rejected'
+        setCurrentStatus(newStatus)
+        
+        // Refresh stránky pro aktualizaci statistik
+        window.location.reload()
+      } else {
+        alert('Chyba při zpracování akce')
+      }
+    } catch (error) {
+      alert('Chyba při komunikaci se serverem')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
@@ -154,31 +215,17 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-semibold text-black">{application.name}</h3>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
-              {getStatusText(application.status)}
+            <h3 className="font-semibold text-black">{application.brandName}</h3>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(currentStatus)}`}>
+              {getStatusText(currentStatus)}
             </span>
           </div>
           
           <p className="text-sm text-gray-600 mb-2">{application.email}</p>
           
-          {application.website && (
-            <p className="text-sm text-blue-600 hover:underline mb-2">
-              <a href={application.website} target="_blank" rel="noopener noreferrer">
-                {application.website}
-              </a>
-            </p>
-          )}
-          
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-            <span>{application.category}</span>
-            <span>•</span>
-            <span>{application.collaborationType}</span>
-          </div>
-          
-          {application.budget && (
-            <p className="text-sm text-green-600 font-medium mb-2">
-              Budget: {application.budget}
+          {application.phone && (
+            <p className="text-sm text-gray-600 mb-2">
+              Tel: {application.phone}
             </p>
           )}
           
@@ -191,20 +238,24 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
           </p>
         </div>
         
-        <div className="flex gap-2">
-          <Link
-            href={`/api/admin/applications/brand/${application.id}?action=approve`}
-            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
-          >
-            Schválit
-          </Link>
-          <Link
-            href={`/api/admin/applications/brand/${application.id}?action=reject`}
-            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
-          >
-            Zamítnout
-          </Link>
-        </div>
+        {currentStatus === 'pending' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAction('approve')}
+              disabled={isLoading}
+              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? '...' : 'Schválit'}
+            </button>
+            <button
+              onClick={() => handleAction('reject')}
+              disabled={isLoading}
+              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? '...' : 'Zamítnout'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
