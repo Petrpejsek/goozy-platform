@@ -32,3 +32,39 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Cursor pravidla pro lepší UX */
+button,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+a,
+label,
+select,
+.cursor-pointer {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"]:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
+/* Hover efekty pro tlačítka */
+button:not(:disabled):hover,
+[role="button"]:not(:disabled):hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Focus stavy pro lepší accessibility */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
