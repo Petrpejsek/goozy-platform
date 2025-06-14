@@ -1,7 +1,165 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import MultiStepInfluencerForm from "@/components/MultiStepInfluencerForm";
 import BrandForm from "@/components/BrandForm";
+
+// Login Modal Component
+const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () => void; type: 'influencer' | 'brand' }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Redirect to appropriate login page
+    if (type === 'influencer') {
+      window.location.href = '/influencer/login';
+    } else {
+      window.location.href = '/brand/login';
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl p-8 max-w-md w-full relative">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-black mb-2">
+            {type === 'influencer' ? 'Influencer Login' : 'Brand Login'}
+          </h2>
+          <p className="text-gray-600">
+            {type === 'influencer' 
+              ? 'Access your dashboard and manage your products' 
+              : 'Manage your brand partnerships and campaigns'
+            }
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+          >
+            Log In
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-600 text-sm">
+            Don't have an account?{' '}
+            <button
+              onClick={() => {
+                onClose();
+                if (type === 'influencer') {
+                  document.getElementById('influencer-form')?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  document.getElementById('brand-form')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="text-black font-medium hover:underline"
+            >
+              Sign Up here
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Dropdown component for navigation
+const DropdownMenu = ({ title, children }: { title: string; children: React.ReactNode }) => {
+  return (
+    <div className="relative group">
+      <button className="text-gray-700 hover:text-black transition-colors text-sm font-medium flex items-center gap-1">
+        {title}
+        <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+        <div className="py-2">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DropdownItem = ({ href, children, requiresAuth, authType }: { 
+  href: string; 
+  children: React.ReactNode; 
+  requiresAuth?: boolean;
+  authType?: 'influencer' | 'brand';
+}) => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (requiresAuth) {
+      e.preventDefault();
+      setShowLoginModal(true);
+    }
+  };
+
+  return (
+    <>
+      <Link 
+        href={href} 
+        onClick={handleClick}
+        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors"
+      >
+        {children}
+      </Link>
+      {showLoginModal && authType && (
+        <LoginModal 
+          isOpen={showLoginModal} 
+          onClose={() => setShowLoginModal(false)} 
+          type={authType}
+        />
+      )}
+    </>
+  );
+};
 
 export default function Home() {
   return (
@@ -12,27 +170,40 @@ export default function Home() {
           <div className="flex items-center">
             <h1 className="text-3xl font-bold text-black tracking-tight">GOOZY</h1>
           </div>
-          <nav className="hidden lg:flex items-center space-x-10">
-            <Link href="/products" className="text-gray-700 hover:text-black transition-colors text-sm font-medium">
-              Produkty
-            </Link>
-            <Link href="#pro-influencery" className="text-gray-700 hover:text-black transition-colors text-sm font-medium">
-              Pro influencery
-            </Link>
-            <Link href="#pro-znacky" className="text-gray-700 hover:text-black transition-colors text-sm font-medium">
-              Pro značky
-            </Link>
-            <Link href="/influencer/login" className="text-gray-700 hover:text-black transition-colors text-sm font-medium">
-              Přihlášení
-            </Link>
-            <Link href="/admin" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
-              Admin
-            </Link>
+          <nav className="hidden lg:flex items-center space-x-8">
+            <DropdownMenu title="For Influencers">
+              <DropdownItem href="#for-influencers">How It Works</DropdownItem>
+              <DropdownItem href="#influencer-form">Apply Now</DropdownItem>
+              <DropdownItem href="/products">Browse Products</DropdownItem>
+              <DropdownItem href="/influencer/login">Login</DropdownItem>
+              <DropdownItem 
+                href="/influencer/dashboard" 
+                requiresAuth={true} 
+                authType="influencer"
+              >
+                Dashboard
+              </DropdownItem>
+            </DropdownMenu>
+
+            <DropdownMenu title="For Brands">
+              <DropdownItem href="#for-brands">Partnership Info</DropdownItem>
+              <DropdownItem href="#brand-form">Get Started</DropdownItem>
+              <DropdownItem href="/brand/login">Brand Login</DropdownItem>
+            </DropdownMenu>
           </nav>
+
+          {/* Mobile menu button */}
+          <div className="lg:hidden">
+            <button className="text-gray-700 hover:text-black">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Hero sekce */}
+      {/* Hero Section */}
       <section className="px-6 lg:px-8 pt-24 pb-32">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-6xl lg:text-8xl font-bold text-black mb-8 tracking-tight leading-none">
@@ -41,21 +212,21 @@ export default function Home() {
             <span className="italic font-light">shoppable.</span>
           </h1>
           <p className="text-xl lg:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-            Připoj se k platformě, kde influenceři vydělávají na prodeji oblečení 
-            svým sledujícím s exkluzivními slevami a provizemi.
+            Join the platform where influencers earn from selling clothes
+            to their followers with exclusive discounts and commissions.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link
-              href="#formular-influencer"
+              href="#influencer-form"
               className="bg-black text-white px-10 py-4 rounded-full hover:bg-gray-800 transition-all duration-300 font-medium text-lg hover:scale-105"
             >
-              Začít vydělávat
+              Start Earning
             </Link>
             <Link
-              href="#formular-znacka"
+              href="#brand-form"
               className="text-black px-10 py-4 rounded-full border-2 border-gray-200 hover:border-black transition-all duration-300 font-medium text-lg hover:scale-105"
             >
-              Jsem značka
+              I'm a Brand
             </Link>
           </div>
         </div>
@@ -67,26 +238,26 @@ export default function Home() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl lg:text-5xl font-bold text-black mb-2">1000+</div>
-              <div className="text-gray-600 font-medium">Aktivních influencerů</div>
+              <div className="text-gray-600 font-medium">Active Influencers</div>
             </div>
             <div>
               <div className="text-4xl lg:text-5xl font-bold text-black mb-2">50+</div>
-              <div className="text-gray-600 font-medium">Partnerských značek</div>
+              <div className="text-gray-600 font-medium">Partner Brands</div>
             </div>
             <div>
               <div className="text-4xl lg:text-5xl font-bold text-black mb-2">€2M+</div>
-              <div className="text-gray-600 font-medium">Celkový obrat</div>
+              <div className="text-gray-600 font-medium">Total Revenue</div>
             </div>
             <div>
               <div className="text-4xl lg:text-5xl font-bold text-black mb-2">95%</div>
-              <div className="text-gray-600 font-medium">Spokojenost</div>
+              <div className="text-gray-600 font-medium">Satisfaction Rate</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features pro influencery */}
-      <section id="pro-influencery" className="px-6 lg:px-8 py-32">
+      {/* Features for Influencers */}
+      <section id="for-influencers" className="px-6 lg:px-8 py-32">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-5xl lg:text-6xl font-bold text-black mb-6 tracking-tight">
@@ -94,7 +265,7 @@ export default function Home() {
               <span className="italic font-light text-gray-400">partners</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
-              Vytvoř si svou osobní stránku s produkty a začni vydělávat na každém prodeji
+              Create your personal page with products and start earning on every sale.
             </p>
           </div>
           
@@ -103,9 +274,9 @@ export default function Home() {
               <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <span className="text-white text-3xl">👤</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Osobní stránka</h3>
+              <h3 className="text-2xl font-bold mb-4">Personal Page</h3>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Vlastní URL s tvým profilem a vybranými produkty pro tvé sledující
+                Your own URL with your profile and selected products for your followers.
               </p>
             </div>
             
@@ -113,9 +284,9 @@ export default function Home() {
               <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <span className="text-white text-3xl">💰</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Provize z prodejů</h3>
+              <h3 className="text-2xl font-bold mb-4">Sales Commissions</h3>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Získej provizi z každého prodeje pomocí tvého osobního kupónu
+                Get a commission from every sale made with your personal discount code.
               </p>
             </div>
             
@@ -123,9 +294,9 @@ export default function Home() {
               <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <span className="text-white text-3xl">📊</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Statistiky</h3>
+              <h3 className="text-2xl font-bold mb-4">Analytics</h3>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Sleduj svoje výnosy, počty prodejů a využití kupónů v reálném čase
+                Track your earnings, sales counts, and coupon usage in real-time.
               </p>
             </div>
           </div>
@@ -140,7 +311,7 @@ export default function Home() {
             <span className="italic font-light text-gray-400">wherever you are</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-16 font-light leading-relaxed">
-            Naše platforma poskytuje všechno, co potřebuješ pro úspěšnou monetizaci tvého obsahu
+            Our platform provides everything you need to successfully monetize your content.
           </p>
           
           <div className="grid lg:grid-cols-3 gap-8">
@@ -150,7 +321,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold mb-4">Web</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Kompletní webová platforma pro správu produktů a sledování výnosů
+                A complete web platform to manage products and track earnings.
               </p>
               <Link href="/products" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
                 Explore
@@ -163,7 +334,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold mb-4">App</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Mobilní aplikace pro správu obsahu a komunikaci s komunitou
+                A mobile app to manage content and communicate with your community.
               </p>
               <Link href="#" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
                 Explore
@@ -176,7 +347,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold mb-4">Browser Extension</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Rozšíření pro prohlížeč pro snadné sdílení produktů ze sociálních sítí
+                A browser extension to easily share products from social media.
               </p>
               <Link href="#" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
                 Explore
@@ -190,8 +361,8 @@ export default function Home() {
       <section className="px-6 lg:px-8 py-32">
         <div className="max-w-4xl mx-auto text-center">
           <blockquote className="text-3xl lg:text-4xl font-light text-black mb-8 leading-relaxed italic">
-            "Díky Goozy jsem si vytvořila stabilní příjem z mého fashion obsahu. 
-            Platforma je intuitivní a podpora skvělá."
+            "Thanks to Goozy, I've created a stable income from my fashion content.
+            The platform is intuitive and the support is great."
           </blockquote>
           <div className="flex items-center justify-center gap-4">
             <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
@@ -203,15 +374,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Formulář pro influencery */}
-      <section id="formular-influencer" className="px-6 lg:px-8 py-32 bg-black">
+      {/* Influencer Form Section */}
+      <section id="influencer-form" className="px-6 lg:px-8 py-32 bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
             Join the ultimate platform to monetize<br />
             <span className="italic font-light text-gray-400">your influence</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
-            Připoj se k tisícům influencerů, kteří už vydělávají s Goozy
+            Join thousands of influencers who are already earning with Goozy.
           </p>
           
           <div className="bg-white p-8 lg:p-12 rounded-3xl">
@@ -220,8 +391,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pro značky sekce */}
-      <section id="pro-znacky" className="px-6 lg:px-8 py-32">
+      {/* Brand Section */}
+      <section id="for-brands" className="px-6 lg:px-8 py-32">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -231,7 +402,7 @@ export default function Home() {
                 partnerships
               </h2>
               <p className="text-xl text-gray-600 mb-12 font-light leading-relaxed">
-                Rozšiř svůj dosah prostřednictvím ověřených influencerů s kvalitní komunitou
+                Expand your reach through verified influencers with a quality community.
               </p>
               
               <div className="space-y-6">
@@ -240,8 +411,8 @@ export default function Home() {
                     <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">Ověření influenceři</h4>
-                    <p className="text-gray-600">S kvalitní komunitou a autentickým obsahem</p>
+                    <h4 className="font-bold text-lg mb-1">Verified Influencers</h4>
+                    <p className="text-gray-600">With a quality community and authentic content.</p>
                   </div>
                 </div>
                 
@@ -250,8 +421,8 @@ export default function Home() {
                     <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">Automatická integrace</h4>
-                    <p className="text-gray-600">Propojení s vaším skladem a systémy</p>
+                    <h4 className="font-bold text-lg mb-1">Automatic Integration</h4>
+                    <p className="text-gray-600">Connection with your warehouse and systems.</p>
                   </div>
                 </div>
                 
@@ -260,15 +431,15 @@ export default function Home() {
                     <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">Detailní analytika</h4>
-                    <p className="text-gray-600">Kompletní reporting a sledování výkonu</p>
+                    <h4 className="font-bold text-lg mb-1">Detailed Analytics</h4>
+                    <p className="text-gray-600">Complete reporting and performance tracking.</p>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="bg-gray-50 p-8 lg:p-12 rounded-3xl">
-              <h3 className="text-2xl font-bold mb-6">Začněte spolupracovat</h3>
+            <div id="brand-form" className="bg-gray-50 p-8 lg:p-12 rounded-3xl">
+              <h3 className="text-2xl font-bold mb-6">Start Collaborating</h3>
               <BrandForm />
             </div>
           </div>
@@ -284,22 +455,22 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-8 text-sm">
               <Link href="/products" className="text-gray-600 hover:text-black transition-colors">
-                Produkty
+                Products
               </Link>
               <Link href="#" className="text-gray-600 hover:text-black transition-colors">
-                O nás
+                About Us
               </Link>
               <Link href="#" className="text-gray-600 hover:text-black transition-colors">
-                Kontakt
+                Contact
               </Link>
               <Link href="#" className="text-gray-600 hover:text-black transition-colors">
-                Podmínky
+                Terms
               </Link>
             </div>
           </div>
           <div className="border-t border-gray-100 mt-8 pt-8 text-center">
             <p className="text-gray-500 text-sm">
-              © 2024 Goozy. Všechna práva vyhrazena.
+              © 2024 Goozy. All rights reserved.
             </p>
           </div>
         </div>

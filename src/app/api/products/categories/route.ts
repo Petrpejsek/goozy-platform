@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    // Načteme všechny unikátní kategorie z dostupných produktů
+    // Get all unique categories from available products
     const categories = await prisma.product.findMany({
       where: {
         isAvailable: true,
@@ -17,7 +17,7 @@ export async function GET() {
       distinct: ['category']
     })
 
-    // Spočítáme počet produktů v každé kategorii
+    // Count products in each category
     const categoriesWithCount = await Promise.all(
       categories.map(async (cat) => {
         const count = await prisma.product.count({
@@ -37,7 +37,7 @@ export async function GET() {
       })
     )
 
-    // Seřadíme podle počtu produktů
+    // Sort by product count
     categoriesWithCount.sort((a, b) => b.count - a.count)
 
     return NextResponse.json({
@@ -48,11 +48,11 @@ export async function GET() {
     })
 
   } catch (error) {
-    console.error('Chyba při načítání kategorií:', error)
+    console.error('Error loading categories:', error)
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Nepodařilo se načíst kategorie' 
+        error: 'Failed to load categories' 
       },
       { status: 500 }
     )

@@ -3,19 +3,19 @@
 import { useState } from 'react'
 
 interface FormData {
-  // Krok 1: Základní info
+  // Step 1: Basic Info
   name: string
   email: string
   password: string
   confirmPassword: string
   
-  // Krok 2: Sociální sítě  
+  // Step 2: Social Networks
   instagram: string
   tiktok: string
   youtube: string
   followers: string
   
-  // Krok 3: Obsah a preference
+  // Step 3: Content and Preferences
   categories: string[]
   bio: string
   collaborationTypes: string[]
@@ -73,36 +73,36 @@ export default function MultiStepInfluencerForm() {
     switch (step) {
       case 1:
         if (!formData.name || !formData.email || !formData.password) {
-          setMessage('Vyplňte všechna povinná pole')
+          setMessage('Please fill in all required fields.')
           setMessageType('error')
           return false
         }
         if (formData.password !== formData.confirmPassword) {
-          setMessage('Hesla se neshodují')
+          setMessage('Passwords do not match.')
           setMessageType('error')
           return false
         }
         if (formData.password.length < 6) {
-          setMessage('Heslo musí mít alespoň 6 znaků')
+          setMessage('Password must be at least 6 characters long.')
           setMessageType('error')
           return false
         }
         break
       case 2:
         if (!formData.followers) {
-          setMessage('Vyberte počet followerů')
+          setMessage('Please select your number of followers.')
           setMessageType('error')
           return false
         }
         if (!formData.instagram && !formData.tiktok && !formData.youtube) {
-          setMessage('Vyplňte alespoň jednu sociální síť')
+          setMessage('Please provide at least one social media profile.')
           setMessageType('error')
           return false
         }
         break
       case 3:
         if (formData.categories.length === 0) {
-          setMessage('Vyberte alespoň jednu kategorii obsahu')
+          setMessage('Please select at least one content category.')
           setMessageType('error')
           return false
         }
@@ -133,14 +133,14 @@ export default function MultiStepInfluencerForm() {
       const submitData = {
         name: formData.name,
         email: formData.email,
-        password: formData.password, // Nové pole pro heslo
+        password: formData.password,
         instagram: formData.instagram,
-        tiktok: formData.tiktok, // Nové pole
-        youtube: formData.youtube, // Nové pole
+        tiktok: formData.tiktok,
+        youtube: formData.youtube,
         followers: formData.followers,
         categories: formData.categories,
-        bio: formData.bio, // Nové pole
-        collaborationTypes: formData.collaborationTypes // Nové pole
+        bio: formData.bio,
+        collaborationTypes: formData.collaborationTypes
       }
 
       const response = await fetch('/api/applications/influencer', {
@@ -155,8 +155,8 @@ export default function MultiStepInfluencerForm() {
 
       if (response.ok) {
         setMessageType('success')
-        setMessage(result.message)
-        // Reset formuláře
+        setMessage(result.message || 'Application submitted successfully!')
+        // Reset form
         setCurrentStep(1)
         setFormData({
           name: '',
@@ -173,47 +173,58 @@ export default function MultiStepInfluencerForm() {
         })
       } else {
         setMessageType('error')
-        setMessage(result.error || 'Chyba při odesílání formuláře')
+        setMessage(result.error || 'Failed to submit application.')
       }
     } catch (error) {
       setMessageType('error')
-      setMessage('Chyba při odesílání formuláře. Zkuste to prosím později.')
+      setMessage('An error occurred. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-sm">
+    <div className="bg-white p-8 lg:p-12 rounded-3xl shadow-sm border border-gray-100">
       {/* Progress bar */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step <= currentStep
-                  ? 'bg-black text-white'
-                  : 'bg-gray-300 text-gray-600'
-              }`}>
-                {step}
-              </div>
-              {step < 3 && (
-                <div className={`w-20 h-1 mx-2 ${
-                  step < currentStep ? 'bg-black' : 'bg-gray-300'
-                }`} />
-              )}
-            </div>
-          ))}
+      <div className="w-full mb-12">
+        {/* Layer for circles and lines */}
+        <div className="flex items-center">
+          {/* Circle 1 */}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+            {currentStep > 1 ? '✓' : '1'}
+          </div>
+
+          {/* Line 1 */}
+          <div className="flex-1 h-px bg-gray-200 mx-4">
+            <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 1 ? 'w-full' : 'w-0'}`}></div>
+          </div>
+
+          {/* Circle 2 */}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+            {currentStep > 2 ? '✓' : '2'}
+          </div>
+
+          {/* Line 2 */}
+          <div className="flex-1 h-px bg-gray-200 mx-4">
+            <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 2 ? 'w-full' : 'w-0'}`}></div>
+          </div>
+
+          {/* Circle 3 */}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 3 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+            3
+          </div>
         </div>
-        <div className="flex justify-between mt-2 text-sm text-gray-600">
-          <span>Základní údaje</span>
-          <span>Sociální sítě</span>
-          <span>Obsah a preference</span>
+
+        {/* Layer for labels */}
+        <div className="flex justify-between mt-2">
+          <p className={`text-sm text-left transition-colors duration-300 ${currentStep >= 1 ? 'font-semibold text-black' : 'text-gray-400'}`}>Basic Info</p>
+          <p className={`text-sm text-center transition-colors duration-300 ${currentStep >= 2 ? 'font-semibold text-black' : 'text-gray-400'}`}>Social Networks</p>
+          <p className={`text-sm text-right transition-colors duration-300 ${currentStep >= 3 ? 'font-semibold text-black' : 'text-gray-400'}`}>Content & Preferences</p>
         </div>
       </div>
 
       {message && (
-        <div className={`mb-6 p-4 rounded-lg ${
+        <div className={`mb-6 p-4 rounded-lg text-sm ${
           messageType === 'success' 
             ? 'bg-green-50 text-green-800 border border-green-200' 
             : 'bg-red-50 text-red-800 border border-red-200'
@@ -222,15 +233,15 @@ export default function MultiStepInfluencerForm() {
         </div>
       )}
 
-      {/* Krok 1: Základní údaje */}
+      {/* Step 1: Basic Info */}
       {currentStep === 1 && (
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold mb-4">Základní údaje</h3>
+          <h3 className="text-xl font-semibold text-center mb-6">Basic Info</h3>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Jméno a příjmení *
+                Full Name *
               </label>
               <input
                 type="text"
@@ -238,7 +249,7 @@ export default function MultiStepInfluencerForm() {
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="Jan Novák"
+                placeholder="John Doe"
               />
             </div>
             <div>
@@ -251,7 +262,7 @@ export default function MultiStepInfluencerForm() {
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="jan@email.cz"
+                placeholder="john.doe@example.com"
               />
             </div>
           </div>
@@ -259,7 +270,7 @@ export default function MultiStepInfluencerForm() {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Heslo *
+                Password *
               </label>
               <input
                 type="password"
@@ -267,12 +278,12 @@ export default function MultiStepInfluencerForm() {
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({...prev, password: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="Alespoň 6 znaků"
+                placeholder="At least 6 characters"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Potvrzení hesla *
+                Confirm Password *
               </label>
               <input
                 type="password"
@@ -280,26 +291,26 @@ export default function MultiStepInfluencerForm() {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData(prev => ({...prev, confirmPassword: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="Zadejte heslo znovu"
+                placeholder="Enter your password again"
               />
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4">
             <button
               onClick={nextStep}
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors font-semibold flex items-center gap-2"
             >
-              Pokračovat →
+              Continue →
             </button>
           </div>
         </div>
       )}
 
-      {/* Krok 2: Sociální sítě */}
+      {/* Step 2: Social Networks */}
       {currentStep === 2 && (
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold mb-4">Sociální sítě</h3>
+          <h3 className="text-xl font-semibold text-center mb-6">Social Networks</h3>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
@@ -338,12 +349,12 @@ export default function MultiStepInfluencerForm() {
                 value={formData.youtube}
                 onChange={(e) => setFormData(prev => ({...prev, youtube: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="Název kanálu"
+                placeholder="Channel Name"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Největší počet followerů *
+                Largest Follower Count *
               </label>
               <select 
                 required
@@ -351,7 +362,7 @@ export default function MultiStepInfluencerForm() {
                 onChange={(e) => setFormData(prev => ({...prev, followers: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
               >
-                <option value="">Vyberte...</option>
+                <option value="">Select range...</option>
                 <option value="1K-10K">1K - 10K</option>
                 <option value="10K-50K">10K - 50K</option>
                 <option value="50K-100K">50K - 100K</option>
@@ -360,99 +371,92 @@ export default function MultiStepInfluencerForm() {
             </div>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between pt-4">
             <button
               onClick={prevStep}
-              className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-full hover:bg-gray-50 transition-colors font-semibold"
             >
-              ← Zpět
+              ← Back
             </button>
             <button
               onClick={nextStep}
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors font-semibold flex items-center gap-2"
             >
-              Pokračovat →
+              Continue →
             </button>
           </div>
         </div>
       )}
 
-      {/* Krok 3: Obsah a preference */}
+      {/* Step 3: Content & Preferences */}
       {currentStep === 3 && (
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold mb-4">Obsah a preference</h3>
+          <h3 className="text-xl font-semibold text-center mb-6">Content & Preferences</h3>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-4">
+              What categories does your content fit into? *
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {['Fashion', 'Beauty', 'Lifestyle', 'Travel', 'Food', 'Fitness'].map(cat => (
+                <label key={cat} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={formData.categories.includes(cat)}
+                    onChange={(e) => handleCategoryChange(cat, e.target.checked)}
+                    className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
+                  />
+                  <span className="text-gray-800 font-medium">{cat}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kategorie obsahu * (vyberte alespoň jednu)
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {['Fashion', 'Lifestyle', 'Beauty', 'Fitness', 'Travel', 'Food', 'Tech', 'Gaming', 'Jiné'].map((category) => (
-                <label key={category} className="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    className="mr-2"
-                    checked={formData.categories.includes(category)}
-                    onChange={(e) => handleCategoryChange(category, e.target.checked)}
-                  />
-                  <span className="text-sm">{category}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Typy spolupráce (co vás zajímá)
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {[
-                'Propagace oblečení', 
-                'Dlouhodobá spolupráce', 
-                'Jednorázové kampaně', 
-                'Affiliate marketing',
-                'Recenze produktů',
-                'Brand ambasadorství'
-              ].map((type) => (
-                <label key={type} className="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    className="mr-2"
-                    checked={formData.collaborationTypes.includes(type)}
-                    onChange={(e) => handleCollaborationChange(type, e.target.checked)}
-                  />
-                  <span className="text-sm">{type}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Krátké bio (volitelné)
+              Tell us about yourself (Bio)
             </label>
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({...prev, bio: e.target.value}))}
-              rows={3}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              placeholder="Pár slov o sobě a svém obsahu..."
-            ></textarea>
+              rows={4}
+              placeholder="What is your content about? What makes you unique?"
+            />
           </div>
 
-          <div className="flex justify-between">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-4">
+              What types of collaboration are you interested in?
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {['Gifting', 'Paid Post', 'Affiliate'].map(type => (
+                <label key={type} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={formData.collaborationTypes.includes(type)}
+                    onChange={(e) => handleCollaborationChange(type, e.target.checked)}
+                    className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
+                  />
+                  <span className="text-gray-800 font-medium">{type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-between pt-4">
             <button
               onClick={prevStep}
-              className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-full hover:bg-gray-50 transition-colors font-semibold"
             >
-              ← Zpět
+              ← Back
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50"
             >
-              {isSubmitting ? 'Odesílání...' : 'Odeslat přihlášku ✨'}
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
             </button>
           </div>
         </div>

@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     
     if (existingApplication) {
       return NextResponse.json(
-        { error: 'S tímto emailem už byla podána přihláška' },
-        { status: 400 }
+        { error: 'An application with this email already exists.' },
+        { status: 409 }
       )
     }
     
@@ -61,14 +61,14 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(
       { 
-        message: 'Přihláška byla úspěšně odeslána! Ozveme se ti do 48 hodin.',
+        message: 'Application submitted successfully! We will review it and get back to you soon.',
         applicationId: application.id
       },
       { status: 201 }
     )
     
   } catch (error) {
-    console.error('Chyba při zpracování přihlášky influencera:', error)
+    console.error('Failed to create influencer application:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Chyba serveru. Zkuste to prosím později.' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     )
   }

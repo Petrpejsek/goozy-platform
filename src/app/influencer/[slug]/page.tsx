@@ -1,259 +1,145 @@
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import Image from 'next/image'
+import { prisma } from '@/lib/prisma'
 import CopyButton from '@/components/CopyButton'
 
-interface PageProps {
-  params: Promise<{ slug: string }>
+// This function should live in a shared utility file
+const createSlug = (name: string): string => {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+};
+
+interface InfluencerPageProps {
+  params: { slug: string };
 }
 
-// Funkce pro vytvoření slug z jména
-function createSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-}
+export default async function InfluencerPublicPage({ params }: InfluencerPageProps) {
+  const { slug } = params;
 
-export default async function InfluencerPage({ params }: PageProps) {
-  const { slug } = await params
+  // Find the approved influencer by their generated slug
+  const applications = await prisma.influencer_applications.findMany({ 
+    where: { status: 'APPROVED' } 
+  });
   
-  // Najdeme influencera podle slug vytvořeného z jména
-  const influencerApplications = await prisma.influencerApplication.findMany({
-    where: { status: 'approved' }
-  })
-  
-  // Najdeme influencera, jehož slug odpovídá URL
-  const influencer = influencerApplications.find(app => 
-    createSlug(app.name) === slug
-  )
-  
+  const influencer = applications.find(app => createSlug(app.name) === slug);
+
   if (!influencer) {
-    notFound()
+    notFound();
   }
-
-  // Načteme skutečné produkty z databáze
+  
+  // TODO: Fetch products specifically selected by this influencer
   const products = await prisma.product.findMany({
-    where: {
-      isAvailable: true,
-      stockQuantity: {
-        gt: 0
-      }
-    },
-    include: {
-      brand: {
-        select: {
-          name: true,
-          logo: true
-        }
-      }
-    },
-    take: 6, // Zobrazíme max 6 produktů
-    orderBy: {
-      createdAt: 'desc'
-    }
-  })
+    where: { isAvailable: true, stockQuantity: { gt: 0 } },
+    include: { brand: { select: { name: true } } },
+    take: 9,
+    orderBy: { createdAt: 'desc' }
+  });
 
-  // Transformujeme produkty pro zobrazení
-  const displayProducts = products.map(product => {
-    const images = JSON.parse(product.images || '[]')
-    const sizes = JSON.parse(product.sizes || '[]')
-    const discountCode = `${influencer.name.replace(/\s+/g, '').toUpperCase()}15`
-    const discountedPrice = product.price * 0.85 // 15% sleva
-    
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: discountedPrice,
-      originalPrice: product.price,
-      discountCode,
-      images,
-      brand: product.brand.name,
-      sizes,
-      sku: product.sku,
-      category: product.category
-    }
-  })
+  const discountCode = `${influencer.name.replace(/\s+/g, '').toUpperCase()}15`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-black">
-              GOOZY
+    <div className="min-h-screen bg-gray-100 font-sans">
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <Link href="/" className="text-3xl font-bold text-black tracking-tight">
+            GOOZY
+          </Link>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500 hidden sm:block">Powered by Goozy</span>
+            <Link href="/#influencer-form" className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
+              Join Us
             </Link>
-            <div className="text-sm text-gray-600">
-              Influencer stránka
-            </div>
           </div>
-        </div>
+        </nav>
       </header>
-
-      {/* Influencer Profile Header */}
-      <section className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center">
-            <div className="w-24 h-24 bg-black rounded-full mx-auto mb-6 flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">
-                {influencer.name.charAt(0).toUpperCase()}
-              </span>
+      
+      <main>
+        {/* Influencer Profile Header */}
+        <section className="bg-white pt-16 pb-20 text-center border-b">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="w-32 h-32 rounded-full mx-auto mb-6 ring-4 ring-offset-4 ring-black overflow-hidden">
+                <Image src={'/placeholder-avatar.png'} alt={influencer.name} width={128} height={128} className="w-full h-full object-cover" />
             </div>
-            
-            <h1 className="text-4xl font-bold text-black mb-2">
-              {influencer.name}
+            <h1 className="text-5xl font-extrabold text-black mb-3">
+              {influencer.name}'s Picks
             </h1>
-            
             {influencer.bio && (
-              <p className="text-lg text-gray-600 mb-4 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
                 {influencer.bio}
               </p>
             )}
-            
-            <div className="flex justify-center space-x-4 mb-6">
-              {influencer.instagram && (
-                <a 
-                  href={`https://instagram.com/${influencer.instagram.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-black"
-                >
-                  <span>📱</span>
-                  <span>{influencer.instagram}</span>
-                </a>
-              )}
-              
-              {influencer.tiktok && (
-                <a 
-                  href={`https://tiktok.com/@${influencer.tiktok.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-black"
-                >
-                  <span>🎵</span>
-                  <span>{influencer.tiktok}</span>
-                </a>
-              )}
-              
-              {influencer.youtube && (
-                <a 
-                  href={`https://youtube.com/c/${influencer.youtube}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-black"
-                >
-                  <span>🎥</span>
-                  <span>{influencer.youtube}</span>
-                </a>
-              )}
+            <div className="flex justify-center items-center gap-6 text-gray-500 mb-8">
+               {influencer.instagram && <a href={`https://instagram.com/${influencer.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-black transition">Instagram</a>}
+               {influencer.tiktok && <a href={`https://tiktok.com/@${influencer.tiktok.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-black transition">TikTok</a>}
+               {influencer.youtube && <a href={`https://youtube.com/c/${influencer.youtube}`} target="_blank" rel="noopener noreferrer" className="hover:text-black transition">YouTube</a>}
             </div>
-            
-            <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-              💰 Sleva 15% na všechny produkty
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Products Section */}
-      <section className="py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-black mb-4">
-              Moje oblíbené produkty
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Vybral jsem pro vás ty nejlepší kousky. Získejte 15% slevu s mým kódem!
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                <div className="aspect-[3/4] bg-gray-200 rounded-t-lg overflow-hidden">
-                  {product.images.length > 0 ? (
-                    <img 
-                      src={product.images[0]} 
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-gray-500">📷 Obrázek produktu</span>
-                    </div>
-                  )}
+            <div className="bg-yellow-100 border-2 border-dashed border-yellow-300 rounded-xl p-4 inline-flex flex-col items-center gap-2">
+                <span className="font-bold text-yellow-900 text-lg">Your 15% Discount Code:</span>
+                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg">
+                    <code className="text-xl font-mono font-bold text-black">{discountCode}</code>
+                    <CopyButton textToCopy={discountCode} />
                 </div>
-                
-                <div className="p-6">
-                  <div className="mb-2">
-                    <span className="text-sm text-gray-500">{product.brand}</span>
-                    <span className="text-sm text-gray-400 ml-2">• {product.category}</span>
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-black mb-2">
-                    {product.name}
-                  </h3>
-                  
-                  {product.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center space-x-2 mb-4">
-                    <span className="text-2xl font-bold text-black">
-                      €{product.price.toFixed(2)}
-                    </span>
-                    <span className="text-lg text-gray-500 line-through">
-                      €{product.originalPrice.toFixed(2)}
-                    </span>
-                    <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
-                      -15%
-                    </span>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <span className="text-sm text-gray-600">Velikosti: </span>
-                    <span className="text-sm font-medium">{product.sizes.join(', ')}</span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <div className="text-sm font-medium text-green-800 mb-1">
-                        Slevoý kód:
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <code className="bg-green-100 px-2 py-1 rounded text-green-800 font-mono">
-                          {product.discountCode}
-                        </code>
-                        <CopyButton text={product.discountCode} />
-                      </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Products Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => {
+              const discountedPrice = product.price * 0.85;
+              const images = JSON.parse(product.images || '[]') as string[];
+              
+              return (
+                <div key={product.id} className="bg-white rounded-2xl shadow-lg overflow-hidden group flex flex-col">
+                  <div className="relative">
+                    <div className="aspect-w-1 aspect-h-1 w-full bg-gray-200">
+                      <Image
+                        src={images[0] || '/placeholder.png'}
+                        alt={product.name}
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
-                    
-                    <button className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium">
-                      Koupit nyní
+                    <div className="absolute top-0 right-0 m-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">15% OFF</div>
+                  </div>
+                  <div className="p-6 flex flex-col flex-grow">
+                    <p className="text-sm text-gray-500 mb-1">{product.brand.name}</p>
+                    <h3 className="text-xl font-bold text-black mb-3 flex-grow">
+                      {product.name}
+                    </h3>
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <span className="text-2xl font-extrabold text-black">
+                        ${discountedPrice.toFixed(2)}
+                      </span>
+                      <span className="text-md text-gray-400 line-through">
+                        ${product.price.toFixed(2)}
+                      </span>
+                    </div>
+                    <button className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                      Shop Now
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-gray-600 mb-2">
-            Tato stránka je poskytována platformou
+      <footer className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+          <p>
+            This page is powered by{' '}
+            <Link href="/" className="font-semibold text-black hover:underline">
+              Goozy
+            </Link>
+            . The platform for influencers.
           </p>
-          <Link href="/" className="text-black font-bold hover:underline">
-            GOOZY
-          </Link>
+          <p className="mt-2">&copy; {new Date().getFullYear()} Goozy. All Rights Reserved.</p>
         </div>
       </footer>
     </div>
-  )
+  );
 } 

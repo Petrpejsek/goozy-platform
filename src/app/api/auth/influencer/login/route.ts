@@ -5,8 +5,8 @@ import { z } from 'zod'
 import jwt from 'jsonwebtoken'
 
 const loginSchema = z.object({
-  email: z.string().email('Neplatný email'),
-  password: z.string().min(1, 'Heslo je povinné'),
+  email: z.string().email('Invalid email'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 export async function POST(request: NextRequest) {
@@ -17,45 +17,43 @@ export async function POST(request: NextRequest) {
     const validatedData = loginSchema.parse(body)
     
     // Najdeme schváleného influencera v aplikacích
-    const application = await prisma.influencerApplication.findFirst({
-      where: {
-        email: validatedData.email,
-        status: 'approved' // Pouze schválení influenceři se mohou přihlásit
+    const influencer = await prisma.influencerApplication.findFirst({
+      where: { 
+        email: validatedData.email, 
+        status: 'approved' 
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        password: true,
-        instagram: true,
-        tiktok: true,
-        youtube: true
-      }
     })
 
-    if (!application) {
-      return NextResponse.json(
-        { error: 'Neplatné přihlašovací údaje nebo účet ještě nebyl schválen' },
-        { status: 401 }
-      )
+    if (!influencer) {
+      // Check if there is a pending or rejected application
+      const application = await prisma.influencerApplication.findFirst({
+        where: { email: validatedData.email },
+        orderBy: { createdAt: 'desc' }
+      })
+      if (application) {
+        if (application.status === 'pending') {
+          return NextResponse.json({ error: 'Your application is still being reviewed.' }, { status: 403 })
+        }
+        if (application.status === 'rejected') {
+          return NextResponse.json({ error: 'Your application has been rejected.' }, { status: 403 })
+        }
+      }
+      return NextResponse.json({ error: 'Invalid credentials or unapproved account.' }, { status: 401 })
     }
 
     // Ověření hesla
-    const isValidPassword = await bcrypt.compare(validatedData.password, application.password)
+    const isPasswordValid = await bcrypt.compare(validatedData.password, influencer.password)
     
-    if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Neplatné přihlašovací údaje' },
-        { status: 401 }
-      )
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 })
     }
 
     // Vytvoření JWT tokenu
     const token = jwt.sign(
       { 
-        id: application.id,
-        email: application.email,
-        name: application.name,
+        id: influencer.id,
+        email: influencer.email,
+        name: influencer.name,
         type: 'influencer'
       },
       process.env.JWT_SECRET || 'fallback-secret-key',
@@ -63,17 +61,14 @@ export async function POST(request: NextRequest) {
     )
 
     return NextResponse.json({
-      message: 'Úspěšné přihlášení',
+      message: 'Login successful.',
       token,
-      user: {
-        id: application.id,
-        name: application.name,
-        email: application.email,
-        instagram: application.instagram,
-        tiktok: application.tiktok,
-        youtube: application.youtube
+      influencer: {
+        id: influencer.id,
+        name: influencer.name,
+        email: influencer.email
       }
-    })
+    }, { status: 200 })
 
   } catch (error) {
     console.error('Login error:', error)
@@ -86,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Chyba serveru' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     )
   }

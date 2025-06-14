@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     )
     
   } catch (error) {
-    console.error('Chyba při zpracování poptávky značky:', error)
+    console.error('Failed to process brand application:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Chyba serveru. Zkuste to prosím později.' },
+      { error: 'Internal Server Error. Please try again later.' },
       { status: 500 }
     )
   }

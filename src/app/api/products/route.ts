@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Sestavíme where podmínku
+    // Build where condition
     const where: any = {
       isAvailable: true,
       stockQuantity: {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       where.category = category
     }
 
-    // Načteme produkty s informacemi o značce
+    // Load products with brand information
     const products = await prisma.product.findMany({
       where,
       include: {
@@ -39,10 +39,10 @@ export async function GET(request: NextRequest) {
       skip: offset
     })
 
-    // Spočítáme celkový počet produktů
+    // Count total products
     const totalCount = await prisma.product.count({ where })
 
-    // Transformujeme data pro frontend
+    // Transform data for frontend
     const transformedProducts = products.map(product => ({
       id: product.id,
       name: product.name,
@@ -73,11 +73,11 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Chyba při načítání produktů:', error)
+    console.error('Error loading products:', error)
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Nepodařilo se načíst produkty' 
+        error: 'Failed to load products' 
       },
       { status: 500 }
     )
