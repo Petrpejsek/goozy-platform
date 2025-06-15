@@ -272,6 +272,11 @@ export default function CampaignPreview() {
   const [bio, setBio] = useState(mockInfluencer.bio);
   const [discountCode, setDiscountCode] = useState(mockInfluencer.discountCode);
   const [socialLinks, setSocialLinks] = useState(mockInfluencer.socialLinks);
+  
+  // Recommendation editing states
+  const [editingRecommendation, setEditingRecommendation] = useState<string | null>(null);
+  const [recommendationText, setRecommendationText] = useState<string>('');
+  const [productRecommendations, setProductRecommendations] = useState<Record<string, string>>({});
 
   const router = useRouter();
 
@@ -434,6 +439,57 @@ export default function CampaignPreview() {
     window.open(url, '_blank');
   };
 
+  // Recommendation handling functions
+  const handleEditRecommendation = (productId: string) => {
+    const currentRecommendation = productRecommendations[productId] || '';
+    setRecommendationText(currentRecommendation);
+    setEditingRecommendation(productId);
+  };
+
+  const handleSaveRecommendation = async () => {
+    if (!editingRecommendation) return;
+
+    try {
+      // Pro demo účely - simulace API volání
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulace network delay
+      
+      // Uložit do local state
+      setProductRecommendations(prev => ({
+        ...prev,
+        [editingRecommendation]: recommendationText.trim()
+      }));
+      
+      setToast({ message: 'Recommendation saved successfully!', type: 'success' });
+      
+      // V produkci by zde bylo skutečné API volání:
+      /* 
+      const response = await fetch('/api/influencer/products/recommendation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          influencerId: getCurrentInfluencerId(), // Dynamické ID
+          productId: editingRecommendation,
+          recommendation: recommendationText.trim()
+        }),
+      });
+      */
+      
+    } catch (error) {
+      console.error('Error saving recommendation:', error);
+      setToast({ message: 'Error saving recommendation', type: 'error' });
+    }
+
+    setEditingRecommendation(null);
+    setRecommendationText('');
+  };
+
+  const handleCancelRecommendation = () => {
+    setEditingRecommendation(null);
+    setRecommendationText('');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Toast */}
@@ -461,13 +517,48 @@ export default function CampaignPreview() {
               >
                 ← Back to Products
               </Link>
-              <button className="bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+              <Link
+                href="/influencer/campaign/launch"
+                className="bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+              >
                 Publish Campaign
-              </button>
+              </Link>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Hint Banner */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-blue-900 mb-1">💡 You can still make changes!</h4>
+              <p className="text-sm text-blue-700">
+                This is your preview - you can <strong>edit your profile</strong>, <strong>drag & drop to reorder products</strong>, or <strong>go back to add more products</strong>. When you're happy, click "Publish Campaign" to go live!
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <Link
+                href="/influencer/dashboard/products"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add More Products
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
@@ -581,12 +672,12 @@ export default function CampaignPreview() {
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-150 cursor-move group relative transform ${
+                className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-200 cursor-move group relative ${
                   draggedItem === index 
                     ? 'scale-105 border-blue-400 shadow-lg' 
                     : dragOverItem === index 
                     ? 'border-blue-400 bg-blue-50 scale-102' 
-                    : 'border-gray-100 hover:shadow-md hover:scale-101'
+                    : 'border-gray-100 hover:shadow-md hover:border-gray-200'
                 }`}
               >
                 {/* Jednoduchý drag handle */}
@@ -607,7 +698,7 @@ export default function CampaignPreview() {
                   <img
                     src={product.images[0]}
                     alt={product.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover transition-transform duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = 'https://picsum.photos/400/400?random=97';
@@ -616,16 +707,51 @@ export default function CampaignPreview() {
                 </div>
                 
                 {/* Product Info */}
-                <div className="p-4">
+                <div className="p-4 cursor-default">
                   <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">{product.name}</h4>
                   <p className="text-sm text-gray-500 mb-3">{product.brand}</p>
                   
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
                     <span className="text-lg font-bold text-black">€{product.discountedPrice}</span>
                     <span className="text-sm text-gray-400 line-through">€{product.price}</span>
                   </div>
                   
-                  <button className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+                  {/* Recommendation Section */}
+                  <div className="mb-3">
+                    {productRecommendations[product.id] ? (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                              <svg className="w-2.5 h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              </svg>
+                            </div>
+                            <span className="text-xs font-medium text-blue-700">My recommendation</span>
+                          </div>
+                          <button
+                            onClick={() => handleEditRecommendation(product.id)}
+                            className="text-blue-600 hover:text-blue-800 text-xs transition-colors duration-200 cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                        <p className="text-xs text-blue-800 italic">"{productRecommendations[product.id]}"</p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleEditRecommendation(product.id)}
+                        className="w-full bg-purple-50 border border-purple-200 text-purple-700 py-2 px-3 rounded-lg text-xs font-medium hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add my recommendation
+                      </button>
+                    )}
+                  </div>
+                  
+                  <button className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors duration-200 cursor-pointer">
                     Add to Cart
                   </button>
                 </div>
@@ -853,6 +979,104 @@ export default function CampaignPreview() {
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendation Edit Modal */}
+      {editingRecommendation && (
+        <div 
+          className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={handleCancelRecommendation}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-lg w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold">Edit Product Recommendation</h3>
+              <button
+                onClick={handleCancelRecommendation}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-purple-900">Make it personal!</h4>
+                    <p className="text-sm text-purple-700">Share why you love this product, how you use it, or why your followers should try it.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your personal recommendation
+              </label>
+              <textarea
+                value={recommendationText}
+                onChange={(e) => setRecommendationText(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                rows={4}
+                maxLength={300}
+                placeholder="I love this product because... / Perfect for... / I always use this when..."
+              />
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-sm text-gray-500">{recommendationText.length}/300 characters</span>
+                <span className={`text-xs ${recommendationText.length > 250 ? 'text-orange-600' : recommendationText.length > 280 ? 'text-red-600' : 'text-gray-400'}`}>
+                  {recommendationText.length > 250 ? (recommendationText.length > 280 ? 'Almost full!' : 'Getting close') : 'Tell your story'}
+                </span>
+              </div>
+            </div>
+            
+            {/* Preview */}
+            {recommendationText.trim() && (
+              <div className="mb-6">
+                <h5 className="text-sm font-medium text-gray-700 mb-2">Preview:</h5>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-blue-700">My recommendation</span>
+                  </div>
+                  <p className="text-xs text-blue-800 italic">"{recommendationText}"</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelRecommendation}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveRecommendation}
+                disabled={!recommendationText.trim()}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  recommendationText.trim()
+                    ? 'bg-purple-600 text-white hover:bg-purple-700'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Save Recommendation
               </button>
             </div>
           </div>

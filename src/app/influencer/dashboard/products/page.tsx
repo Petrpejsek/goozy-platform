@@ -5,19 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
-// Toast component
-const Toast = ({ message, type, onDismiss }: { message: string, type: 'success' | 'error', onDismiss: () => void }) => {
-  useEffect(() => {
-    const timer = setTimeout(onDismiss, 3000);
-    return () => clearTimeout(timer);
-  }, [onDismiss]);
 
-  return (
-    <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-      {message}
-    </div>
-  );
-};
 
 // Sidebar Navigation Component (same as dashboard)
 const Sidebar = ({ currentPage = 'products' }: { currentPage?: string }) => {
@@ -171,7 +159,6 @@ export default function InfluencerProductCatalog() {
   const [error, setError] = useState<string>('')
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set())
   
   const router = useRouter()
@@ -210,7 +197,7 @@ export default function InfluencerProductCatalog() {
       }
     } catch (err: any) {
       setError(err.message);
-      setToast({ message: err.message, type: 'error' });
+      console.error('Error fetching products:', err)
     }
   }
 
@@ -267,12 +254,12 @@ export default function InfluencerProductCatalog() {
       });
       const data = await response.json();
       if (response.ok) {
-        setToast({ message: 'Selection saved successfully!', type: 'success' });
+        console.log('Selection saved successfully!');
       } else {
         throw new Error(data.error || 'Failed to save selection.');
       }
     } catch (err: any) {
-      setToast({ message: err.message, type: 'error' });
+      console.error('Error saving selection:', err);
     } finally {
       setSaving(false);
     }
@@ -280,8 +267,6 @@ export default function InfluencerProductCatalog() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-      
       <Sidebar currentPage="products" />
       
       {/* Top Header */}
@@ -296,16 +281,14 @@ export default function InfluencerProductCatalog() {
             <span className="text-sm font-medium text-gray-700">
               {selectedProducts.size} selected
             </span>
+            
             <button
               onClick={() => {
                 if (selectedProducts.size > 0) {
                   // Store selected products in localStorage for the campaign preview
                   const selectedProductsArray = products.filter(p => selectedProducts.has(p.id));
                   localStorage.setItem('selectedProducts', JSON.stringify(selectedProductsArray));
-                  setToast({ message: `${selectedProducts.size} products added to campaign!`, type: 'success' });
-                  setTimeout(() => {
-                    router.push('/influencer/campaign/preview');
-                  }, 1000);
+                  router.push('/influencer/campaign/preview');
                 }
               }}
               disabled={selectedProducts.size === 0}

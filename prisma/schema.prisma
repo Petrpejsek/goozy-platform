@@ -168,6 +168,9 @@ model InfluencerProduct {
   isActive     Boolean    @default(true)
   addedAt      DateTime   @default(now())
   
+  // Personalizované doporučení od influencera
+  recommendation String?  // Text doporučení (max 300 znaků)
+  
   influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
   product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 

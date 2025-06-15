@@ -1,0 +1,771 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+
+// Mock data pro live kampani (později z databáze)
+const mockCampaignData = {
+  influencer: {
+    name: "Aneta",
+    avatar: "https://picsum.photos/150/150?random=1",
+    bio: "Hi girls! I've selected amazing pieces for you with an exclusive discount! Use my code for 20% off ✨ I'm passionate about fashion, lifestyle, and helping you find the perfect pieces that make you feel confident and beautiful.",
+    followers: "125K",
+    discountCode: "ANETA20",
+    discountPercent: 20,
+    socialLinks: {
+      instagram: "https://instagram.com/aneta",
+      tiktok: "https://tiktok.com/@aneta",
+      youtube: "https://youtube.com/@aneta"
+    }
+  },
+  campaign: {
+    startDate: new Date(Date.now() + 2 * 60 * 1000).toISOString(), // Kampaň začíná za 2 minuty
+    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Kampaň končí za 3 dny
+    isActive: false // Kampaň ještě nezačala
+  },
+  products: [
+    {
+      id: "1",
+      name: "Cotton T-Shirt",
+      price: 24.99,
+      discountedPrice: 19.99,
+      images: ["https://picsum.photos/400/400?random=2", "https://picsum.photos/400/400?random=3"],
+      brand: "Fashion Brand",
+      category: "T-Shirts",
+      description: "Comfortable cotton t-shirt perfect for everyday wear.",
+      sizes: ["XS", "S", "M", "L", "XL"],
+      colors: ["White", "Black", "Navy"],
+      recommendation: "I absolutely love this t-shirt! It's so soft and comfortable, I wear it all the time. Perfect for casual days and the quality is amazing - it stays soft even after many washes! 💕"
+    },
+    {
+      id: "2",
+      name: "Luxury Leather Handbag",
+      price: 129.99,
+      discountedPrice: 103.99,
+      images: ["https://picsum.photos/400/400?random=4", "https://picsum.photos/400/400?random=5"],
+      brand: "Fashion Brand",
+      category: "Accessories",
+      description: "Premium leather handbag with elegant design.",
+      colors: ["Brown", "Black", "Tan"],
+      recommendation: "This handbag is a game-changer! It fits everything I need and looks so elegant. I get compliments every time I wear it - definitely worth the investment!"
+    },
+    {
+      id: "3",
+      name: "Comfortable Sneakers",
+      price: 79.99,
+      discountedPrice: 63.99,
+      images: ["https://picsum.photos/400/400?random=6", "https://picsum.photos/400/400?random=7"],
+      brand: "Fashion Brand",
+      category: "Shoes",
+      description: "Lightweight sneakers for all-day comfort.",
+      sizes: ["36", "37", "38", "39", "40", "41", "42"],
+      recommendation: "Best sneakers I've ever owned! I can walk for hours without any discomfort. Great for both workouts and everyday wear. My feet thank me every day! 🏃‍♀️"
+    }
+  ]
+}
+
+const socialPlatforms = [
+  { key: 'instagram', name: 'Instagram', color: 'from-purple-500 to-pink-500', icon: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z' },
+  { key: 'tiktok', name: 'TikTok', color: 'bg-black', icon: 'M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z' },
+  { key: 'youtube', name: 'YouTube', color: 'bg-red-600', icon: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' }
+]
+
+// Countdown Timer Component
+const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  })
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = new Date(targetDate).getTime() - new Date().getTime()
+      
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        })
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+      }
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+
+    return () => clearInterval(timer)
+  }, [targetDate])
+
+  return (
+    <div className="text-center">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-2xl mx-auto">
+        {[
+          { label: 'Days', value: timeLeft.days },
+          { label: 'Hours', value: timeLeft.hours },
+          { label: 'Minutes', value: timeLeft.minutes },
+          { label: 'Seconds', value: timeLeft.seconds }
+        ].map((item, index) => (
+          <div key={item.label} className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+            <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+              {item.value.toString().padStart(2, '0')}
+            </div>
+            <div className="text-sm md:text-base text-gray-600 font-medium uppercase tracking-wide">
+              {item.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Cart component
+const Cart = ({ isOpen, onClose, cartItems, updateQuantity, removeItem }: any) => {
+  const total = cartItems.reduce((sum: number, item: any) => sum + (item.discountedPrice * item.quantity), 0)
+  
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+      <div className="bg-white w-full max-w-md h-full overflow-y-auto">
+        <div className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Shopping Cart</h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          {cartItems.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">Your cart is empty</p>
+          ) : (
+            <>
+              <div className="space-y-4 mb-6">
+                {cartItems.map((item: any) => (
+                  <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4 p-4 border rounded-lg">
+                    <img src={item.images[0]} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                    <div className="flex-1">
+                      <h4 className="font-medium">{item.name}</h4>
+                      <p className="text-sm text-gray-500">
+                        {item.selectedSize && `Size: ${item.selectedSize}`}
+                        {item.selectedSize && item.selectedColor && ', '}
+                        {item.selectedColor && `Color: ${item.selectedColor}`}
+                      </p>
+                      <p className="font-semibold">€{item.discountedPrice}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)}
+                          className="w-8 h-8 border rounded flex items-center justify-center"
+                        >
+                          -
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)}
+                          className="w-8 h-8 border rounded flex items-center justify-center"
+                        >
+                          +
+                        </button>
+                        <button 
+                          onClick={() => removeItem(item.id, item.selectedSize, item.selectedColor)}
+                          className="ml-2 text-red-500 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-semibold">Total: €{total.toFixed(2)}</span>
+                </div>
+                <button className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                  Proceed to Checkout
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Product Modal
+const ProductModal = ({ product, isOpen, onClose, onAddToCart }: any) => {
+  const [selectedSize, setSelectedSize] = useState('')
+  const [selectedColor, setSelectedColor] = useState('')
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  if (!isOpen || !product) return null
+
+  const handleAddToCart = () => {
+    onAddToCart(product, selectedSize, selectedColor)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b flex justify-between items-center">
+          <h2 className="text-xl font-semibold">{product.name}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <img 
+                src={product.images[currentImageIndex]} 
+                alt={product.name}
+                className="w-full aspect-square object-cover rounded-lg"
+              />
+              {product.images.length > 1 && (
+                <div className="flex gap-2 mt-4">
+                  {product.images.map((img: string, index: number) => (
+                    <img 
+                      key={index}
+                      src={img} 
+                      alt={`${product.name} ${index + 1}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-16 h-16 object-cover rounded cursor-pointer border-2 ${
+                        index === currentImageIndex ? 'border-blue-500' : 'border-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <h3 className="text-2xl font-bold mb-2">{product.name}</h3>
+              <p className="text-gray-600 mb-4">{product.brand}</p>
+              <p className="text-gray-700 mb-6">{product.description}</p>
+              
+              <div className="flex items-center gap-4 mb-6">
+                <span className="text-2xl font-bold text-black">€{product.discountedPrice}</span>
+                <span className="text-lg text-gray-400 line-through">€{product.price}</span>
+                <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
+                  {mockCampaignData.influencer.discountPercent}% OFF
+                </span>
+              </div>
+              
+              {product.sizes && (
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3">Size</h4>
+                  <div className="flex gap-2">
+                    {product.sizes.map((size: string) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-2 border rounded-lg ${
+                          selectedSize === size 
+                            ? 'border-black bg-black text-white' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {product.colors && (
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3">Color</h4>
+                  <div className="flex gap-2">
+                    {product.colors.map((color: string) => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-4 py-2 border rounded-lg ${
+                          selectedColor === color 
+                            ? 'border-black bg-black text-white' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={handleAddToCart}
+                disabled={(product.sizes && !selectedSize) || (product.colors && !selectedColor)}
+                className={`w-full py-3 px-6 rounded-lg font-medium transition-colors ${
+                  (product.sizes && !selectedSize) || (product.colors && !selectedColor)
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-gray-800'
+                }`}
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function LiveCampaign() {
+  const params = useParams()
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [cartItems, setCartItems] = useState<any[]>([])
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [discountCodeCopied, setDiscountCodeCopied] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  const { influencer, campaign, products } = mockCampaignData
+
+  // Update current time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  // Check if campaign has started
+  const campaignStartTime = new Date(campaign.startDate)
+  const campaignEndTime = new Date(campaign.endDate)
+  const isCampaignStarted = currentTime >= campaignStartTime
+  const isCampaignEnded = currentTime >= campaignEndTime
+  const isCampaignActive = isCampaignStarted && !isCampaignEnded
+
+  const copyDiscountCode = async () => {
+    try {
+      await navigator.clipboard.writeText(influencer.discountCode)
+      setDiscountCodeCopied(true)
+      setTimeout(() => setDiscountCodeCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  const addToCart = (product: any, selectedSize: string, selectedColor: string) => {
+    const cartItem = {
+      ...product,
+      selectedSize,
+      selectedColor,
+      quantity: 1
+    }
+    
+    const existingItemIndex = cartItems.findIndex(item => 
+      item.id === product.id && 
+      item.selectedSize === selectedSize && 
+      item.selectedColor === selectedColor
+    )
+    
+    if (existingItemIndex >= 0) {
+      const updatedItems = [...cartItems]
+      updatedItems[existingItemIndex].quantity += 1
+      setCartItems(updatedItems)
+    } else {
+      setCartItems([...cartItems, cartItem])
+    }
+  }
+
+  const updateQuantity = (id: string, size: string, color: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeItem(id, size, color)
+      return
+    }
+    
+    setCartItems(cartItems.map(item => 
+      item.id === id && item.selectedSize === size && item.selectedColor === color
+        ? { ...item, quantity: newQuantity }
+        : item
+    ))
+  }
+
+  const removeItem = (id: string, size: string, color: string) => {
+    setCartItems(cartItems.filter(item => 
+      !(item.id === id && item.selectedSize === size && item.selectedColor === color)
+    ))
+  }
+
+  const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img
+                src={influencer.avatar}
+                alt={influencer.name}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div>
+                <h1 className="text-lg font-semibold">{influencer.name}'s Campaign</h1>
+                <p className="text-sm text-gray-500">Exclusive discount available</p>
+              </div>
+            </div>
+            
+            {isCampaignActive && (
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 002 2h6.5M17 17v6a2 2 0 002 2h.5"/>
+                </svg>
+                Cart ({cartItemsCount})
+              </button>
+            )}
+            
+            {isCampaignEnded && (
+              <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium">
+                Campaign Ended
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+            {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Influencer Section - Hide only during countdown */}
+        {(isCampaignStarted || isCampaignEnded) && (
+          <div className="bg-white rounded-2xl shadow-sm border p-8 mb-8">
+            <div className="flex flex-col md:flex-row items-start gap-6">
+              <img
+                src={influencer.avatar}
+                alt={influencer.name}
+                className="w-24 h-24 rounded-full object-cover flex-shrink-0"
+              />
+              
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{influencer.name}</h2>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {influencer.followers} followers
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    {Object.entries(influencer.socialLinks).map(([platform, url]) => {
+                      const platformData = socialPlatforms.find(p => p.key === platform)
+                      if (!platformData) return null
+                      
+                      return (
+                        <a
+                          key={platform}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`p-2 text-white rounded-lg hover:shadow-lg transition-all ${
+                            platformData.color.startsWith('from-') 
+                              ? `bg-gradient-to-r ${platformData.color}` 
+                              : platformData.color
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d={platformData.icon} />
+                          </svg>
+                        </a>
+                      )
+                    })}
+                  </div>
+                </div>
+                
+                <p className="text-gray-700 leading-relaxed mb-6">{influencer.bio}</p>
+                
+                {isCampaignActive && (
+                  <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg border border-pink-200 inline-block">
+                    <p className="text-sm text-gray-600 mb-2">Exclusive Discount Code</p>
+                    <div className="flex items-center gap-3">
+                      <code className="bg-white px-3 py-2 rounded border text-lg font-mono font-bold text-purple-600">
+                        {influencer.discountCode}
+                      </code>
+                      <button
+                        onClick={copyDiscountCode}
+                        className={`px-3 py-2 rounded font-medium transition-colors ${
+                          discountCodeCopied 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-purple-600 text-white hover:bg-purple-700'
+                        }`}
+                      >
+                        {discountCodeCopied ? 'Copied!' : 'Copy'}
+                      </button>
+                      <span className="text-sm text-gray-600">({influencer.discountPercent}% OFF)</span>
+                    </div>
+                  </div>
+                )}
+                
+                {isCampaignEnded && (
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200 inline-block">
+                    <p className="text-sm text-gray-600 mb-2">Campaign Has Ended</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-semibold text-gray-600">
+                        Thank you for your interest!
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Campaign Content - Show countdown or products based on campaign status */}
+        {!isCampaignStarted ? (
+          /* Campaign Countdown Section */
+          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-2xl shadow-sm border p-12 text-center">
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-8">
+                <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Campaign Launching Soon
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                  Get Ready for Something Amazing!
+                </h2>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                  {influencer.name} has curated an exclusive collection just for you. 
+                  The campaign launches on <strong>{new Date(campaign.startDate).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</strong>
+                </p>
+              </div>
+
+              <div className="mb-12">
+                <CountdownTimer targetDate={campaign.startDate} />
+              </div>
+
+              <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-purple-100 max-w-md mx-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Don't Miss Out!</h3>
+                <div className="space-y-3 text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-gray-700">Exclusive {influencer.discountPercent}% discount</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-gray-700">Limited time offer</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-gray-700">Curated by {influencer.name}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-2">Your discount code will be:</p>
+                  <code className="bg-white px-3 py-2 rounded border text-lg font-mono font-bold text-purple-600">
+                    {influencer.discountCode}
+                  </code>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <p className="text-sm text-gray-500">
+                  Follow {influencer.name} on social media to get notified when the campaign goes live!
+                </p>
+                <div className="flex justify-center items-center gap-3 mt-4">
+                  {Object.entries(influencer.socialLinks).map(([platform, url]) => {
+                    const platformData = socialPlatforms.find(p => p.key === platform)
+                    if (!platformData) return null
+                    
+                    return (
+                      <a
+                        key={platform}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`p-3 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 ${
+                          platformData.color.startsWith('from-') 
+                            ? `bg-gradient-to-r ${platformData.color}` 
+                            : platformData.color
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d={platformData.icon} />
+                        </svg>
+                      </a>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : isCampaignEnded ? (
+          /* Campaign Ended Section */
+          <div className="bg-gray-100 rounded-2xl shadow-sm border p-12 text-center">
+            <div className="max-w-2xl mx-auto">
+              <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Campaign Has Ended</h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Thank you for your interest! This campaign ended on {new Date(campaign.endDate).toLocaleDateString()}.
+              </p>
+              <p className="text-sm text-gray-500">
+                Follow {influencer.name} for future campaigns and exclusive offers.
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* Active Campaign - Products Section */
+          <div>
+            {/* Campaign Active - Show countdown to end */}
+            <div className="bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 rounded-2xl shadow-sm border p-8 mb-8 text-center">
+              <div className="max-w-4xl mx-auto">
+                <div className="mb-6">
+                  <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Campaign Live Now!
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    🎉 Campaign is Active!
+                  </h2>
+                  <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                    Hurry up! The exclusive {influencer.discountPercent}% discount ends on <strong>{new Date(campaign.endDate).toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</strong>
+                  </p>
+                </div>
+
+                <div className="mb-8">
+                  <p className="text-lg font-semibold text-gray-800 mb-4">⏰ Time remaining:</p>
+                  <CountdownTimer targetDate={campaign.endDate} />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-2xl font-semibold text-gray-900">Featured Products</h3>
+                <p className="text-sm text-gray-500">
+                  {products.length} products • All prices include {influencer.discountPercent}% discount
+                </p>
+              </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                  onClick={() => setSelectedProduct(product)}
+                >
+                  <div className="aspect-square bg-gray-100 overflow-hidden relative">
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
+                      -{influencer.discountPercent}%
+                    </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <h4 className="font-semibold text-gray-900 mb-2 text-lg">{product.name}</h4>
+                    <p className="text-sm text-gray-500 mb-4">{product.brand}</p>
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl font-bold text-black">€{product.discountedPrice}</span>
+                        <span className="text-sm text-gray-400 line-through">€{product.price}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Influencer Recommendation */}
+                    {product.recommendation && (
+                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full overflow-hidden flex-shrink-0">
+                            <img
+                              src={influencer.avatar}
+                              alt={influencer.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = 'https://picsum.photos/32/32?random=1';
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-semibold text-purple-700">{influencer.name} says:</span>
+                              <svg className="w-3 h-3 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              </svg>
+                            </div>
+                            <p className="text-sm text-purple-800 italic leading-relaxed">"{product.recommendation}"</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <button className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors group-hover:bg-gray-800">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          </div>
+        )}
+      </main>
+
+      {/* Product Modal */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={addToCart}
+      />
+
+      {/* Cart */}
+      <Cart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        updateQuantity={updateQuantity}
+        removeItem={removeItem}
+      />
+    </div>
+  )
+} 
