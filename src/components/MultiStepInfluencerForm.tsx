@@ -188,38 +188,40 @@ export default function MultiStepInfluencerForm() {
       {/* Progress bar */}
       <div className="w-full mb-12">
         {/* Layer for circles and lines */}
-        <div className="flex items-center">
-          {/* Circle 1 */}
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
-            {currentStep > 1 ? '✓' : '1'}
+        <div className="flex items-center justify-between">
+          {/* Step 1 */}
+          <div className="flex flex-col items-center flex-1">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+              {currentStep > 1 ? '✓' : '1'}
+            </div>
+            <p className={`text-sm transition-colors duration-300 ${currentStep >= 1 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Basic Info</p>
           </div>
 
           {/* Line 1 */}
-          <div className="flex-1 h-px bg-gray-200 mx-4">
+          <div className="flex-1 h-px bg-gray-200 mx-4 max-w-24">
             <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 1 ? 'w-full' : 'w-0'}`}></div>
           </div>
 
-          {/* Circle 2 */}
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
-            {currentStep > 2 ? '✓' : '2'}
+          {/* Step 2 */}
+          <div className="flex flex-col items-center flex-1">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+              {currentStep > 2 ? '✓' : '2'}
+            </div>
+            <p className={`text-sm transition-colors duration-300 ${currentStep >= 2 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Social Networks</p>
           </div>
 
           {/* Line 2 */}
-          <div className="flex-1 h-px bg-gray-200 mx-4">
+          <div className="flex-1 h-px bg-gray-200 mx-4 max-w-24">
             <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 2 ? 'w-full' : 'w-0'}`}></div>
           </div>
 
-          {/* Circle 3 */}
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 3 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
-            3
+          {/* Step 3 */}
+          <div className="flex flex-col items-center flex-1">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 3 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+              3
+            </div>
+            <p className={`text-sm transition-colors duration-300 ${currentStep >= 3 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Content & Preferences</p>
           </div>
-        </div>
-
-        {/* Layer for labels */}
-        <div className="flex justify-between mt-2">
-          <p className={`text-sm text-left transition-colors duration-300 ${currentStep >= 1 ? 'font-semibold text-black' : 'text-gray-400'}`}>Basic Info</p>
-          <p className={`text-sm text-center transition-colors duration-300 ${currentStep >= 2 ? 'font-semibold text-black' : 'text-gray-400'}`}>Social Networks</p>
-          <p className={`text-sm text-right transition-colors duration-300 ${currentStep >= 3 ? 'font-semibold text-black' : 'text-gray-400'}`}>Content & Preferences</p>
         </div>
       </div>
 
@@ -236,11 +238,11 @@ export default function MultiStepInfluencerForm() {
       {/* Step 1: Basic Info */}
       {currentStep === 1 && (
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-center mb-6">Basic Info</h3>
+          <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Basic Info</h3>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Full Name *
               </label>
               <input
@@ -253,7 +255,7 @@ export default function MultiStepInfluencerForm() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Email *
               </label>
               <input
@@ -269,7 +271,7 @@ export default function MultiStepInfluencerForm() {
 
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Password *
               </label>
               <input
@@ -282,7 +284,7 @@ export default function MultiStepInfluencerForm() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Confirm Password *
               </label>
               <input
@@ -310,11 +312,11 @@ export default function MultiStepInfluencerForm() {
       {/* Step 2: Social Networks */}
       {currentStep === 2 && (
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-center mb-6">Social Networks</h3>
+          <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Social Networks</h3>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Instagram
               </label>
               <input
@@ -326,7 +328,7 @@ export default function MultiStepInfluencerForm() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 TikTok
               </label>
               <input
@@ -341,7 +343,7 @@ export default function MultiStepInfluencerForm() {
 
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 YouTube
               </label>
               <input
@@ -353,7 +355,7 @@ export default function MultiStepInfluencerForm() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Largest Follower Count *
               </label>
               <select 
@@ -391,10 +393,10 @@ export default function MultiStepInfluencerForm() {
       {/* Step 3: Content & Preferences */}
       {currentStep === 3 && (
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-center mb-6">Content & Preferences</h3>
+          <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Content & Preferences</h3>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4">
+            <label className="block text-sm font-medium text-gray-900 mb-4">
               What categories does your content fit into? *
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -406,14 +408,14 @@ export default function MultiStepInfluencerForm() {
                     onChange={(e) => handleCategoryChange(cat, e.target.checked)}
                     className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
                   />
-                  <span className="text-gray-800 font-medium">{cat}</span>
+                  <span className="text-gray-900 font-medium">{cat}</span>
                 </label>
               ))}
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Tell us about yourself (Bio)
             </label>
             <textarea
@@ -426,7 +428,7 @@ export default function MultiStepInfluencerForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4">
+            <label className="block text-sm font-medium text-gray-900 mb-4">
               What types of collaboration are you interested in?
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -438,7 +440,7 @@ export default function MultiStepInfluencerForm() {
                     onChange={(e) => handleCollaborationChange(type, e.target.checked)}
                     className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
                   />
-                  <span className="text-gray-800 font-medium">{type}</span>
+                  <span className="text-gray-900 font-medium">{type}</span>
                 </label>
               ))}
             </div>

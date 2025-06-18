@@ -264,38 +264,342 @@ export default function Home() {
               Some of our amazing brand<br />
               <span className="italic font-light text-gray-400">partners</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed mb-16">
               Create your personal page with products and start earning on every sale.
             </p>
+            
+            {/* Fashion Product Gallery */}
+            <div className="max-w-7xl mx-auto mb-20 overflow-hidden">
+              <style jsx>{`
+                .infinite-scroll {
+                  display: flex;
+                  animation: scrollContinuous 38s linear infinite;
+                }
+                .infinite-scroll-reverse {
+                  display: flex;
+                  animation: scrollContinuousReverse 38s linear infinite;
+                }
+                @keyframes scrollContinuous {
+                  0% { transform: translateX(0); }
+                  100% { transform: translateX(calc(-8 * (8rem + 3rem))); }
+                }
+                @keyframes scrollContinuousReverse {
+                  0% { transform: translateX(calc(-8 * (8rem + 3rem))); }
+                  100% { transform: translateX(0); }
+                }
+                .scroll-item {
+                  flex-shrink: 0;
+                  width: 8rem;
+                  height: 8rem;
+                  margin-right: 3rem;
+                }
+              `}</style>
+              
+              {/* Top Row - Moving Right */}
+              <div className="relative overflow-hidden mb-3">
+                <div className="infinite-scroll">
+                  {/* První sada obrázků */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&auto=format" alt="Pink sweatpants" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&auto=format" alt="Beauty cosmetics" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop&auto=format" alt="Luxury handbag" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=400&fit=crop&auto=format" alt="Athletic shoes" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Duplikáty pro velmi dlouhou nekonečnou smyčku */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&auto=format" alt="Pink sweatpants" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&auto=format" alt="Beauty cosmetics" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop&auto=format" alt="Luxury handbag" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=400&fit=crop&auto=format" alt="Athletic shoes" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Třetí duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&auto=format" alt="Pink sweatpants" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&auto=format" alt="Beauty cosmetics" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop&auto=format" alt="Luxury handbag" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=400&fit=crop&auto=format" alt="Athletic shoes" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Čtvrtý duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&auto=format" alt="Pink sweatpants" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&auto=format" alt="Beauty cosmetics" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop&auto=format" alt="Luxury handbag" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=400&fit=crop&auto=format" alt="Athletic shoes" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Pátý duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&auto=format" alt="Pink sweatpants" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&auto=format" alt="Beauty cosmetics" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop&auto=format" alt="Luxury handbag" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=400&fit=crop&auto=format" alt="Athletic shoes" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Row - Moving Left */}
+              <div className="relative overflow-hidden">
+                <div className="infinite-scroll-reverse">
+                  {/* První sada obrázků */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Duplikáty pro velmi dlouhou nekonečnou smyčku */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Třetí duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Čtvrtý duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Pátý duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
             <div className="text-center group">
               <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <span className="text-white text-3xl">👤</span>
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Personal Page</h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
+              <h3 className="text-2xl font-bold mb-4 text-black">Personal Page</h3>
+              <p className="text-gray-800 text-lg leading-relaxed">
                 Your own URL with your profile and selected products for your followers.
               </p>
             </div>
             
             <div className="text-center group">
               <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <span className="text-white text-3xl">💰</span>
+                <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Sales Commissions</h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
+              <h3 className="text-2xl font-bold mb-4 text-black">Sales Commissions</h3>
+              <p className="text-gray-800 text-lg leading-relaxed">
                 Get a commission from every sale made with your personal discount code.
               </p>
             </div>
             
             <div className="text-center group">
               <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <span className="text-white text-3xl">📊</span>
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Analytics</h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
+              <h3 className="text-2xl font-bold mb-4 text-black">Analytics</h3>
+              <p className="text-gray-800 text-lg leading-relaxed">
                 Track your earnings, sales counts, and coupon usage in real-time.
               </p>
             </div>
@@ -316,11 +620,13 @@ export default function Home() {
           
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="bg-white p-8 lg:p-10 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-blue-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <span className="text-blue-600 text-2xl">🌐</span>
+              <div className="w-16 h-16 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Web</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <h3 className="text-2xl font-bold mb-4 text-black">Web</h3>
+              <p className="text-gray-800 leading-relaxed mb-6">
                 A complete web platform to manage products and track earnings.
               </p>
               <Link href="/products" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
@@ -329,11 +635,13 @@ export default function Home() {
             </div>
             
             <div className="bg-white p-8 lg:p-10 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <span className="text-green-600 text-2xl">📱</span>
+              <div className="w-16 h-16 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4">App</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <h3 className="text-2xl font-bold mb-4 text-black">App</h3>
+              <p className="text-gray-800 leading-relaxed mb-6">
                 A mobile app to manage content and communicate with your community.
               </p>
               <Link href="#" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
@@ -342,11 +650,13 @@ export default function Home() {
             </div>
             
             <div className="bg-white p-8 lg:p-10 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-purple-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                <span className="text-purple-600 text-2xl">🔗</span>
+              <div className="w-16 h-16 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Browser Extension</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <h3 className="text-2xl font-bold mb-4 text-black">Browser Extension</h3>
+              <p className="text-gray-800 leading-relaxed mb-6">
                 A browser extension to easily share products from social media.
               </p>
               <Link href="#" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
