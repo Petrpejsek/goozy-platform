@@ -54,13 +54,13 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
         const newStatus = action === 'approve' ? 'approved' : 'rejected'
         setCurrentStatus(newStatus)
         
-        // Refresh stránky pro aktualizaci statistik
+        // Refresh page to update statistics
         window.location.reload()
       } else {
-        alert('Chyba při zpracování akce')
+        alert('Error processing action')
       }
     } catch (error) {
-      alert('Chyba při komunikaci se serverem')
+      alert('Error communicating with server')
     } finally {
       setIsLoading(false)
     }
@@ -80,11 +80,11 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
   const getStatusText = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'Schváleno'
+        return 'Approved'
       case 'rejected':
-        return 'Zamítnuto'
+        return 'Rejected'
       default:
-        return 'Čeká na schválení'
+        return 'Pending'
     }
   }
 
@@ -102,7 +102,7 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
           <p className="text-sm text-gray-600 mb-2">{application.email}</p>
           
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-            <span>{application.followers} followerů</span>
+            <span>{application.followers} followers</span>
             <span>•</span>
             <span>{application.categories}</span>
           </div>
@@ -130,28 +130,40 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
           )}
           
           <p className="text-xs text-gray-400">
-            Podáno: {new Date(application.createdAt).toLocaleDateString('cs-CZ')}
+            Submitted: {new Date(application.createdAt).toLocaleDateString('en-US')}
           </p>
         </div>
         
-        {currentStatus === 'pending' && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleAction('approve')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? '...' : 'Schválit'}
-            </button>
-            <button
-              onClick={() => handleAction('reject')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? '...' : 'Zamítnout'}
-            </button>
-          </div>
-        )}
+        <div className="flex flex-col gap-2">
+          <button
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+            onClick={() => {
+              // Open detail modal or navigate to detail page
+              alert(`View details for ${application.name} - Feature coming soon!`)
+            }}
+          >
+            View Details
+          </button>
+          
+          {currentStatus === 'pending' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleAction('approve')}
+                disabled={isLoading}
+                className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '...' : 'Approve'}
+              </button>
+              <button
+                onClick={() => handleAction('reject')}
+                disabled={isLoading}
+                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '...' : 'Reject'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -176,13 +188,13 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
         const newStatus = action === 'approve' ? 'approved' : 'rejected'
         setCurrentStatus(newStatus)
         
-        // Refresh stránky pro aktualizaci statistik
+        // Refresh page to update statistics
         window.location.reload()
       } else {
-        alert('Chyba při zpracování akce')
+        alert('Error processing action')
       }
     } catch (error) {
-      alert('Chyba při komunikaci se serverem')
+      alert('Error communicating with server')
     } finally {
       setIsLoading(false)
     }
@@ -202,11 +214,11 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
   const getStatusText = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'Schváleno'
+        return 'Approved'
       case 'rejected':
-        return 'Zamítnuto'
+        return 'Rejected'
       default:
-        return 'Čeká na schválení'
+        return 'Pending'
     }
   }
 
@@ -225,7 +237,7 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
           
           {application.phone && (
             <p className="text-sm text-gray-600 mb-2">
-              Tel: {application.phone}
+              Phone: {application.phone}
             </p>
           )}
           
@@ -234,28 +246,40 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
           )}
           
           <p className="text-xs text-gray-400">
-            Podáno: {new Date(application.createdAt).toLocaleDateString('cs-CZ')}
+            Submitted: {new Date(application.createdAt).toLocaleDateString('en-US')}
           </p>
         </div>
         
-        {currentStatus === 'pending' && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleAction('approve')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? '...' : 'Schválit'}
-            </button>
-            <button
-              onClick={() => handleAction('reject')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? '...' : 'Zamítnout'}
-            </button>
-          </div>
-        )}
+        <div className="flex flex-col gap-2">
+          <button
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+            onClick={() => {
+              // Open detail modal or navigate to detail page
+              alert(`View details for ${application.brandName} - Feature coming soon!`)
+            }}
+          >
+            View Details
+          </button>
+          
+          {currentStatus === 'pending' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleAction('approve')}
+                disabled={isLoading}
+                className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '...' : 'Approve'}
+              </button>
+              <button
+                onClick={() => handleAction('reject')}
+                disabled={isLoading}
+                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '...' : 'Reject'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

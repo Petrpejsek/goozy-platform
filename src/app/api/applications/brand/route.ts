@@ -2,34 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
-// Schéma pro validaci formuláře značky
+// Schema for brand form validation
 const brandApplicationSchema = z.object({
-  brandName: z.string().min(2, 'Název značky musí mít alespoň 2 znaky'),
-  email: z.string().email('Neplatný email'),
+  brandName: z.string().min(2, 'Brand name must be at least 2 characters'),
+  email: z.string().email('Invalid email'),
   phone: z.string().optional(),
-  description: z.string().min(10, 'Popis musí mít alespoň 10 znaků'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
 })
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    // Validace dat
+    // Data validation
     const validatedData = brandApplicationSchema.parse(body)
     
-    // Kontrola, jestli už není email v databázi
+    // Check if email already exists in database
     const existingApplication = await prisma.brandApplication.findFirst({
       where: { email: validatedData.email }
     })
     
     if (existingApplication) {
       return NextResponse.json(
-        { error: 'S tímto emailem už byla podána poptávka' },
+        { error: 'An application with this email has already been submitted' },
         { status: 400 }
       )
     }
     
-    // Uložení poptávky do databáze
+    // Save application to database
     const application = await prisma.brandApplication.create({
       data: {
         brandName: validatedData.brandName,
@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    // TODO: Odeslat notifikační email adminům
+    // TODO: Send notification email to admins
     
     return NextResponse.json(
       { 
-        message: 'Poptávka byla úspěšně odeslána! Ozveme se vám do 24 hodin.',
+        message: 'Application submitted successfully! We will contact you within 24 hours.',
         applicationId: application.id
       },
       { status: 201 }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Neplatné data formuláře', details: error.errors },
+        { error: 'Invalid form data', details: error.errors },
         { status: 400 }
       )
     }

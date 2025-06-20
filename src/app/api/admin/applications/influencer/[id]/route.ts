@@ -16,11 +16,10 @@ export async function PATCH(
     const { action, notes } = updateApplicationSchema.parse(body)
     
     // Najdeme přihlášku
-    const application = await prisma.influencerApplication.findUnique({
-      where: { id: params.id }
-    })
+    const resolvedParams = await params
+    const influencer = await prisma.influencerApplication.findUnique({ where: { id: resolvedParams.id } })
     
-    if (!application) {
+    if (!influencer) {
       return NextResponse.json(
         { error: 'Přihláška nenalezena' },
         { status: 404 }

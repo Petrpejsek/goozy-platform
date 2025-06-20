@@ -9,9 +9,9 @@ export default function CopyButton({ text, className = "" }: CopyButtonProps) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text)
-      // Můžeme přidat toast notifikaci později
+      // We can add toast notification later
     } catch (err) {
-      console.error('Chyba při kopírování:', err)
+      console.error('Error copying text:', err)
     }
   }
 
@@ -20,7 +20,7 @@ export default function CopyButton({ text, className = "" }: CopyButtonProps) {
       onClick={handleCopy}
       className={`text-green-600 hover:text-green-800 text-sm ${className}`}
     >
-      Kopírovat
+      Copy
     </button>
   )
 } 

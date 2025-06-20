@@ -70,8 +70,8 @@ const socialPlatforms = [
   { key: 'youtube', name: 'YouTube', color: 'bg-red-600', icon: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' }
 ]
 
-// Countdown Timer Component
-const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
+// Countdown Timer Component with compact option
+const CountdownTimer = ({ targetDate, compact = false }: { targetDate: string, compact?: boolean }) => {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -100,6 +100,21 @@ const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
 
     return () => clearInterval(timer)
   }, [targetDate])
+
+  if (compact) {
+    // Kompaktní verze pro header - zmenšeno o 50%
+    return (
+      <div className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-600 text-white px-2 py-1 rounded-md shadow-md border border-red-400/20 backdrop-blur-sm">
+        <div className="w-1 h-1 bg-white rounded-full animate-pulse opacity-80"></div>
+        <span className="text-xs font-semibold tracking-wide">
+          {timeLeft.days > 0 && `${timeLeft.days}d `}
+          {String(timeLeft.hours).padStart(2, '0')}:
+          {String(timeLeft.minutes).padStart(2, '0')}:
+          {String(timeLeft.seconds).padStart(2, '0')}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="text-center">
@@ -409,9 +424,9 @@ export default function LiveCampaign() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - zmenšeno o 50% */}
       <header className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+        <div className="max-w-6xl mx-auto px-3 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <img
@@ -425,20 +440,29 @@ export default function LiveCampaign() {
               </div>
             </div>
             
-            {isCampaignActive && (
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 002 2h6.5M17 17v6a2 2 0 002 2h.5"/>
-                </svg>
-                Cart ({cartItemsCount})
-              </button>
-            )}
+            <div className="flex items-center gap-4">
+              {isCampaignActive && (
+                <div className="scale-[0.50] origin-right flex flex-col items-center gap-1">
+                  <span className="text-xs text-gray-500 font-medium">Campaign ends in:</span>
+                  <CountdownTimer targetDate={campaign.endDate} />
+                </div>
+              )}
+
+              {isCampaignActive && (
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 002 2h6.5M17 17v6a2 2 0 002 2h.5"/>
+                  </svg>
+                  Cart ({cartItemsCount})
+                </button>
+              )}
+            </div>
             
             {isCampaignEnded && (
-              <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium">
+              <div className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium">
                 Campaign Ended
               </div>
             )}
@@ -450,7 +474,7 @@ export default function LiveCampaign() {
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Influencer Section - Hide only during countdown */}
         {(isCampaignStarted || isCampaignEnded) && (
-          <div className="bg-white rounded-2xl shadow-sm border p-8 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
             <div className="flex flex-col md:flex-row items-start gap-6">
               <img
                 src={influencer.avatar}
@@ -535,7 +559,7 @@ export default function LiveCampaign() {
         {/* Campaign Content - Show countdown or products based on campaign status */}
         {!isCampaignStarted ? (
           /* Campaign Countdown Section */
-          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-2xl shadow-sm border p-12 text-center">
+          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-2xl shadow-lg p-12 text-center">
             <div className="max-w-4xl mx-auto">
               <div className="mb-8">
                 <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
@@ -622,7 +646,7 @@ export default function LiveCampaign() {
           </div>
         ) : isCampaignEnded ? (
           /* Campaign Ended Section */
-          <div className="bg-gray-100 rounded-2xl shadow-sm border p-12 text-center">
+          <div className="bg-gray-100 rounded-2xl shadow-lg p-12 text-center">
             <div className="max-w-2xl mx-auto">
               <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -640,40 +664,7 @@ export default function LiveCampaign() {
           </div>
         ) : (
           /* Active Campaign - Products Section */
-          <div>
-            {/* Campaign Active - Show countdown to end */}
-            <div className="bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 rounded-2xl shadow-sm border p-8 mb-8 text-center">
-              <div className="max-w-4xl mx-auto">
-                <div className="mb-6">
-                  <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Campaign Live Now!
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                    🎉 Campaign is Active!
-                  </h2>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                    Hurry up! The exclusive {influencer.discountPercent}% discount ends on <strong>{new Date(campaign.endDate).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}</strong>
-                  </p>
-                </div>
-
-                <div className="mb-8">
-                  <p className="text-lg font-semibold text-gray-800 mb-4">⏰ Time remaining:</p>
-                  <CountdownTimer targetDate={campaign.endDate} />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border p-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-semibold text-gray-900">Featured Products</h3>
                 <p className="text-sm text-gray-500">
@@ -745,7 +736,6 @@ export default function LiveCampaign() {
                 </div>
               ))}
             </div>
-          </div>
           </div>
         )}
       </main>

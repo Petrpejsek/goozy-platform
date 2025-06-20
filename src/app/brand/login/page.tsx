@@ -33,10 +33,10 @@ export default function BrandLogin() {
         localStorage.setItem('brandToken', result.token)
         router.push('/brand/dashboard')
       } else {
-        setError(result.error || 'Chyba při přihlašování')
+        setError(result.error || 'Login error')
       }
     } catch (error) {
-      setError('Chyba při přihlašování. Zkuste to znovu.')
+      setError('Login error. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -50,12 +50,12 @@ export default function BrandLogin() {
             <h1 className="text-3xl font-bold text-black">GOOZY</h1>
           </Link>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Přihlášení pro brandy
+            Brand Log In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Zatím nemáte účet?{' '}
+            Don't have an account yet?{' '}
             <Link href="/#formular-znacka" className="font-medium text-black hover:underline">
-              Registrujte se zde
+              Register here
             </Link>
           </p>
         </div>
@@ -86,7 +86,7 @@ export default function BrandLogin() {
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Heslo
+                Password
               </label>
               <input
                 id="password"
@@ -107,7 +107,7 @@ export default function BrandLogin() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
             >
-              {isLoading ? 'Přihlašování...' : 'Přihlásit se'}
+              {isLoading ? 'Logging in...' : 'Log In'}
             </button>
           </div>
           
@@ -116,7 +116,7 @@ export default function BrandLogin() {
               href="/"
               className="text-sm text-gray-600 hover:text-black"
             >
-              ← Zpět na hlavní stránku
+              ← Back to Homepage
             </Link>
           </div>
         </form>

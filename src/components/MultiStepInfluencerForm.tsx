@@ -17,8 +17,8 @@ interface FormData {
   
   // Step 3: Content and Preferences
   categories: string[]
+  customCategory: string
   bio: string
-  collaborationTypes: string[]
 }
 
 export default function MultiStepInfluencerForm() {
@@ -33,13 +33,14 @@ export default function MultiStepInfluencerForm() {
     youtube: '',
     followers: '',
     categories: [],
-    bio: '',
-    collaborationTypes: []
+    customCategory: '',
+    bio: ''
   })
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
@@ -55,19 +56,29 @@ export default function MultiStepInfluencerForm() {
     }
   }
 
-  const handleCollaborationChange = (type: string, checked: boolean) => {
+  const handleOtherCategoryChange = (checked: boolean) => {
     if (checked) {
       setFormData(prev => ({
         ...prev,
-        collaborationTypes: [...prev.collaborationTypes, type]
+        categories: [...prev.categories, 'Other']
       }))
     } else {
       setFormData(prev => ({
         ...prev,
-        collaborationTypes: prev.collaborationTypes.filter(t => t !== type)
+        categories: prev.categories.filter(c => c !== 'Other'),
+        customCategory: ''
       }))
     }
   }
+
+  const handleCustomCategoryText = (text: string) => {
+    setFormData(prev => ({
+      ...prev,
+      customCategory: text
+    }))
+  }
+
+
 
   const validateStep = (step: number): boolean => {
     switch (step) {
@@ -130,6 +141,13 @@ export default function MultiStepInfluencerForm() {
     setMessage('')
 
     try {
+      // Prepare categories - if "Other" is selected and custom text exists, replace "Other" with the custom text
+      let categoriesForSubmit = [...formData.categories]
+      if (formData.categories.includes('Other') && formData.customCategory.trim()) {
+        categoriesForSubmit = categoriesForSubmit.filter(cat => cat !== 'Other')
+        categoriesForSubmit.push(formData.customCategory.trim())
+      }
+
       const submitData = {
         name: formData.name,
         email: formData.email,
@@ -138,9 +156,8 @@ export default function MultiStepInfluencerForm() {
         tiktok: formData.tiktok,
         youtube: formData.youtube,
         followers: formData.followers,
-        categories: formData.categories,
-        bio: formData.bio,
-        collaborationTypes: formData.collaborationTypes
+                  categories: categoriesForSubmit,
+          bio: formData.bio
       }
 
       const response = await fetch('/api/applications/influencer', {
@@ -155,22 +172,8 @@ export default function MultiStepInfluencerForm() {
 
       if (response.ok) {
         setMessageType('success')
-        setMessage(result.message || 'Application submitted successfully!')
-        // Reset form
-        setCurrentStep(1)
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          instagram: '',
-          tiktok: '',
-          youtube: '',
-          followers: '',
-          categories: [],
-          bio: '',
-          collaborationTypes: []
-        })
+        setMessage(result.message || 'Application submitted successfully! We will review it and get back to you soon.')
+        setIsSubmitted(true)
       } else {
         setMessageType('error')
         setMessage(result.error || 'Failed to submit application.')
@@ -185,57 +188,72 @@ export default function MultiStepInfluencerForm() {
 
   return (
     <div className="bg-white p-8 lg:p-12 rounded-3xl shadow-sm border border-gray-100">
-      {/* Progress bar */}
-      <div className="w-full mb-12">
-        {/* Layer for circles and lines */}
-        <div className="flex items-center justify-between">
-          {/* Step 1 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
-              {currentStep > 1 ? '✓' : '1'}
-            </div>
-            <p className={`text-sm transition-colors duration-300 ${currentStep >= 1 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Basic Info</p>
+      {/* Show success message only after submission */}
+      {isSubmitted ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-
-          {/* Line 1 */}
-          <div className="flex-1 h-px bg-gray-200 mx-4 max-w-24">
-            <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 1 ? 'w-full' : 'w-0'}`}></div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
-              {currentStep > 2 ? '✓' : '2'}
-            </div>
-            <p className={`text-sm transition-colors duration-300 ${currentStep >= 2 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Social Networks</p>
-          </div>
-
-          {/* Line 2 */}
-          <div className="flex-1 h-px bg-gray-200 mx-4 max-w-24">
-            <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 2 ? 'w-full' : 'w-0'}`}></div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 3 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
-              3
-            </div>
-            <p className={`text-sm transition-colors duration-300 ${currentStep >= 3 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Content & Preferences</p>
-          </div>
+          <h3 className="text-2xl font-semibold text-gray-900 mb-4">Thank You!</h3>
+          <p className="text-gray-600 text-lg leading-relaxed">
+            {message}
+          </p>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Progress bar */}
+          <div className="w-full mb-12">
+            {/* Layer for circles and lines */}
+            <div className="flex items-center justify-between">
+              {/* Step 1 */}
+              <div className="flex flex-col items-center flex-1">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+                  {currentStep > 1 ? '✓' : '1'}
+                </div>
+                <p className={`text-sm transition-colors duration-300 ${currentStep >= 1 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Basic Info</p>
+              </div>
 
-      {message && (
-        <div className={`mb-6 p-4 rounded-lg text-sm ${
-          messageType === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
-            : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
-          {message}
-        </div>
-      )}
+              {/* Line 1 */}
+              <div className="flex-1 h-px bg-gray-200 mx-4 max-w-24">
+                <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 1 ? 'w-full' : 'w-0'}`}></div>
+              </div>
 
-      {/* Step 1: Basic Info */}
+              {/* Step 2 */}
+              <div className="flex flex-col items-center flex-1">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+                  {currentStep > 2 ? '✓' : '2'}
+                </div>
+                <p className={`text-sm transition-colors duration-300 ${currentStep >= 2 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Social Networks</p>
+              </div>
+
+              {/* Line 2 */}
+              <div className="flex-1 h-px bg-gray-200 mx-4 max-w-24">
+                <div className={`h-px bg-black transition-all duration-500 ease-in-out ${currentStep > 2 ? 'w-full' : 'w-0'}`}></div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex flex-col items-center flex-1">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${currentStep >= 3 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}>
+                  3
+                </div>
+                <p className={`text-sm transition-colors duration-300 ${currentStep >= 3 ? 'font-semibold text-black' : 'text-gray-400'} mt-2 text-center`}>Content & Preferences</p>
+              </div>
+            </div>
+          </div>
+
+          {message && (
+            <div className={`mb-6 p-4 rounded-lg text-sm ${
+              messageType === 'success' 
+                ? 'bg-green-50 text-green-800 border border-green-200' 
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {message}
+            </div>
+          )}
+
+          {/* Step 1: Basic Info */}
       {currentStep === 1 && (
         <div className="space-y-6">
           <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Basic Info</h3>
@@ -399,7 +417,7 @@ export default function MultiStepInfluencerForm() {
             <label className="block text-sm font-medium text-gray-900 mb-4">
               What categories does your content fit into? *
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               {['Fashion', 'Beauty', 'Lifestyle', 'Travel', 'Food', 'Fitness'].map(cat => (
                 <label key={cat} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
                   <input
@@ -411,6 +429,29 @@ export default function MultiStepInfluencerForm() {
                   <span className="text-gray-900 font-medium">{cat}</span>
                 </label>
               ))}
+            </div>
+            
+            {/* Other category row */}
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={formData.categories.includes('Other')}
+                  onChange={(e) => handleOtherCategoryChange(e.target.checked)}
+                  className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
+                />
+                <span className="text-gray-900 font-medium">Other</span>
+              </label>
+              
+              {formData.categories.includes('Other') && (
+                <input
+                  type="text"
+                  value={formData.customCategory}
+                  onChange={(e) => handleCustomCategoryText(e.target.value)}
+                  placeholder="Specify your category..."
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              )}
             </div>
           </div>
           
@@ -425,25 +466,6 @@ export default function MultiStepInfluencerForm() {
               rows={4}
               placeholder="What is your content about? What makes you unique?"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-4">
-              What types of collaboration are you interested in?
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {['Gifting', 'Paid Post', 'Affiliate'].map(type => (
-                <label key={type} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.collaborationTypes.includes(type)}
-                    onChange={(e) => handleCollaborationChange(type, e.target.checked)}
-                    className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
-                  />
-                  <span className="text-gray-900 font-medium">{type}</span>
-                </label>
-              ))}
-            </div>
           </div>
 
           <div className="flex justify-between pt-4">
@@ -462,6 +484,8 @@ export default function MultiStepInfluencerForm() {
             </button>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )

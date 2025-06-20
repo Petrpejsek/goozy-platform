@@ -56,7 +56,7 @@ export default function InfluencerForm() {
       if (response.ok) {
         setMessageType('success')
         setMessage(result.message)
-        // Reset formuláře
+        // Reset form
         setFormData({
           name: '',
           email: '',
@@ -66,11 +66,11 @@ export default function InfluencerForm() {
         })
       } else {
         setMessageType('error')
-        setMessage(result.error || 'Chyba při odesílání formuláře')
+        setMessage(result.error || 'Error submitting form')
       }
     } catch (error) {
       setMessageType('error')
-      setMessage('Chyba při odesílání formuláře. Zkuste to prosím později.')
+      setMessage('Error submitting form. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }
@@ -91,7 +91,7 @@ export default function InfluencerForm() {
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Jméno a příjmení *
+            Full Name *
           </label>
           <input
             type="text"
@@ -99,7 +99,7 @@ export default function InfluencerForm() {
             value={formData.name}
             onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder="Jan Novák"
+            placeholder="John Doe"
           />
         </div>
         <div>
@@ -112,7 +112,7 @@ export default function InfluencerForm() {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder="jan@email.cz"
+            placeholder="john.doe@example.com"
           />
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function InfluencerForm() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Počet followerů *
+            Follower Count *
           </label>
           <select 
             required
@@ -140,7 +140,7 @@ export default function InfluencerForm() {
             onChange={(e) => setFormData(prev => ({...prev, followers: e.target.value}))}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
           >
-            <option value="">Vyberte...</option>
+            <option value="">Select...</option>
             <option value="1K-10K">1K - 10K</option>
             <option value="10K-50K">10K - 50K</option>
             <option value="50K-100K">50K - 100K</option>
@@ -151,10 +151,10 @@ export default function InfluencerForm() {
       
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Kategorie obsahu * (vyberte alespoň jednu)
+          Content Categories * (select at least one)
         </label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {['Fashion', 'Lifestyle', 'Beauty', 'Fitness', 'Travel', 'Jiné'].map((category) => (
+          {['Fashion', 'Lifestyle', 'Beauty', 'Fitness', 'Travel', 'Other'].map((category) => (
             <label key={category} className="flex items-center">
               <input 
                 type="checkbox" 
@@ -173,7 +173,7 @@ export default function InfluencerForm() {
         disabled={isSubmitting}
         className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? 'Odesílání...' : 'Odeslat přihlášku'}
+        {isSubmitting ? 'Submitting...' : 'Submit Application'}
       </button>
     </form>
   )

@@ -15,19 +15,18 @@ export async function PATCH(
     const body = await request.json()
     const { action, notes } = updateApplicationSchema.parse(body)
     
-    // Najdeme poptávku
-    const application = await prisma.brandApplication.findUnique({
-      where: { id: params.id }
-    })
+    // Find the application
+    const resolvedParams = await params
+    const application = await prisma.brandApplication.findUnique({ where: { id: resolvedParams.id } })
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Poptávka nenalezena' },
+        { error: 'Application not found' },
         { status: 404 }
       )
     }
     
-    // Aktualizujeme status
+    // Update status
     const newStatus = action === 'approve' ? 'approved' : 'rejected'
     
     const updatedApplication = await prisma.brandApplication.update({
@@ -38,26 +37,26 @@ export async function PATCH(
       }
     })
     
-    // TODO: Pokud je schváleno, můžeme poslat email značce
-    // TODO: Můžeme také vytvořit záznam v tabulce Brand
+    // TODO: If approved, we can send email to brand
+    // TODO: We can also create a record in Brand table
     
     return NextResponse.json({
-      message: `Poptávka byla ${action === 'approve' ? 'schválena' : 'zamítnuta'}`,
+      message: `Application has been ${action === 'approve' ? 'approved' : 'rejected'}`,
       application: updatedApplication
     })
     
   } catch (error) {
-    console.error('Chyba při aktualizaci poptávky:', error)
+    console.error('Error updating application:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Neplatné data', details: error.errors },
+        { error: 'Invalid data', details: error.errors },
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Chyba serveru' },
+      { error: 'Server error' },
       { status: 500 }
     )
   }

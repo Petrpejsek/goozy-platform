@@ -9,12 +9,13 @@ interface Product {
   description?: string
   price: number
   currency: string
-  images: string[]
+  images?: string
   category: string
-  sizes: string[]
-  colors: string[]
+  sizes?: string
+  colors?: string
   sku: string
   stockQuantity: number
+  isAvailable: boolean
   brand: {
     id: string
     name: string
@@ -32,43 +33,38 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
 
-  // Načtení produktů
   const fetchProducts = async (category?: string) => {
     try {
       setLoading(true)
-      const url = category 
-        ? `/api/products?category=${encodeURIComponent(category)}&limit=20`
-        : '/api/products?limit=20'
-      
-      const response = await fetch(url)
-      const data = await response.json()
-      
-      if (data.success) {
-        setProducts(data.data.products)
-      } else {
-        setError(data.error || 'Nepodařilo se načíst produkty')
+      const params = new URLSearchParams()
+      if (category) {
+        params.append('category', category)
       }
+      
+      const response = await fetch(`/api/products?${params}`)
+      if (!response.ok) throw new Error('Failed to fetch products')
+      
+      const data = await response.json()
+      setProducts(data.products)
     } catch (err) {
-      setError('Chyba při načítání produktů')
-      console.error(err)
+      setError('Error loading products')
+      console.error('Error fetching products:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  // Načtení kategorií
   const fetchCategories = async () => {
     try {
       const response = await fetch('/api/products/categories')
-      const data = await response.json()
+      if (!response.ok) throw new Error('Failed to fetch categories')
       
-      if (data.success) {
-        setCategories(data.data.categories)
-      }
+      const data = await response.json()
+      setCategories(data.categories)
     } catch (err) {
-      console.error('Chyba při načítání kategorií:', err)
+      console.error('Error fetching categories:', err)
     }
   }
 
@@ -86,31 +82,33 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <Link href="/" className="text-2xl font-bold text-black">
               GOOZY
             </Link>
-            <nav className="flex space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-black">
-                Domů
+            
+            <nav className="flex space-x-8">
+              <Link href="/" className="text-gray-600 hover:text-black transition-colors">
+                Home
               </Link>
               <Link href="/products" className="text-black font-medium">
-                Produkty
+                Products
               </Link>
             </nav>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Page Header */}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-black mb-4">
-            Všechny produkty
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Product Catalog
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Objevte nejnovější módní trendy od našich partnerských značek
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Discover amazing products from our brand partners
           </p>
         </div>
 
@@ -125,7 +123,7 @@ export default function ProductsPage() {
                   : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}
             >
-              Všechny ({categories.reduce((sum, cat) => sum + cat.count, 0)})
+              All ({categories.reduce((sum, cat) => sum + cat.count, 0)})
             </button>
             {categories.map((category) => (
               <button
@@ -147,7 +145,7 @@ export default function ProductsPage() {
         {loading && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-            <p className="mt-2 text-gray-600">Načítám produkty...</p>
+            <p className="mt-2 text-gray-600">Loading products...</p>
           </div>
         )}
 
@@ -159,66 +157,69 @@ export default function ProductsPage() {
               onClick={() => fetchProducts(selectedCategory || undefined)}
               className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
             >
-              Zkusit znovu
+              Try Again
             </button>
           </div>
         )}
 
         {/* Products Grid */}
-        {!loading && !error && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                <div className="aspect-[3/4] bg-gray-200 rounded-t-lg overflow-hidden">
-                  {product.images.length > 0 ? (
-                    <img 
-                      src={product.images[0]} 
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-gray-500">📷</span>
+        {!loading && !error && products.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.map((product) => {
+              const images = product.images ? JSON.parse(product.images) : []
+              
+              return (
+                <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                  {/* Product Image */}
+                  <div className="aspect-square bg-gray-200">
+                    {images.length > 0 ? (
+                      <img 
+                        src={images[0]} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-gray-400 text-4xl">📷</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">{product.brand.name}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        product.isAvailable 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {product.isAvailable ? 'Available' : 'Out of Stock'}
+                      </span>
                     </div>
-                  )}
+                    
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {product.name}
+                    </h3>
+                    
+                    {product.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                        {product.description}
+                      </p>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-black">
+                        €{product.price.toFixed(2)}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {product.stockQuantity} in stock
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="p-4">
-                  <div className="mb-2">
-                    <span className="text-sm text-gray-500">{product.brand.name}</span>
-                    <span className="text-sm text-gray-400 ml-2">• {product.category}</span>
-                  </div>
-                  
-                  <h3 className="text-lg font-semibold text-black mb-2 line-clamp-2">
-                    {product.name}
-                  </h3>
-                  
-                  {product.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xl font-bold text-black">
-                      €{product.price.toFixed(2)}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {product.stockQuantity} ks skladem
-                    </span>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-600">Velikosti: </span>
-                    <span className="text-xs font-medium">{product.sizes.join(', ')}</span>
-                  </div>
-                  
-                  <button className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
-                    Zobrazit detail
-                  </button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
@@ -227,8 +228,8 @@ export default function ProductsPage() {
           <div className="text-center py-12">
             <p className="text-gray-600 mb-4">
               {selectedCategory 
-                ? `Žádné produkty v kategorii "${selectedCategory}"`
-                : 'Žádné produkty nenalezeny'
+                ? `No products found in "${selectedCategory}" category`
+                : 'No products found'
               }
             </p>
             {selectedCategory && (
@@ -236,12 +237,12 @@ export default function ProductsPage() {
                 onClick={() => handleCategoryChange('')}
                 className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
               >
-                Zobrazit všechny produkty
+                Show All Products
               </button>
             )}
           </div>
         )}
-      </div>
+      </main>
 
       {/* Footer */}
       <footer className="bg-white border-t py-8 mt-12">

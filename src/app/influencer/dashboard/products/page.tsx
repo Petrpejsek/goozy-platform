@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-
-
 
 // Sidebar Navigation Component (same as dashboard)
 const Sidebar = ({ currentPage = 'products' }: { currentPage?: string }) => {
@@ -151,27 +149,54 @@ interface Category {
   count: number
 }
 
+interface Brand {
+  name: string
+  count: number
+}
+
 export default function InfluencerProductCatalog() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [brands, setBrands] = useState<Brand[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
+  const [selectedBrand, setSelectedBrand] = useState<string>('All')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set())
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false)
+  const [brandsExpanded, setBrandsExpanded] = useState(false)
   
   const router = useRouter()
 
+  // Memoized filtered products to avoid recalculation
+  const filteredProducts = useMemo(() => {
+    let filtered = allProducts
+    
+    // Filter by brand
+    if (selectedBrand !== 'All') {
+      filtered = filtered.filter(product => product.brand.name === selectedBrand)
+    }
+    
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(product => product.category === selectedCategory)
+    }
+    
+    return filtered
+  }, [allProducts, selectedCategory, selectedBrand])
+
   useEffect(() => {
     fetchInitialData()
-  }, [router])
+  }, [])
 
   const fetchInitialData = async () => {
     setLoading(true);
     try {
       await Promise.all([
         fetchCategories(),
+        fetchBrands(),
         fetchProducts(),
       ]);
     } catch (err) {
@@ -181,17 +206,13 @@ export default function InfluencerProductCatalog() {
     }
   };
 
-  const fetchProducts = async (category: string = 'All') => {
+  const fetchProducts = async () => {
     try {
-      const url = category !== 'All'
-        ? `/api/products?category=${encodeURIComponent(category)}&limit=50`
-        : '/api/products?limit=50'
-      
-      const response = await fetch(url)
+      const response = await fetch('/api/products?limit=100')
       const data = await response.json()
       
       if (response.ok) {
-        setProducts(data.data.products)
+        setAllProducts(data.data.products)
       } else {
         throw new Error(data.error || 'Failed to fetch products');
       }
@@ -207,42 +228,65 @@ export default function InfluencerProductCatalog() {
       const data = await response.json()
       
       if (response.ok) {
-        setCategories([{ name: 'All', count: data.data.categories.reduce((acc: number, cat: Category) => acc + cat.count, 0) }, ...data.data.categories])
+        const totalCount = data.data.categories.reduce((acc: number, cat: Category) => acc + cat.count, 0)
+        setCategories([{ name: 'All', count: totalCount }, ...data.data.categories])
       }
     } catch (err) {
       console.error('Failed to fetch categories:', err)
     }
   }
 
-  const handleCategoryChange = (category: string) => {
+  const fetchBrands = async () => {
+    // Mock data pro značky - později můžeme nahradit API dotazem
+    const mockBrands = [
+      { name: 'Nike', count: 12 },
+      { name: 'Adidas', count: 8 },
+      { name: 'Puma', count: 6 },
+      { name: 'Under Armour', count: 4 },
+      { name: 'New Balance', count: 3 },
+      { name: 'Reebok', count: 2 },
+    ]
+    
+    const totalCount = mockBrands.reduce((acc, brand) => acc + brand.count, 0)
+    setBrands([{ name: 'All', count: totalCount }, ...mockBrands])
+  }
+
+  // Optimized change handlers - no API call needed
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category)
-    setLoading(true);
-    fetchProducts(category).finally(() => setLoading(false));
-  }
+  }, [])
 
-  const toggleProductSelection = (productId: string) => {
-    const newSelected = new Set(selectedProducts)
-    if (newSelected.has(productId)) {
-      newSelected.delete(productId)
-    } else {
-      newSelected.add(productId)
-    }
-    setSelectedProducts(newSelected)
-  }
+  const handleBrandChange = useCallback((brand: string) => {
+    setSelectedBrand(brand)
+  }, [])
 
-  const toggleCardFlip = (productId: string) => {
-    const newFlipped = new Set(flippedCards)
-    if (newFlipped.has(productId)) {
-      newFlipped.delete(productId)
-    } else {
-      newFlipped.add(productId)
-    }
-    setFlippedCards(newFlipped)
-  }
+  const toggleProductSelection = useCallback((productId: string) => {
+    setSelectedProducts(prev => {
+      const newSelected = new Set(prev)
+      if (newSelected.has(productId)) {
+        newSelected.delete(productId)
+      } else {
+        newSelected.add(productId)
+      }
+      return newSelected
+    })
+  }, [])
 
-  const calculateDiscountedPrice = (price: number) => {
+  const toggleCardFlip = useCallback((productId: string) => {
+    setFlippedCards(prev => {
+      const newFlipped = new Set(prev)
+      if (newFlipped.has(productId)) {
+        newFlipped.delete(productId)
+      } else {
+        newFlipped.add(productId)
+      }
+      return newFlipped
+    })
+  }, [])
+
+  const calculateDiscountedPrice = useCallback((price: number) => {
     return (price * 0.85).toFixed(2); // 15% discount
-  }
+  }, [])
 
   const saveProductSelection = async () => {
     setSaving(true);
@@ -286,7 +330,7 @@ export default function InfluencerProductCatalog() {
               onClick={() => {
                 if (selectedProducts.size > 0) {
                   // Store selected products in localStorage for the campaign preview
-                  const selectedProductsArray = products.filter(p => selectedProducts.has(p.id));
+                  const selectedProductsArray = filteredProducts.filter(p => selectedProducts.has(p.id));
                   localStorage.setItem('selectedProducts', JSON.stringify(selectedProductsArray));
                   router.push('/influencer/campaign/preview');
                 }
@@ -307,16 +351,158 @@ export default function InfluencerProductCatalog() {
       {/* Main Content */}
       <main className="ml-64 pt-16 p-8">
         <div className="flex gap-8">
-          {/* Categories Filter */}
-          <aside className="w-64 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24">
+          {/* Filters Sidebar */}
+          <aside className="w-64 flex-shrink-0 space-y-2 sticky top-24 self-start max-h-screen overflow-y-auto">
+            {/* Brands Filter */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Brands</h3>
+              
+              {/* Collapsible Header for Brands */}
+              <button
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  const isChevronClick = target.closest('svg') || target.closest('.chevron-area');
+                  
+                  if (isChevronClick) {
+                    setBrandsExpanded(!brandsExpanded);
+                  } else {
+                    handleBrandChange('All');
+                    setBrandsExpanded(true); // OKAMŽITĚ rozbal při kliknutí na All
+                  }
+                }}
+                className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-150 ease-out flex justify-between items-center mb-2 ${
+                  selectedBrand === 'All'
+                    ? 'bg-black text-white shadow-lg'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">All</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    selectedBrand === 'All' 
+                      ? 'bg-white text-black' 
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {brands.find(brand => brand.name === 'All')?.count || 0}
+                  </span>
+                  <div 
+                    className="chevron-area p-1 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setBrandsExpanded(!brandsExpanded);
+                    }}
+                  >
+                    <svg 
+                      className={`w-4 h-4 transition-transform duration-200 ease-out ${
+                        brandsExpanded ? 'rotate-180' : ''
+                      } ${selectedBrand === 'All' ? 'text-white' : 'text-gray-600'}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+
+              {/* Expandable Brands */}
+              <div className={`space-y-1 overflow-hidden transition-all duration-200 ease-out ${
+                brandsExpanded ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+              }`}>
+                {brands.filter(brand => brand.name !== 'All').map(brand => (
+                  <button
+                    key={brand.name}
+                    onClick={() => {
+                      handleBrandChange(brand.name);
+                      setBrandsExpanded(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-150 ease-out flex justify-between items-center ${
+                      selectedBrand === brand.name
+                        ? 'bg-black text-white shadow-lg'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="font-medium">{brand.name}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      selectedBrand === brand.name 
+                        ? 'bg-white text-black' 
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {brand.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Categories Filter */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
-              <div className="space-y-2">
-                {categories.map(cat => (
+              
+              {/* Collapsible Header - Optimized */}
+              <button
+                onClick={(e) => {
+                  // If clicking on the chevron area, toggle expansion
+                  const target = e.target as HTMLElement;
+                  const isChevronClick = target.closest('svg') || target.closest('.chevron-area');
+                  
+                  if (isChevronClick) {
+                    setCategoriesExpanded(!categoriesExpanded);
+                  } else {
+                    // If clicking on text/label area, select "All" category and expand
+                    handleCategoryChange('All');
+                    setCategoriesExpanded(true); // OKAMŽITĚ rozbal při kliknutí na All
+                  }
+                }}
+                className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-150 ease-out flex justify-between items-center mb-2 ${
+                  selectedCategory === 'All'
+                    ? 'bg-black text-white shadow-lg'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">All</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    selectedCategory === 'All' 
+                      ? 'bg-white text-black' 
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {categories.find(cat => cat.name === 'All')?.count || 0}
+                  </span>
+                  <div 
+                    className="chevron-area p-1 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCategoriesExpanded(!categoriesExpanded);
+                    }}
+                  >
+                    <svg 
+                      className={`w-4 h-4 transition-transform duration-200 ease-out ${
+                        categoriesExpanded ? 'rotate-180' : ''
+                      } ${selectedCategory === 'All' ? 'text-white' : 'text-gray-600'}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+
+              {/* Expandable Categories - Optimized Animations */}
+              <div className={`space-y-1 overflow-hidden transition-all duration-200 ease-out ${
+                categoriesExpanded ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+              }`}>
+                {categories.filter(cat => cat.name !== 'All').map(cat => (
                   <button
                     key={cat.name}
-                    onClick={() => handleCategoryChange(cat.name)}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex justify-between items-center ${
+                    onClick={() => {
+                      handleCategoryChange(cat.name);
+                      setCategoriesExpanded(false); // Close after selection
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-150 ease-out flex justify-between items-center ${
                       selectedCategory === cat.name
                         ? 'bg-black text-white shadow-lg'
                         : 'text-gray-700 hover:bg-gray-50'
@@ -366,17 +552,17 @@ export default function InfluencerProductCatalog() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {products.map(product => (
+                {filteredProducts.map(product => (
                   <div 
                     key={product.id} 
-                    className={`relative h-96 transition-all duration-300 hover:shadow-lg ${
+                    className={`relative h-96 transition-all duration-200 ease-out hover:shadow-lg transform hover:-translate-y-1 ${
                       selectedProducts.has(product.id) ? 'ring-2 ring-black' : ''
                     }`}
                     style={{ perspective: '1000px' }}
                   >
                     {/* Flip Card Container */}
                     <div 
-                      className={`relative w-full h-full transition-transform duration-700 transform-style-preserve-3d ${
+                      className={`relative w-full h-full transition-transform duration-500 ease-out transform-style-preserve-3d ${
                         flippedCards.has(product.id) ? 'rotate-y-180' : ''
                       }`}
                     >
@@ -395,7 +581,7 @@ export default function InfluencerProductCatalog() {
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
-                                  target.src = '/placeholder.png';
+                                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
                                 }}
                               />
                             ) : (
@@ -407,8 +593,8 @@ export default function InfluencerProductCatalog() {
                             )}
                             
                             {/* Click to view details overlay - only on image hover */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 px-3 py-1 rounded-full text-sm font-medium text-gray-900">
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 px-3 py-1 rounded-full text-sm font-medium text-gray-900">
                                 Click for details
                               </div>
                             </div>
@@ -445,9 +631,9 @@ export default function InfluencerProductCatalog() {
                               e.stopPropagation();
                               toggleProductSelection(product.id);
                             }}
-                            className={`mt-auto w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                            className={`mt-auto w-full py-2 px-4 rounded-lg text-sm font-medium transition-all duration-150 ${
                               selectedProducts.has(product.id)
-                                ? 'bg-black text-white hover:bg-gray-800'
+                                ? 'bg-black text-white hover:bg-gray-800 transform scale-105'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                           >
@@ -469,7 +655,7 @@ export default function InfluencerProductCatalog() {
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
                                     const target = e.target as HTMLImageElement;
-                                    target.src = '/placeholder.png';
+                                    target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
                                   }}
                                 />
                               ) : (
@@ -547,9 +733,9 @@ export default function InfluencerProductCatalog() {
                                 e.stopPropagation();
                                 toggleProductSelection(product.id);
                               }}
-                              className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                              className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-150 ${
                                 selectedProducts.has(product.id)
-                                  ? 'bg-black text-white hover:bg-gray-800'
+                                  ? 'bg-black text-white hover:bg-gray-800 transform scale-105'
                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                               }`}
                             >
@@ -564,7 +750,7 @@ export default function InfluencerProductCatalog() {
               </div>
             )}
             
-            {!loading && !error && products.length === 0 && (
+            {!loading && !error && filteredProducts.length === 0 && (
               <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
                 <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -598,6 +784,13 @@ export default function InfluencerProductCatalog() {
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+        /* Hardware acceleration for smoother animations */
+        .transition-transform {
+          will-change: transform;
+        }
+        .transition-all {
+          will-change: transform, background-color, box-shadow;
         }
       `}</style>
     </div>

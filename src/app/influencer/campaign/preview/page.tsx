@@ -153,20 +153,6 @@ const mockSelectedProducts = [
   }
 ]
 
-// Toast component
-const Toast = ({ message, type, onDismiss }: { message: string, type: 'success' | 'error', onDismiss: () => void }) => {
-  useEffect(() => {
-    const timer = setTimeout(onDismiss, 3000);
-    return () => clearTimeout(timer);
-  }, [onDismiss]);
-
-  return (
-    <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-      {message}
-    </div>
-  );
-};
-
 // Product Gallery Modal
 const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: boolean, onClose: () => void }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -264,7 +250,6 @@ export default function CampaignPreview() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [dragOverItem, setDragOverItem] = useState<number | null>(null);
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   
   // Profile editing states
   const [editingProfile, setEditingProfile] = useState(false);
@@ -362,11 +347,9 @@ export default function CampaignPreview() {
 
   const handleSaveProfile = () => {
     if (discountCode.length > 15) {
-      setToast({ message: 'Discount code too long (max 15 characters)', type: 'error' });
       return;
     }
     setEditingProfile(false);
-    setToast({ message: 'Profile updated successfully!', type: 'success' });
   };
 
   const handleFileUpload = (file: File) => {
@@ -375,12 +358,8 @@ export default function CampaignPreview() {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setAvatar(result);
-        setToast({ message: 'Avatar updated successfully!', type: 'success' });
-        setEditingAvatar(false);
       };
       reader.readAsDataURL(file);
-    } else {
-      setToast({ message: 'Please select a valid image file', type: 'error' });
     }
   };
 
@@ -422,7 +401,6 @@ export default function CampaignPreview() {
         ...prev,
         [platform]: url.trim()
       }));
-      setToast({ message: `${platform} link added!`, type: 'success' });
     }
   };
 
@@ -432,7 +410,6 @@ export default function CampaignPreview() {
       delete newLinks[platform as keyof typeof newLinks];
       return newLinks;
     });
-    setToast({ message: `${platform} link removed!`, type: 'success' });
   };
 
   const openSocialLink = (url: string) => {
@@ -459,26 +436,8 @@ export default function CampaignPreview() {
         [editingRecommendation]: recommendationText.trim()
       }));
       
-      setToast({ message: 'Recommendation saved successfully!', type: 'success' });
-      
-      // V produkci by zde bylo skutečné API volání:
-      /* 
-      const response = await fetch('/api/influencer/products/recommendation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          influencerId: getCurrentInfluencerId(), // Dynamické ID
-          productId: editingRecommendation,
-          recommendation: recommendationText.trim()
-        }),
-      });
-      */
-      
     } catch (error) {
       console.error('Error saving recommendation:', error);
-      setToast({ message: 'Error saving recommendation', type: 'error' });
     }
 
     setEditingRecommendation(null);
@@ -492,15 +451,6 @@ export default function CampaignPreview() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Toast */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onDismiss={() => setToast(null)}
-        />
-      )}
-
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -719,7 +669,7 @@ export default function CampaignPreview() {
                   {/* Recommendation Section */}
                   <div className="mb-3">
                     {productRecommendations[product.id] ? (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2 overflow-hidden">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
@@ -736,7 +686,7 @@ export default function CampaignPreview() {
                             Edit
                           </button>
                         </div>
-                        <p className="text-xs text-blue-800 italic">"{productRecommendations[product.id]}"</p>
+                        <p className="text-xs text-blue-800 italic break-words">"{productRecommendations[product.id]}"</p>
                       </div>
                     ) : (
                       <button
@@ -1017,7 +967,7 @@ export default function CampaignPreview() {
                   </div>
                   <div>
                     <h4 className="font-medium text-purple-900">Make it personal!</h4>
-                    <p className="text-sm text-purple-700">Share why you love this product, how you use it, or why your followers should try it.</p>
+                    <p className="text-sm text-purple-700">Share why you love this product, how you use it, or why your followers should try it. Maximum 200 characters.</p>
                   </div>
                 </div>
               </div>
@@ -1030,13 +980,13 @@ export default function CampaignPreview() {
                 onChange={(e) => setRecommendationText(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 rows={4}
-                maxLength={300}
+                maxLength={200}
                 placeholder="I love this product because... / Perfect for... / I always use this when..."
               />
               <div className="flex justify-between items-center mt-2">
-                <span className="text-sm text-gray-500">{recommendationText.length}/300 characters</span>
-                <span className={`text-xs ${recommendationText.length > 250 ? 'text-orange-600' : recommendationText.length > 280 ? 'text-red-600' : 'text-gray-400'}`}>
-                  {recommendationText.length > 250 ? (recommendationText.length > 280 ? 'Almost full!' : 'Getting close') : 'Tell your story'}
+                <span className="text-sm text-gray-500">{recommendationText.length}/200 characters</span>
+                <span className={`text-xs ${recommendationText.length > 150 ? 'text-orange-600' : recommendationText.length > 180 ? 'text-red-600' : 'text-gray-400'}`}>
+                  {recommendationText.length > 150 ? (recommendationText.length > 180 ? 'Almost full!' : 'Getting close') : 'Tell your story'}
                 </span>
               </div>
             </div>
@@ -1045,7 +995,7 @@ export default function CampaignPreview() {
             {recommendationText.trim() && (
               <div className="mb-6">
                 <h5 className="text-sm font-medium text-gray-700 mb-2">Preview:</h5>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 overflow-hidden">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                       <svg className="w-2.5 h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -1054,7 +1004,7 @@ export default function CampaignPreview() {
                     </div>
                     <span className="text-xs font-medium text-blue-700">My recommendation</span>
                   </div>
-                  <p className="text-xs text-blue-800 italic">"{recommendationText}"</p>
+                  <p className="text-xs text-blue-800 italic break-words">"{recommendationText}"</p>
                 </div>
               </div>
             )}

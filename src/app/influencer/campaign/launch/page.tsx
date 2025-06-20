@@ -13,6 +13,21 @@ export default function LaunchCampaign() {
   const [isLaunching, setIsLaunching] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
+
+  // Initialize default times on component mount  
+  useEffect(() => {
+    // Set default start time if not set
+    if (!startDate) {
+      const today = new Date().toISOString().slice(0,10)
+      setStartDate(`${today}T12:00`)
+    }
+    // Set default end time if not set
+    if (!endDate) {
+      const today = new Date().toISOString().slice(0,10)
+      setEndDate(`${today}T18:00`)
+    }
+  }, [])
+
   // Auto-generate URL when end date changes
   useEffect(() => {
     if (endDate) {
@@ -70,18 +85,18 @@ export default function LaunchCampaign() {
     
     setIsLaunching(true)
     
-    // Simulate API call
+    // Simulate campaign launch process
     setTimeout(() => {
       setIsLaunching(false)
       setShowSuccess(true)
       
-      // Redirect to live campaign after 2 seconds
+      // Redirect to live campaign page
       setTimeout(() => {
         const urlParts = campaignUrl.split('/')
         const campaignSlug = urlParts[urlParts.length - 1]
         router.push(`/campaign/${campaignSlug}`)
       }, 2000)
-    }, 2000)
+    }, 1500) // Simple 1.5s launch process
   }
 
   const isFormValid = startDate && endDate && termsAccepted && campaignUrl
@@ -152,7 +167,7 @@ export default function LaunchCampaign() {
                       type="date"
                       value={startDate.split('T')[0] || ''}
                       onChange={(e) => {
-                        const timeValue = startDate.split('T')[1] || '12:30'
+                        const timeValue = startDate.split('T')[1] || '12:00'
                         const newDateTime = e.target.value ? `${e.target.value}T${timeValue}` : ''
                         setStartDate(newDateTime)
                       }}
@@ -161,7 +176,7 @@ export default function LaunchCampaign() {
                     />
                     <input
                       type="time"
-                      value={startDate.split('T')[1] || ''}
+                      value={startDate.split('T')[1] || '12:00'}
                       onChange={(e) => {
                         const dateValue = startDate.split('T')[0] || new Date().toISOString().slice(0,10)
                         const newDateTime = `${dateValue}T${e.target.value}`
@@ -181,7 +196,7 @@ export default function LaunchCampaign() {
                       type="date"
                       value={endDate.split('T')[0] || ''}
                       onChange={(e) => {
-                        const timeValue = endDate.split('T')[1] || '12:30'
+                        const timeValue = endDate.split('T')[1] || '18:00'
                         const newDateTime = e.target.value ? `${e.target.value}T${timeValue}` : ''
                         setEndDate(newDateTime)
                         // Generate URL when end date is set
@@ -196,11 +211,17 @@ export default function LaunchCampaign() {
                     />
                     <input
                       type="time"
-                      value={endDate.split('T')[1] || ''}
+                      value={endDate.split('T')[1] || '18:00'}
                       onChange={(e) => {
                         const dateValue = endDate.split('T')[0] || (startDate ? startDate.split('T')[0] : new Date().toISOString().slice(0,10))
                         const newDateTime = `${dateValue}T${e.target.value}`
                         setEndDate(newDateTime)
+                        // Generate URL when end time is set
+                        setTimeout(() => {
+                          if (newDateTime) {
+                            handleGenerateUrl()
+                          }
+                        }, 100)
                       }}
                       className="w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
@@ -314,6 +335,22 @@ export default function LaunchCampaign() {
                     . I understand that once launched, the campaign will be live and accessible to customers.
                   </span>
                 </label>
+
+                {/* Launch Info */}
+                {startDate && (
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>Campaign will launch:</strong> {new Date(startDate).toLocaleString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric', 
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                )}
 
                 {/* Launch Button */}
                 <button

@@ -61,6 +61,9 @@ model Influencer {
   
   // Kategorie obsahu
   contentCategories InfluencerCategory[]
+  
+  // Rozšířený profil
+  profile           InfluencerProfile?
 
   @@map("influencers")
 }
@@ -330,4 +333,208 @@ model BrandApplication {
   updatedAt   DateTime @updatedAt
 
   @@map("brand_applications")
+}
+
+// === SCRAPING SYSTEM ===
+
+// === HASHTAG DATABASE BUILDER ===
+model InfluencerDatabase {
+  id              String   @id @default(cuid())
+  
+  // Základní údaje
+  name            String
+  username        String   // hlavní username (Instagram přednostně)
+  email           String?
+  bio             String?
+  avatar          String?
+  country         String?
+  location        String?
+  
+  // Platform data
+  instagramUsername String? @unique
+  instagramUrl      String?
+  instagramData     String? // JSON s Instagram daty
+  tiktokUsername    String?
+  tiktokUrl         String?
+  tiktokData        String?  // JSON s TikTok daty
+  youtubeChannel    String?
+  youtubeUrl        String?
+  youtubeData       String? // JSON s YouTube daty
+  
+  // Agregované statistiky
+  totalFollowers    Int     @default(0)
+  engagementRate    Float?
+  avgLikes          Int?
+  avgComments       Int?
+  
+  // Source tracking - jaký hashtag search jej našel
+  sourceHashtags    String? // JSON array hashtagů ["czechfashion", "prague"]
+  sourceCountry     String? // země kterou jsme hledali
+  foundBy           String? // "hashtag_search", "manual_import"
+  
+  // Status a validace
+  isValidated       Boolean @default(false)
+  hasEmail          Boolean @default(false)
+  isActive          Boolean @default(true)
+  lastScrapedAt     DateTime?
+  notes             String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("influencer_database")
+}
+
+model ScrapingConfig {
+  id                String   @id @default(cuid())
+  name              String   // název konfigurace
+  countries         String   // JSON array zemí ["CZ", "SK"]
+  minFollowers      Int      @default(3000)
+  maxFollowers      Int      @default(500000)
+  platforms         String   // JSON array ["instagram", "tiktok", "youtube"]
+  targetCount       Int      @default(100) // kolik unikátních účtů chceme najít
+  /// Hash-tagy použití pro cílené vyhledávání (JSON array ["fashion", "beauty"])
+  hashtags          String?  // JSON array string[]
+
+  /// Povinná klíčová slova (JSON array) – profil musí obsahovat alespoň jedno
+  keywords          String?  // JSON array string[]
+
+  /// Klíčová slova k vyloučení (JSON array) – profil nesmí obsahovat žádné
+  excludeKeywords   String?  // JSON array string[]
+  isActive          Boolean  @default(false)
+  lastRunAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Scraping runs pro tuto konfiguraci
+  scrapingRuns      ScrapingRun[]
+
+  @@map("scraping_configs")
+}
+
+model ScrapingRun {
+  id              String         @id @default(cuid())
+  configId        String
+  status          String         @default("running") // running, completed, failed
+  totalFound      Int            @default(0)
+  totalProcessed  Int            @default(0)
+  errors          String?        // JSON array chyb
+  startedAt       DateTime       @default(now())
+  completedAt     DateTime?
+  
+  config          ScrapingConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  
+  // Nalezení prospekti
+  prospects       InfluencerProspect[]
+  
+  // Všechny pokusy o scraping (úspěšné i neúspěšné)
+  scrapingAttempts ScrapingAttempt[]
+
+  @@map("scraping_runs")
+}
+
+model ScrapingAttempt {
+  id              String      @id @default(cuid())
+  scrapingRunId   String
+  
+  // Profil který se snažíme scrape-ovat
+  platform        String      // "instagram", "tiktok", "youtube"
+  username        String      // username profilu
+  profileUrl      String?     // URL profilu
+  country         String?     // pro kterou zemi byl nalezen
+  
+  // Status pokusu
+  status          String      // "success", "failed", "timeout", "not_found"
+  errorMessage    String?     // chyba pokud selhal
+  
+  // Stažená data (pokud úspěšný)
+  scrapedData     String?     // JSON s nastaženými daty
+  
+  // Prospect vytvořený z tohoto pokusu (pokud úspěšný)
+  prospectId      String?     // ID vytvořeného prospect
+  
+  // Metadata
+  attemptedAt     DateTime    @default(now())
+  duration        Int?        // doba v milisekundách
+  
+  scrapingRun     ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
+  
+  @@map("scraping_attempts")
+}
+
+model InfluencerProspect {
+  id              String      @id @default(cuid())
+  scrapingRunId   String
+  
+  // Základní údaje
+  name            String
+  email           String?
+  bio             String?
+  avatar          String?     // cesta k uložené profilové fotce
+  country         String?
+  
+  // Unikátní identifikátory pro detekci duplikátů
+  instagramUsername String?   // @username bez @ 
+  instagramUrl      String?   // plná URL k profilu
+  tiktokUsername    String?
+  tiktokUrl         String?
+  youtubeChannel    String?
+  youtubeUrl        String?
+  
+  // Platform data - JSON objects
+  instagramData   String?     // JSON s Instagram daty
+  tiktokData      String?     // JSON s TikTok daty  
+  youtubeData     String?     // JSON s YouTube daty
+  
+  // Agregované statistiky
+  totalFollowers  Int         @default(0)
+  engagementRate  Float?
+  avgLikes        Int?
+  avgComments     Int?
+  
+  // Status
+  status          String      @default("pending") // pending, approved, rejected, duplicate
+  duplicateOf     String?     // ID jiného prospectu pokud je duplikát
+  duplicateReason String?     // proč je označen jako duplikát (username, email, url)
+  notes           String?     // poznámky admina
+  
+  scrapingRun     ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("influencer_prospects")
+}
+
+// === ADDITIONAL PROFILE DATA FOR EXISTING INFLUENCERS ===
+
+model InfluencerProfile {
+  id                    String     @id @default(cuid())
+  influencerId          String     @unique
+  
+  // Demografické údaje influencera
+  age                   Int?
+  gender                String?    // "male", "female", "other"
+  location              String?    // město/země
+  
+  // Údaje o publiku (budou vyplňovat sami)
+  audienceAgeGroups     String?    // JSON {"18-24": 30, "25-34": 45, ...}
+  audienceGenders       String?    // JSON {"male": 40, "female": 60}
+  audienceCountries     String?    // JSON {"CZ": 60, "SK": 25, "DE": 15}
+  
+  // Performance metriky
+  avgReach              Int?
+  avgComments           Int?
+  avgStoryViews         Int?
+  clickThroughRate      Float?
+  
+  // Obsahové kategorie (checkboxy/tagy)
+  contentCategories     String?    // JSON array ["Fashion", "Beauty", "Lifestyle"]
+  
+  influencer            Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@map("influencer_profiles")
 }

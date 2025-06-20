@@ -2,11 +2,12 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { InfluencerApplicationCard, BrandApplicationCard } from '@/components/AdminApplicationCard'
 import ProductQuickView from '@/components/ProductQuickView'
+import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
 export default async function AdminDashboard() {
   const [influencerApplications, brandApplications, products, approvedInfluencers, approvedBrands] = await Promise.all([
-    prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.brand_applications.findMany({ orderBy: { createdAt: 'desc' } }),
+    prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
+    prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.product.findMany({
       include: { brand: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
@@ -20,78 +21,83 @@ export default async function AdminDashboard() {
   const pendingBrands = brandApplications.filter(app => app.status === 'PENDING').length;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <h1 className="text-2xl font-bold text-black">GOOZY ADMIN</h1>
-            <Link href="/" className="text-sm font-medium text-gray-600 hover:text-black transition-colors flex items-center gap-2">
-              Zpět na web
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-            </Link>
+    <div>
+      {/* Top Header */}
+      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-0 z-30">
+        <div className="flex items-center justify-between h-full px-8">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Admin Dashboard</h2>
+            <p className="text-sm text-gray-500">Platform management center</p>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-red-400 to-orange-400 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-medium text-gray-900">Super Admin</p>
+                <p className="text-xs text-gray-500">admin@goozy.com</p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
-
-      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
-          <StatCard title="Čekající influenceři" value={pendingInfluencers} color="yellow" />
-          <StatCard title="Čekající značky" value={pendingBrands} color="yellow" />
-          <StatCard title="Schválení influenceři" value={approvedInfluencers} color="green" />
-          <StatCard title="Aktivní značky" value={approvedBrands} color="green" />
-          <StatCard title="Produktů v katalogu" value={products.length} color="blue" />
-        </div>
       
-        <div className="grid lg:grid-cols-2 gap-8">
-          <ApplicationSection
-            title="Přihlášky influencerů"
-            count={influencerApplications.length}
-            description="Nové přihlášky čekající na schválení"
-          >
-            {influencerApplications.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">Zatím žádné přihlášky</p>
-            ) : (
-              influencerApplications.map(app => <InfluencerApplicationCard key={app.id} application={app} />)
-            )}
-          </ApplicationSection>
+      {/* Main Content */}
+      <main className="pt-24 p-8">
 
-          <ApplicationSection
-            title="Poptávky značek"
-            count={brandApplications.length}
-            description="Nové poptávky na spolupráci"
-          >
-            {brandApplications.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">Zatím žádné poptávky</p>
-            ) : (
-              brandApplications.map(app => <BrandApplicationCard key={app.id} application={app} />)
-            )}
-          </ApplicationSection>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <StatCard title="Pending Influencers" value={pendingInfluencers} color="yellow" />
+          <StatCard title="Pending Brands" value={pendingBrands} color="yellow" />
+          <StatCard title="Approved Influencers" value={approvedInfluencers} color="green" />
+          <StatCard title="Active Brands" value={approvedBrands} color="green" />
+          <StatCard title="Products in Catalog" value={products.length} color="blue" />
         </div>
 
-        <div className="mt-8 bg-white rounded-xl shadow-lg">
-          <div className="p-6 border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-black">Nejnovější produkty v katalogu</h2>
-                <p className="text-gray-600 mt-1">Produkty dostupné pro influencery</p>
-              </div>
-              <Link href="/admin/products" className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Zobrazit všechny →
-              </Link>
+        {/* Applications Section */}
+        <div id="applications" className="grid lg:grid-cols-2 gap-8 mb-8">
+          <TabbedApplicationSection
+            title="Influencer Applications"
+            applications={influencerApplications}
+            type="influencer"
+          />
+
+          <TabbedApplicationSection
+            title="Brand Applications"
+            applications={brandApplications}
+            type="brand"
+          />
+        </div>
+
+        {/* Products Section */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Latest Products</h2>
+              <p className="text-gray-600 mt-1">Products available to influencers</p>
             </div>
+            <Link 
+              href="/admin/products" 
+              className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              View All →
+            </Link>
           </div>
-          <div className="p-6">
-            {products.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">Žádné produkty v katalogu</p>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {products.map((product) => (
-                  <ProductQuickView key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-          </div>
+          
+          {products.length === 0 ? (
+            <p className="text-gray-500 text-center py-10">No products in catalog</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {products.map((product) => (
+                <ProductQuickView key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
@@ -100,26 +106,40 @@ export default async function AdminDashboard() {
 
 const StatCard = ({ title, value, color }: { title: string, value: number, color: 'yellow' | 'green' | 'blue' }) => {
   const colors = {
-    yellow: 'text-yellow-600 bg-yellow-100',
-    green: 'text-green-600 bg-green-100',
-    blue: 'text-blue-600 bg-blue-100',
+    yellow: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+    green: 'text-green-600 bg-green-50 border-green-200',
+    blue: 'text-blue-600 bg-blue-50 border-blue-200',
   }
+  
+  const icons = {
+    yellow: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    green: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+    blue: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+    ),
+  }
+
   return (
-    <div className="bg-white p-5 rounded-xl shadow-lg">
-      <p className="text-sm text-gray-500 mb-1">{title}</p>
-      <p className={`text-4xl font-bold ${colors[color]}`}>{value}</p>
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors[color]}`}>
+          {icons[color]}
+        </div>
+      </div>
     </div>
   )
-}
-
-const ApplicationSection = ({ title, count, description, children }: { title: string, count: number, description: string, children: React.ReactNode }) => {
-  return (
-    <div className="bg-white rounded-xl shadow-lg">
-      <div className="p-6 border-b">
-        <h2 className="text-xl font-bold text-black">{title} ({count})</h2>
-        <p className="text-gray-600 mt-1">{description}</p>
-      </div>
-      <div className="p-4 space-y-4">{children}</div>
-    </div>
-  );
-}; 
+} 

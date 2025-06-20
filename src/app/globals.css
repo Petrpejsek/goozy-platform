@@ -24,7 +24,7 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
-/* Utility pro omezení textu na 2 řádky */
+/* Utility for limiting text to 2 lines */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -32,7 +32,7 @@ body {
   overflow: hidden;
 }
 
-/* Cursor pravidla pro lepší UX */
+/* Cursor rules for better UX */
 button,
 [role="button"],
 input[type="submit"],
@@ -50,7 +50,7 @@ input:disabled {
   cursor: not-allowed;
 }
 
-/* Hover efekty pro tlačítka */
+/* Hover effects for buttons */
 button:not(:disabled):hover,
 [role="button"]:not(:disabled):hover {
   opacity: 0.9;
@@ -58,7 +58,7 @@ button:not(:disabled):hover,
   transition: all 0.2s ease;
 }
 
-/* Focus stavy pro lepší accessibility */
+/* Focus states for better accessibility */
 button:focus,
 a:focus,
 input:focus,
