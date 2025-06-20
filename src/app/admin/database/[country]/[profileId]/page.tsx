@@ -46,10 +46,86 @@ export default function ProfileDetailPage() {
   const [profile, setProfile] = useState<ProfileDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [editedData, setEditedData] = useState<Partial<ProfileDetail>>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     loadProfileData()
   }, [profileId])
+
+  // Function to extract email from bio text
+  const extractEmailFromBio = (bioText: string): string | null => {
+    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/
+    const match = bioText.match(emailRegex)
+    return match ? match[0] : null
+  }
+
+  // Function to extract metrics from Instagram data
+  const extractMetricsFromInstagramData = (instagramDataString: string) => {
+    try {
+      const instagramData = JSON.parse(instagramDataString)
+      const metrics: Partial<ProfileDetail> = {}
+
+      // Extract followers count
+      if (instagramData.followers && typeof instagramData.followers === 'number') {
+        metrics.totalFollowers = instagramData.followers
+      }
+
+      // Extract other basic data
+      if (instagramData.name && instagramData.name.trim()) {
+        metrics.name = instagramData.name.trim()
+      }
+
+      if (instagramData.bio && instagramData.bio.trim()) {
+        metrics.bio = instagramData.bio.trim()
+        // Auto-extract email from bio
+        const extractedEmail = extractEmailFromBio(instagramData.bio)
+        if (extractedEmail) {
+          metrics.email = extractedEmail
+        }
+      }
+
+      // Calculate estimated engagement rate based on typical values for follower count
+      // This is a rough estimation - real engagement would need actual post interaction data
+      if (instagramData.followers && typeof instagramData.followers === 'number') {
+        let estimatedEngagement = 3.0 // Default 3% for micro accounts
+        
+        if (instagramData.followers >= 100000) {
+          estimatedEngagement = 1.5 // Large accounts (100K+) typically have lower engagement rates
+        } else if (instagramData.followers >= 10000) {
+          estimatedEngagement = 2.5 // Mid-tier accounts (10K-100K)
+        } else if (instagramData.followers >= 1000) {
+          estimatedEngagement = 3.5 // Small accounts (1K-10K) often have higher engagement
+        } else {
+          estimatedEngagement = 3.0 // Micro accounts (<1K) - default
+        }
+        
+        metrics.engagementRate = estimatedEngagement
+        
+        // Estimate average likes and comments based on followers and engagement
+        const estimatedLikes = Math.round((instagramData.followers * estimatedEngagement) / 100)
+        const estimatedComments = Math.round(estimatedLikes * 0.1) // Comments are typically ~10% of likes
+        
+        metrics.avgLikes = estimatedLikes
+        metrics.avgComments = estimatedComments
+      }
+
+      return metrics
+    } catch (error) {
+      console.error('Error parsing Instagram data:', error)
+      return {}
+    }
+  }
+
+  // Auto-extract email when bio changes
+  const handleBioChange = (newBio: string) => {
+    const extractedEmail = extractEmailFromBio(newBio)
+    setEditedData(prev => ({
+      ...prev,
+      bio: newBio,
+      ...(extractedEmail && !prev.email ? { email: extractedEmail } : {})
+    }))
+  }
 
   const loadProfileData = async () => {
     try {
@@ -62,6 +138,46 @@ export default function ProfileDetailPage() {
       
       const profileData = await response.json()
       setProfile(profileData)
+
+      // Auto-extract data from Instagram if available and fields are empty
+      if (profileData.instagramData && (
+        !profileData.email || 
+        !profileData.engagementRate || 
+        !profileData.avgLikes || 
+        !profileData.avgComments
+      )) {
+        const extractedMetrics = extractMetricsFromInstagramData(profileData.instagramData)
+        if (Object.keys(extractedMetrics).length > 0) {
+          // Only include fields that are currently null/empty
+          const fieldsToUpdate: Partial<ProfileDetail> = {}
+          
+          if (!profileData.email && extractedMetrics.email) {
+            fieldsToUpdate.email = extractedMetrics.email
+          }
+          if (!profileData.totalFollowers && extractedMetrics.totalFollowers) {
+            fieldsToUpdate.totalFollowers = extractedMetrics.totalFollowers
+          }
+          if (!profileData.engagementRate && extractedMetrics.engagementRate) {
+            fieldsToUpdate.engagementRate = extractedMetrics.engagementRate
+          }
+          if (!profileData.avgLikes && extractedMetrics.avgLikes) {
+            fieldsToUpdate.avgLikes = extractedMetrics.avgLikes
+          }
+          if (!profileData.avgComments && extractedMetrics.avgComments) {
+            fieldsToUpdate.avgComments = extractedMetrics.avgComments
+          }
+          if (extractedMetrics.name && extractedMetrics.name !== profileData.name) {
+            fieldsToUpdate.name = extractedMetrics.name
+          }
+          if (extractedMetrics.bio && extractedMetrics.bio !== profileData.bio) {
+            fieldsToUpdate.bio = extractedMetrics.bio
+          }
+
+          if (Object.keys(fieldsToUpdate).length > 0) {
+            setEditedData(fieldsToUpdate)
+          }
+        }
+      }
     } catch (err) {
       console.error('Failed to load profile:', err)
       setError(err instanceof Error ? err.message : 'Failed to load profile')
@@ -72,6 +188,7 @@ export default function ProfileDetailPage() {
 
   const handleUpdateProfile = async (updates: Partial<ProfileDetail>) => {
     try {
+      setSaving(true)
       const response = await fetch(`/api/admin/database/profile/${profileId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -81,6 +198,7 @@ export default function ProfileDetailPage() {
       if (response.ok) {
         const updatedProfile = await response.json()
         setProfile(updatedProfile)
+        setEditedData({}) // Clear edited data after successful save
         alert('Profile updated successfully')
       } else {
         const error = await response.json()
@@ -89,7 +207,19 @@ export default function ProfileDetailPage() {
     } catch (error) {
       console.error('Error updating profile:', error)
       alert('Error updating profile')
+    } finally {
+      setSaving(false)
     }
+  }
+
+  const handleSaveChanges = () => {
+    if (Object.keys(editedData).length > 0) {
+      handleUpdateProfile(editedData)
+    }
+  }
+
+  const getCurrentValue = (field: keyof ProfileDetail) => {
+    return editedData[field] !== undefined ? editedData[field] : profile?.[field]
   }
 
   if (loading) {
@@ -171,26 +301,96 @@ export default function ProfileDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Basic Information */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">📋 Basic Information</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">📋 Basic Information</h2>
+            {Object.keys(editedData).length > 0 && (
+              <button
+                onClick={handleSaveChanges}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            )}
+          </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <p className="text-gray-900">{profile.email || 'Not provided'}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                value={getCurrentValue('name') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <input
+                type="text"
+                value={getCurrentValue('username') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, username: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter username"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+                {editedData.email && editedData.email !== profile?.email && (
+                  <span className="ml-2 text-xs text-green-600 font-medium">✨ Auto-extracted</span>
+                )}
+              </label>
+              <input
+                type="email"
+                value={getCurrentValue('email') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter email address"
+              />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-              <p className="text-gray-900">{profile.bio || 'No bio available'}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+                <span className="ml-2 text-xs text-blue-600">Email will be auto-extracted</span>
+              </label>
+              <textarea
+                rows={4}
+                value={getCurrentValue('bio') || ''}
+                onChange={(e) => handleBioChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter bio"
+              />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <p className="text-gray-900">{profile.location || 'Not specified'}</p>
+              <input
+                type="text"
+                value={getCurrentValue('location') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, location: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter location"
+              />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-              <p className="text-gray-900">{profile.country || 'Unknown'}</p>
+              <select
+                value={getCurrentValue('country') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, country: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select country</option>
+                <option value="CZ">Czech Republic</option>
+                <option value="SK">Slovakia</option>
+                <option value="US">United States</option>
+                <option value="GB">United Kingdom</option>
+                <option value="DE">Germany</option>
+              </select>
             </div>
           </div>
         </div>
@@ -199,125 +399,182 @@ export default function ProfileDetailPage() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">📱 Social Media</h2>
           <div className="space-y-4">
-            {profile.instagramUsername && (
-              <div className="flex items-center space-x-3">
-                <span className="text-lg">📷</span>
-                <div>
-                  <p className="font-medium">Instagram</p>
-                  <a 
-                    href={profile.instagramUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    @{profile.instagramUsername}
-                  </a>
-                </div>
-              </div>
-            )}
-            
-            {profile.tiktokUsername && (
-              <div className="flex items-center space-x-3">
-                <span className="text-lg">🎵</span>
-                <div>
-                  <p className="font-medium">TikTok</p>
-                  <a 
-                    href={profile.tiktokUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    @{profile.tiktokUsername}
-                  </a>
-                </div>
-              </div>
-            )}
-            
-            {profile.youtubeChannel && (
-              <div className="flex items-center space-x-3">
-                <span className="text-lg">📺</span>
-                <div>
-                  <p className="font-medium">YouTube</p>
-                  <a 
-                    href={profile.youtubeUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    {profile.youtubeChannel}
-                  </a>
-                </div>
-              </div>
-            )}
-            
-            {!profile.instagramUsername && !profile.tiktokUsername && !profile.youtubeChannel && (
-              <p className="text-gray-500">No social media accounts linked</p>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">📷 Instagram Username</label>
+              <input
+                type="text"
+                value={getCurrentValue('instagramUsername') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, instagramUsername: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Instagram username"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">📷 Instagram URL</label>
+              <input
+                type="url"
+                value={getCurrentValue('instagramUrl') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Instagram URL"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">🎵 TikTok Username</label>
+              <input
+                type="text"
+                value={getCurrentValue('tiktokUsername') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, tiktokUsername: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter TikTok username"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">🎵 TikTok URL</label>
+              <input
+                type="url"
+                value={getCurrentValue('tiktokUrl') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, tiktokUrl: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter TikTok URL"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">📺 YouTube Channel</label>
+              <input
+                type="text"
+                value={getCurrentValue('youtubeChannel') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, youtubeChannel: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter YouTube channel name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">📺 YouTube URL</label>
+              <input
+                type="url"
+                value={getCurrentValue('youtubeUrl') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter YouTube URL"
+              />
+            </div>
           </div>
         </div>
 
         {/* Statistics */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">📊 Statistics</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <p className="text-sm text-gray-600">Total Followers</p>
-              <p className="text-2xl font-bold text-gray-900">{profile.totalFollowers.toLocaleString()}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Followers</label>
+              <input
+                type="number"
+                value={getCurrentValue('totalFollowers') || 0}
+                onChange={(e) => setEditedData(prev => ({ ...prev, totalFollowers: parseInt(e.target.value) || 0 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter total followers"
+              />
             </div>
             
-            {profile.engagementRate && (
-              <div>
-                <p className="text-sm text-gray-600">Engagement Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{profile.engagementRate.toFixed(2)}%</p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Engagement Rate (%)
+                {editedData.engagementRate && editedData.engagementRate !== profile?.engagementRate && (
+                  <span className="ml-2 text-xs text-blue-600 font-medium">📊 Estimated</span>
+                )}
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={getCurrentValue('engagementRate') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, engagementRate: parseFloat(e.target.value) || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter engagement rate"
+              />
+            </div>
             
-            {profile.avgLikes && (
-              <div>
-                <p className="text-sm text-gray-600">Avg Likes</p>
-                <p className="text-2xl font-bold text-gray-900">{profile.avgLikes.toLocaleString()}</p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Average Likes
+                {editedData.avgLikes && editedData.avgLikes !== profile?.avgLikes && (
+                  <span className="ml-2 text-xs text-blue-600 font-medium">📊 Estimated</span>
+                )}
+              </label>
+              <input
+                type="number"
+                value={getCurrentValue('avgLikes') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, avgLikes: parseInt(e.target.value) || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter average likes"
+              />
+            </div>
             
-            {profile.avgComments && (
-              <div>
-                <p className="text-sm text-gray-600">Avg Comments</p>
-                <p className="text-2xl font-bold text-gray-900">{profile.avgComments.toLocaleString()}</p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Average Comments
+                {editedData.avgComments && editedData.avgComments !== profile?.avgComments && (
+                  <span className="ml-2 text-xs text-blue-600 font-medium">📊 Estimated</span>
+                )}
+              </label>
+              <input
+                type="number"
+                value={getCurrentValue('avgComments') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, avgComments: parseInt(e.target.value) || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter average comments"
+              />
+            </div>
           </div>
         </div>
 
         {/* Discovery & Metadata */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">🔍 Discovery & Metadata</h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium text-gray-700">Found By</p>
-              <p className="text-gray-900">{profile.foundBy || 'Unknown'}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Found By</label>
+              <input
+                type="text"
+                value={getCurrentValue('foundBy') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, foundBy: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter discovery source"
+              />
             </div>
             
-            {profile.sourceHashtags && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Source Hashtags</label>
+              <input
+                type="text"
+                value={getCurrentValue('sourceHashtags') || ''}
+                onChange={(e) => setEditedData(prev => ({ ...prev, sourceHashtags: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter hashtags used for discovery"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Source Hashtags</p>
-                <p className="text-gray-900">{profile.sourceHashtags}</p>
+                <p className="text-sm font-medium text-gray-700">Created</p>
+                <p className="text-gray-600 text-sm">{new Date(profile.createdAt).toLocaleString()}</p>
               </div>
-            )}
-            
-            <div>
-              <p className="text-sm font-medium text-gray-700">Created</p>
-              <p className="text-gray-900">{new Date(profile.createdAt).toLocaleString()}</p>
-            </div>
-            
-            <div>
-              <p className="text-sm font-medium text-gray-700">Last Updated</p>
-              <p className="text-gray-900">{new Date(profile.updatedAt).toLocaleString()}</p>
+              
+              <div>
+                <p className="text-sm font-medium text-gray-700">Last Updated</p>
+                <p className="text-gray-600 text-sm">{new Date(profile.updatedAt).toLocaleString()}</p>
+              </div>
             </div>
             
             {profile.lastScrapedAt && (
               <div>
                 <p className="text-sm font-medium text-gray-700">Last Scraped</p>
-                <p className="text-gray-900">{new Date(profile.lastScrapedAt).toLocaleString()}</p>
+                <p className="text-gray-600 text-sm">{new Date(profile.lastScrapedAt).toLocaleString()}</p>
               </div>
             )}
           </div>
@@ -325,17 +582,31 @@ export default function ProfileDetailPage() {
       </div>
 
       {/* Admin Notes */}
-      {profile.notes && (
-        <div className="mt-8 bg-yellow-50 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">📝 Admin Notes</h2>
-          <p className="text-gray-900">{profile.notes}</p>
-        </div>
-      )}
+      <div className="mt-8 bg-yellow-50 rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4">📝 Admin Notes</h2>
+        <textarea
+          rows={4}
+          value={getCurrentValue('notes') || ''}
+          onChange={(e) => setEditedData(prev => ({ ...prev, notes: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter admin notes or comments about this profile..."
+        />
+      </div>
 
       {/* Quick Actions */}
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-4">⚡ Quick Actions</h2>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-4">
+          {Object.keys(editedData).length > 0 && (
+            <button
+              onClick={handleSaveChanges}
+              disabled={saving}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 text-lg"
+            >
+              {saving ? 'Saving...' : '💾 Save All Changes'}
+            </button>
+          )}
+          
           <button 
             onClick={() => handleUpdateProfile({ isActive: !profile.isActive })}
             className={`px-4 py-2 rounded font-medium ${
@@ -357,6 +628,42 @@ export default function ProfileDetailPage() {
           >
             {profile.isValidated ? 'Mark Unvalidated' : 'Mark Validated'}
           </button>
+
+          <button
+            onClick={() => {
+              if (profile?.bio) {
+                const extractedEmail = extractEmailFromBio(profile.bio)
+                if (extractedEmail) {
+                  setEditedData(prev => ({ ...prev, email: extractedEmail }))
+                  alert(`Email extracted: ${extractedEmail}`)
+                } else {
+                  alert('No email found in bio')
+                }
+              } else {
+                alert('No bio available for email extraction')
+              }
+            }}
+            className="px-4 py-2 bg-purple-600 text-white rounded font-medium hover:bg-purple-700"
+          >
+            🔍 Extract Email from Bio
+          </button>
+
+          {profile?.instagramData && (
+            <button
+              onClick={() => {
+                const extractedMetrics = extractMetricsFromInstagramData(profile.instagramData!)
+                if (Object.keys(extractedMetrics).length > 0) {
+                  setEditedData(prev => ({ ...prev, ...extractedMetrics }))
+                  alert(`Extracted data from Instagram: ${Object.keys(extractedMetrics).join(', ')}`)
+                } else {
+                  alert('No additional data could be extracted from Instagram')
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700"
+            >
+              📷 Extract from Instagram Data
+            </button>
+          )}
         </div>
       </div>
     </div>

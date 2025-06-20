@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useCountryData } from '@/hooks/useCountryData'
@@ -47,6 +47,12 @@ interface CountryDetail {
   }>
 }
 
+interface CategoryCounts {
+  all: number
+  successfullyDownloaded: number
+  failedDownload: number
+}
+
 export default function CountryDetailPage() {
   const params = useParams()
   const country = params.country as string
@@ -65,11 +71,76 @@ export default function CountryDetailPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProfiles, setSelectedProfiles] = useState<string[]>([])
   const [isDeleting, setIsDeleting] = useState(false)
+  const [categoryProfiles, setCategoryProfiles] = useState<any>(null)
+  const [loadingCategoryProfiles, setLoadingCategoryProfiles] = useState(false)
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCounts>({
+    all: 0,
+    successfullyDownloaded: 0,
+    failedDownload: 0
+  })
 
   // Funkce pro refresh dat po smazání profilů
   const refreshAfterDelete = async () => {
     await forceRefresh()
+    await loadCategoryCounts() // Refresh counts after delete
   }
+
+  // Funkce pro načtení počtů podle kategorií
+  const loadCategoryCounts = async () => {
+    try {
+      const [allResponse, successResponse, failedResponse] = await Promise.all([
+        fetch(`/api/admin/database/${country}/profiles?category=all`),
+        fetch(`/api/admin/database/${country}/profiles?category=successfully-downloaded`),
+        fetch(`/api/admin/database/${country}/profiles?category=failed-download`)
+      ])
+
+      const [allData, successData, failedData] = await Promise.all([
+        allResponse.ok ? allResponse.json() : { total: 0 },
+        successResponse.ok ? successResponse.json() : { total: 0 },
+        failedResponse.ok ? failedResponse.json() : { total: 0 }
+      ])
+
+      setCategoryCounts({
+        all: allData.total || 0,
+        successfullyDownloaded: successData.total || 0,
+        failedDownload: failedData.total || 0
+      })
+    } catch (error) {
+      console.error('Error loading category counts:', error)
+    }
+  }
+
+  // Funkce pro načtení profilů podle kategorie
+  const loadCategoryProfiles = async (category: string) => {
+    setLoadingCategoryProfiles(true)
+    try {
+      const response = await fetch(`/api/admin/database/${country}/profiles?category=${category}`)
+      if (response.ok) {
+        const profilesData = await response.json()
+        setCategoryProfiles(profilesData)
+      } else {
+        console.error('Failed to load category profiles')
+      }
+    } catch (error) {
+      console.error('Error loading category profiles:', error)
+    } finally {
+      setLoadingCategoryProfiles(false)
+    }
+  }
+
+  // Load category counts on mount and when data changes
+  useEffect(() => {
+    if (data && country) {
+      loadCategoryCounts()
+    }
+  }, [data, country])
+
+  // Načtení profilů podle kategorie při přepnutí záložky
+  useEffect(() => {
+    if (activeTab === 'successfully-downloaded' || activeTab === 'failed-download') {
+      loadCategoryProfiles(activeTab)
+    }
+  }, [activeTab])
 
   const handleSelectProfile = (profileId: string) => {
     setSelectedProfiles(prev => 
@@ -258,20 +329,22 @@ export default function CountryDetailPage() {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             {[
-              { id: 'overview', name: 'Overview', icon: '📊' },
-              { id: 'profiles', name: 'Profiles', icon: '👥' }
+              { id: 'overview', name: 'Overview', icon: '📊', count: null },
+              { id: 'profiles', name: 'All Profiles', icon: '👥', count: categoryCounts.all },
+              { id: 'successfully-downloaded', name: 'Successfully Downloaded', icon: '✅', color: 'text-green-600 border-green-500', count: categoryCounts.successfullyDownloaded },
+              { id: 'failed-download', name: 'Failed to Download', icon: '❌', color: 'text-red-600 border-red-500', count: categoryCounts.failedDownload }
             ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.icon} {tab.name}
-              </button>
+                              <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? tab.color || 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {tab.icon} {tab.name}{tab.count !== null ? ` (${tab.count})` : ''}
+                </button>
             ))}
           </nav>
         </div>
@@ -458,6 +531,142 @@ export default function CountryDetailPage() {
                 ))}
               </div>
             </>
+          )}
+        </div>
+      )}
+
+      {/* Successfully Downloaded Profiles Tab */}
+      {activeTab === 'successfully-downloaded' && (
+        <div className="bg-white rounded-lg shadow-md">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-green-700">✅ Successfully Downloaded Profiles</h3>
+              <div className="text-sm text-gray-500">
+                {loadingCategoryProfiles ? 'Loading...' : `${categoryProfiles?.profiles?.length || 0} profiles`}
+              </div>
+            </div>
+          </div>
+          
+          {loadingCategoryProfiles ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-gray-500">Loading profiles...</div>
+            </div>
+          ) : categoryProfiles?.profiles?.length > 0 ? (
+            <div className="divide-y divide-gray-200">
+              {categoryProfiles.profiles.map((profile: any) => (
+                <div key={profile.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <span className="text-green-600 font-medium text-sm">
+                          {(profile.displayName || profile.username || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {profile.displayName || profile.username || 'Unknown User'}
+                        </h4>
+                        <p className="text-xs text-gray-600">@{profile.username || 'unknown'}</p>
+                        <div className="flex items-center space-x-3 mt-1">
+                          <span className="text-xs text-gray-500">
+                            👥 {(profile.followers || 0).toLocaleString()}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            🏷️ {profile.category || 'uncategorized'}
+                          </span>
+                          <span className="text-xs text-green-600 font-medium">
+                            ✅ Complete Instagram Data
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Link 
+                        href={`/admin/database/${country}/${profile.id}`}
+                        className="text-blue-600 hover:text-blue-800 text-xs font-medium px-3 py-1 hover:bg-blue-50 rounded"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-green-600 text-4xl mb-4">✅</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Successfully Downloaded Profiles</h3>
+              <p className="text-gray-600">No profiles have been successfully scraped from Instagram yet.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Failed to Download Profiles Tab */}
+      {activeTab === 'failed-download' && (
+        <div className="bg-white rounded-lg shadow-md">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-red-700">❌ Failed to Download Profiles</h3>
+              <div className="text-sm text-gray-500">
+                {loadingCategoryProfiles ? 'Loading...' : `${categoryProfiles?.profiles?.length || 0} profiles`}
+              </div>
+            </div>
+          </div>
+          
+          {loadingCategoryProfiles ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-gray-500">Loading profiles...</div>
+            </div>
+          ) : categoryProfiles?.profiles?.length > 0 ? (
+            <div className="divide-y divide-gray-200">
+              {categoryProfiles.profiles.map((profile: any) => (
+                <div key={profile.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <span className="text-red-600 font-medium text-sm">
+                          {(profile.displayName || profile.username || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {profile.displayName || profile.username || 'Unknown User'}
+                        </h4>
+                        <p className="text-xs text-gray-600">@{profile.username || 'unknown'}</p>
+                        <div className="flex items-center space-x-3 mt-1">
+                          <span className="text-xs text-gray-500">
+                            👥 {(profile.followers || 0).toLocaleString()}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            🏷️ {profile.category || 'uncategorized'}
+                          </span>
+                          <span className="text-xs text-red-600 font-medium">
+                            ❌ Failed Scraping
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Link 
+                        href={`/admin/database/${country}/${profile.id}`}
+                        className="text-blue-600 hover:text-blue-800 text-xs font-medium px-3 py-1 hover:bg-blue-50 rounded"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-red-600 text-4xl mb-4">❌</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Failed Downloads</h3>
+              <p className="text-gray-600">No profiles have failed Instagram scraping attempts yet.</p>
+            </div>
           )}
         </div>
       )}

@@ -379,6 +379,9 @@ model InfluencerDatabase {
   lastScrapedAt     DateTime?
   notes             String?
   
+  // Relace k scraping attempts
+  scrapingAttempts  ScrapingAttempt[]
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -415,6 +418,8 @@ model ScrapingConfig {
 model ScrapingRun {
   id              String         @id @default(cuid())
   configId        String
+  type            String         @default("google_search") // "google_search" | "instagram_scraping"
+  sourceFilter    String?        // JSON filter pro Instagram scraping (země, specifické profily)
   status          String         @default("running") // running, completed, failed
   totalFound      Int            @default(0)
   totalProcessed  Int            @default(0)
@@ -436,6 +441,7 @@ model ScrapingRun {
 model ScrapingAttempt {
   id              String      @id @default(cuid())
   scrapingRunId   String
+  targetProfileId String?     // ID z InfluencerDatabase pro Instagram scraping
   
   // Profil který se snažíme scrape-ovat
   platform        String      // "instagram", "tiktok", "youtube"
@@ -444,7 +450,7 @@ model ScrapingAttempt {
   country         String?     // pro kterou zemi byl nalezen
   
   // Status pokusu
-  status          String      // "success", "failed", "timeout", "not_found"
+  status          String      // "success", "failed", "timeout", "not_found", "skipped_private"
   errorMessage    String?     // chyba pokud selhal
   
   // Stažená data (pokud úspěšný)
@@ -458,6 +464,7 @@ model ScrapingAttempt {
   duration        Int?        // doba v milisekundách
   
   scrapingRun     ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
+  targetProfile   InfluencerDatabase? @relation(fields: [targetProfileId], references: [id], onDelete: SetNull)
   
   @@map("scraping_attempts")
 }
