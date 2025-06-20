@@ -210,7 +210,7 @@ export class ScrapingOrchestrator {
             const category = this.detectCategoryFromKeywords(config.keywords)
             console.log(`📂 [GOOGLE-DISCOVERY] Detected category: ${category || 'all categories'}`)
             
-            const googleResults = await this.googleSearchScraper.searchInstagramProfiles(country, category, maxProfiles * 2)
+            const googleResults = await this.googleSearchScraper.searchInstagramProfiles(country, country, maxProfiles * 2)
             console.log(`🔍 [GOOGLE-DISCOVERY] Found ${googleResults.length} profiles from Google Search`)
             
             // Filtrovat výsledky podle konfigurace

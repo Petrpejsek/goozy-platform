@@ -109,8 +109,8 @@ export class GoogleSearchScraper {
         'česká', 'český', 'czech', 'Československá'
       ],
       'SK': [
-        'Bratislava', 'Košice', 'Prešov', 'Nitra', 'Trenčín',
-        'slovenská', 'slovenský', 'slovak', 'slovakia'
+        'Bratislava', 'Košice', 'Prešov', 'Nitra', 'Trenčín', 'Žilina', 'Banská Bystrica',
+        'slovenská', 'slovenský', 'slovak', 'slovakia', 'slovensko', 'blogerka', 'influencer'
       ]
     }
 
@@ -139,26 +139,36 @@ export class GoogleSearchScraper {
       })
     })
 
-    // Obecnější queries
-    queries.push(`site:instagram.com "czech blogger"`)
-    queries.push(`site:instagram.com "česká blogerka"`)
-    queries.push(`site:instagram.com "prague influencer"`)
-    queries.push(`site:instagram.com "český youtuber"`)
-    queries.push(`site:instagram.com "slovak blogger"`)
+    // Obecnější queries podle země
+    if (country === 'CZ') {
+      queries.push(`site:instagram.com "czech blogger"`)
+      queries.push(`site:instagram.com "česká blogerka"`)
+      queries.push(`site:instagram.com "prague influencer"`)
+      queries.push(`site:instagram.com "český youtuber"`)
+    } else if (country === 'SK') {
+      queries.push(`site:instagram.com "slovak blogger"`)
+      queries.push(`site:instagram.com "slovenská blogerka"`)
+      queries.push(`site:instagram.com "bratislava influencer"`)
+      queries.push(`site:instagram.com "slovenský youtuber"`)
+      queries.push(`site:instagram.com "slovakia fashion"`)
+    } else {
+      queries.push(`site:instagram.com "${country.toLowerCase()} blogger"`)
+      queries.push(`site:instagram.com "${country.toLowerCase()} influencer"`)
+    }
 
     return queries
   }
 
   // Hlavní metoda pro search Instagram profilů
-  async searchInstagramProfiles(searchQuery: string, limit: number = 50000): Promise<string[]> {
+  async searchInstagramProfiles(searchQuery: string, country: string = 'CZ', limit: number = 50000): Promise<string[]> {
     if (!this.browser) {
       await this.initialize()
     }
 
-    console.log(`🔍 [GOOGLE-SEARCH] Starting search for: "${searchQuery}"`)
+    console.log(`🔍 [GOOGLE-SEARCH] Starting search for: "${searchQuery}" in country: ${country}`)
     
     try {
-      const results = await this.performSingleSearch(searchQuery)
+      const results = await this.performSingleSearch(searchQuery, country)
       
       // Extrahuj usernames z výsledků
       const usernames = results
@@ -176,15 +186,25 @@ export class GoogleSearchScraper {
   }
 
   // Provést jeden Google search
-  private async performSingleSearch(query: string): Promise<GoogleSearchResult[]> {
+  private async performSingleSearch(query: string, country: string = 'CZ'): Promise<GoogleSearchResult[]> {
     let page: Page | null = null
     
     try {
       page = await this.browser!.newPage()
       await this.setupPage(page)
 
-      // Navigace na Google
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&num=100`
+      // Použití lokálních Google domén pro lepší výsledky
+      const googleDomains: Record<string, string> = {
+        'CZ': 'google.cz',
+        'SK': 'google.sk', 
+        'PL': 'google.pl',
+        'HU': 'google.hu',
+        'AT': 'google.at',
+        'DE': 'google.de'
+      }
+      
+      const domain = googleDomains[country] || 'google.com'
+      const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&num=100&hl=${country.toLowerCase()}&gl=${country}`
       console.log(`🌐 [GOOGLE-SEARCH] Navigating to: ${searchUrl}`)
 
       const response = await page.goto(searchUrl, { 

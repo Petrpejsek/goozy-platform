@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const searchQuery = `${searchTerm} site:instagram.com`
     console.log(`🔍 [TEST-SCRAPING] Google query: "${searchQuery}"`)
     
-    const results = await googleScraper.searchInstagramProfiles(searchQuery, 5)
+    const results = await googleScraper.searchInstagramProfiles(searchQuery, 'CZ', 5)
     
     await googleScraper.close()
     

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Pro každý term sestavíme jednoduchý Google dotaz a vytáhneme usernames
     for (const term of searchTerms) {
       const query = `site:instagram.com ${term} ${country}`.trim()
-      const usernames = await googleScraper.searchInstagramProfiles(query, maxResultsPerQuery)
+      const usernames = await googleScraper.searchInstagramProfiles(query, country, maxResultsPerQuery)
       allUsernames.push(...usernames)
     }
 

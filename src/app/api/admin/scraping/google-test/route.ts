@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     try {
       await googleScraper.initialize()
       
-      const results = await googleScraper.searchInstagramProfiles(country, category, limit)
+      const results = await googleScraper.searchInstagramProfiles(country, country, limit)
       
       console.log(`✅ [GOOGLE-TEST] Found ${results.length} Instagram profiles`)
       
