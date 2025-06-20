@@ -35,7 +35,6 @@ interface BatchConfig {
   delayBetween: number
   maxRetries: number
   timeout: number
-  skipPrivate: boolean
   onlyMissingData: boolean
 }
 
@@ -75,7 +74,6 @@ export default function InstagramScrapingPage() {
     delayBetween: 5000,
     maxRetries: 3,
     timeout: 30000,
-    skipPrivate: true,
     onlyMissingData: true
   })
 
@@ -124,15 +122,30 @@ export default function InstagramScrapingPage() {
       const response = await fetch(`/api/admin/instagram-scraping/runs/${runId}/status`)
       if (response.ok) {
         const data = await response.json()
-        setCurrentRun(data.run)
         
-        if (data.run.status === 'completed' || data.run.status === 'failed') {
-          loadStatsAndRuns() // Refresh stats and runs list
+        // Check if run data exists
+        if (data && data.run) {
+          setCurrentRun(data.run)
+          
+          if (data.run.status === 'completed' || data.run.status === 'failed') {
+            loadStatsAndRuns() // Refresh stats and runs list
+            setCurrentRun(null)
+          }
+        } else {
+          console.warn('No run data received from API')
+          // If no run data, clear current run and refresh
           setCurrentRun(null)
+          loadStatsAndRuns()
         }
+      } else {
+        console.error('Failed to poll run status:', response.status)
+        // On error, clear current run
+        setCurrentRun(null)
       }
     } catch (error) {
       console.error('Failed to poll run status:', error)
+      // On error, clear current run
+      setCurrentRun(null)
     }
   }
 
@@ -265,9 +278,15 @@ export default function InstagramScrapingPage() {
                 value={batchConfig.country}
                 onChange={(e) => setBatchConfig({...batchConfig, country: e.target.value})}
               >
-                <option value="CZ">Czech Republic</option>
-                <option value="SK">Slovakia</option>
                 <option value="">All Countries</option>
+                <option value="CZ">🇨🇿 Czech Republic</option>
+                <option value="SK">🇸🇰 Slovakia</option>
+                <option value="PL">🇵🇱 Poland</option>
+                <option value="HU">🇭🇺 Hungary</option>
+                <option value="FR">🇫🇷 France</option>
+                <option value="ES">🇪🇸 Spain</option>
+                <option value="DE">🇩🇪 Germany</option>
+                <option value="AT">🇦🇹 Austria</option>
               </select>
             </div>
             
@@ -306,16 +325,6 @@ export default function InstagramScrapingPage() {
                 onChange={(e) => setBatchConfig({...batchConfig, onlyMissingData: e.target.checked})}
               />
               <span className="text-sm text-gray-700">Only profiles missing Instagram data</span>
-            </label>
-            
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-2"
-                checked={batchConfig.skipPrivate}
-                onChange={(e) => setBatchConfig({...batchConfig, skipPrivate: e.target.checked})}
-              />
-              <span className="text-sm text-gray-700">Skip private accounts (faster)</span>
             </label>
           </div>
           

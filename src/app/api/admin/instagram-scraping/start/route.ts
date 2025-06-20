@@ -7,7 +7,6 @@ interface BatchConfig {
   delayBetween: number
   maxRetries: number
   timeout: number
-  skipPrivate: boolean
   onlyMissingData: boolean
 }
 
@@ -163,28 +162,6 @@ async function startInstagramScrapingProcess(
       let scrapedData: string | undefined
 
       try {
-        // Check if account is private first (if enabled)
-        if (batchConfig.skipPrivate) {
-          const isPrivate = await scraper.isAccountPrivate(username)
-          if (isPrivate) {
-            attemptStatus = 'skipped_private'
-            attemptError = 'Account is private - skipped'
-            skippedCount++
-            
-            console.log(`🔒 [DEBUG] Skipped @${username}: private account`)
-
-            // Save the attempt
-            await saveScrapingAttempt(runId, profile, attemptStatus, attemptError, undefined, Date.now() - attemptStartTime)
-            
-            // Update progress
-            await updateProgress(runId, i + 1, profiles.length, successCount, errorCount, skippedCount)
-            
-            // Delay before next profile
-            await delay(batchConfig.delayBetween)
-            continue
-          }
-        }
-
         // Scrape the Instagram profile
         const instagramProfile = await scraper.scrapeProfile(username)
 

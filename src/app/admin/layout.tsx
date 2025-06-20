@@ -162,19 +162,6 @@ const AdminSidebar = () => {
           ))}
         </ul>
       </nav>
-
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl">
-          <h4 className="font-semibold text-gray-900 mb-1">Admin Tools</h4>
-          <p className="text-sm text-gray-600 mb-3">Platform management center</p>
-          <Link 
-            href="/"
-            className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors block text-center"
-          >
-            Back to Website
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }

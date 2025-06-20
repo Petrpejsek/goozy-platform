@@ -27,7 +27,7 @@ interface ScrapingResult {
 }
 
 export default function ScrapingPage() {
-  const [activeTab, setActiveTab] = useState<'scraping' | 'history' | 'queue'>('scraping')
+  const [activeTab, setActiveTab] = useState<'scraping' | 'history'>('scraping')
   const [scrapingRuns, setScrapingRuns] = useState<ScrapingResult[]>([])
   const [isScrapingRunning, setIsScrapingRunning] = useState(false)
   const [currentHashtag, setCurrentHashtag] = useState('')
@@ -46,6 +46,10 @@ export default function ScrapingPage() {
     { code: 'SK', name: 'Slovakia', flag: '🇸🇰' },
     { code: 'PL', name: 'Poland', flag: '🇵🇱' },
     { code: 'HU', name: 'Hungary', flag: '🇭🇺' },
+    { code: 'FR', name: 'France', flag: '🇫🇷' },
+    { code: 'ES', name: 'Spain', flag: '🇪🇸' },
+    { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+    { code: 'AT', name: 'Austria', flag: '🇦🇹' },
   ]
 
   const startScraping = async () => {
@@ -231,7 +235,6 @@ export default function ScrapingPage() {
               {[
                 { id: 'scraping', name: 'Start Scraping', icon: '🚀' },
                 { id: 'history', name: 'Scraping History', icon: '📊' },
-                { id: 'queue', name: 'Active Jobs', icon: '⏳' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -400,17 +403,6 @@ export default function ScrapingPage() {
                     ))}
                   </div>
                 )}
-              </div>
-            )}
-
-            {activeTab === 'queue' && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Active Jobs</h3>
-                <div className="text-center py-12">
-                  <div className="text-gray-400 text-4xl mb-4">⏳</div>
-                  <p className="text-gray-600">No active scraping jobs</p>
-                  <p className="text-sm text-gray-500">Running jobs will appear here</p>
-                </div>
               </div>
             )}
           </div>
