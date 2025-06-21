@@ -57,12 +57,27 @@ export class GoogleSearchScraper {
     return this.browser !== null
   }
 
-  private async randomDelay(min: number = 4000, max: number = 10000): Promise<void> {
+  private async randomDelay(min: number = 8000, max: number = 15000): Promise<void> {
     const delay = Math.floor(Math.random() * (max - min + 1)) + min
+    console.log(`⏳ [GOOGLE-SEARCH] Waiting ${delay}ms before next request...`)
     await new Promise(resolve => setTimeout(resolve, delay))
   }
 
+  private getRandomUserAgent(): string {
+    const userAgents = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0'
+    ]
+    return userAgents[Math.floor(Math.random() * userAgents.length)]
+  }
+
   private async setupPage(page: Page): Promise<void> {
+    const userAgent = this.getRandomUserAgent()
+    console.log(`🎭 [GOOGLE-SEARCH] Using User-Agent: ${userAgent.substring(0, 50)}...`)
+    
     // Anti-detection setup
     await page.evaluateOnNewDocument(() => {
       // Remove webdriver property
@@ -79,11 +94,19 @@ export class GoogleSearchScraper {
       Object.defineProperty(navigator, 'languages', {
         get: () => ['cs-CZ', 'cs', 'en-US', 'en'],
       })
+
+      // Hide automation indicators
+      delete (window as any).cdc_adoQpoasnfa76pfcZLmcfl_Array
+      delete (window as any).cdc_adoQpoasnfa76pfcZLmcfl_Promise
+      delete (window as any).cdc_adoQpoasnfa76pfcZLmcfl_Symbol
     })
 
-    // Set Czech headers
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-    await page.setViewport({ width: 1920, height: 1080 })
+    // Set random User-Agent
+    await page.setUserAgent(userAgent)
+    await page.setViewport({ 
+      width: 1366 + Math.floor(Math.random() * 300), 
+      height: 768 + Math.floor(Math.random() * 200) 
+    })
     
     await page.setExtraHTTPHeaders({
       'Accept-Language': 'cs-CZ,cs;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -92,7 +115,14 @@ export class GoogleSearchScraper {
       'DNT': '1',
       'Connection': 'keep-alive',
       'Upgrade-Insecure-Requests': '1',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Cache-Control': 'max-age=0'
     })
+
+    // Add random delay before starting
+    await this.randomDelay(3000, 6000)
   }
 
   // Generování search queries podle kategorie a lokace
@@ -207,17 +237,29 @@ export class GoogleSearchScraper {
       const searchUrl = `https://www.${domain}/search?q=${encodeURIComponent(query)}&num=100&hl=${country.toLowerCase()}&gl=${country}`
       console.log(`🌐 [GOOGLE-SEARCH] Navigating to: ${searchUrl}`)
 
+      // Přidat delay před navigací
+      await this.randomDelay(2000, 5000)
+      
       const response = await page.goto(searchUrl, { 
         waitUntil: 'domcontentloaded',
-        timeout: 20000 
+        timeout: 30000 
       })
 
       if (!response || !response.ok()) {
-        throw new Error(`Failed to load Google search: ${response?.status()}`)
+        const status = response?.status()
+        console.log(`⚠️ [GOOGLE-SEARCH] Google returned status: ${status}`)
+        
+        if (status === 429) {
+          console.log(`🔄 [GOOGLE-SEARCH] Rate limited, waiting longer...`)
+          await this.randomDelay(30000, 60000) // Wait 30-60 seconds
+        }
+        
+        throw new Error(`Failed to load Google search: ${status}`)
       }
 
-      // Počkat na načtení výsledků
-      await this.randomDelay(2000, 4000)
+      // Počkat na načtení výsledků - delší delay
+      console.log(`⏳ [GOOGLE-SEARCH] Page loaded, waiting for results...`)
+      await this.randomDelay(5000, 10000)
 
       // Extract search results
       const results = await page.evaluate(() => {
