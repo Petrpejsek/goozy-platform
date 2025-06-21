@@ -107,6 +107,16 @@ export class GoogleSearchScraper {
       width: 1366 + Math.floor(Math.random() * 300), 
       height: 768 + Math.floor(Math.random() * 200) 
     })
+
+    // 🌍 FAKE GEOLOCATION - Praha, Czech Republic
+    console.log(`🌍 [GOOGLE-SEARCH] Setting geolocation to Prague, Czech Republic`)
+    const context = page.browserContext()
+    await context.overridePermissions('https://www.google.cz', ['geolocation'])
+    await page.setGeolocation({
+      latitude: 50.0755,  // Praha
+      longitude: 14.4378, // Praha  
+      accuracy: 100
+    })
     
     await page.setExtraHTTPHeaders({
       'Accept-Language': 'cs-CZ,cs;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -118,7 +128,9 @@ export class GoogleSearchScraper {
       'Sec-Fetch-Dest': 'document',
       'Sec-Fetch-Mode': 'navigate',
       'Sec-Fetch-Site': 'none',
-      'Cache-Control': 'max-age=0'
+      'Cache-Control': 'max-age=0',
+      'X-Forwarded-For': '85.207.2.100', // Czech IP address
+      'CF-IPCountry': 'CZ'
     })
 
     // Add random delay before starting
