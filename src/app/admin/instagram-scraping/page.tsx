@@ -298,7 +298,10 @@ export default function InstagramScrapingPage() {
                 min="1" 
                 max="100" 
                 value={batchConfig.batchSize}
-                onChange={(e) => setBatchConfig({...batchConfig, batchSize: parseInt(e.target.value)})}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  setBatchConfig({...batchConfig, batchSize: isNaN(value) ? 20 : value});
+                }}
               />
             </div>
             
@@ -311,7 +314,10 @@ export default function InstagramScrapingPage() {
                 max="30000" 
                 step="1000" 
                 value={batchConfig.delayBetween}
-                onChange={(e) => setBatchConfig({...batchConfig, delayBetween: parseInt(e.target.value)})}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  setBatchConfig({...batchConfig, delayBetween: isNaN(value) ? 5000 : value});
+                }}
               />
             </div>
           </div>
