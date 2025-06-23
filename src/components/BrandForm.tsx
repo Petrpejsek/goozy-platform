@@ -138,6 +138,18 @@ export default function BrandForm() {
           {isSubmitting ? 'Sending...' : 'Send Inquiry'}
         </button>
       </div>
+
+      <div className="text-center pt-4 border-t border-gray-200">
+        <p className="text-gray-600 text-sm">
+          Already have an account?{' '}
+          <a 
+            href="/brand/login" 
+            className="text-black font-medium hover:underline"
+          >
+            Log in here
+          </a>
+        </p>
+      </div>
     </form>
   )
 } 

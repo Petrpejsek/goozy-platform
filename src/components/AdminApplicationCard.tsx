@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 interface InfluencerApplication {
   id: string
@@ -9,7 +10,7 @@ interface InfluencerApplication {
   instagram?: string
   tiktok?: string
   youtube?: string
-  followers: string
+  facebook?: string
   categories: string
   bio?: string
   collaborationTypes: string
@@ -38,6 +39,7 @@ interface BrandApplicationCardProps {
 export function InfluencerApplicationCard({ application }: InfluencerApplicationCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(application.status)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const handleAction = async (action: 'approve' | 'reject') => {
     setIsLoading(true)
@@ -63,6 +65,37 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
       alert('Error communicating with server')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      // Reset confirmation after 3 seconds if no second click
+      setTimeout(() => setConfirmDelete(false), 3000)
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/admin/applications/influencer/${application.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        // Refresh page to update the list
+        window.location.reload()
+      } else {
+        alert('Error deleting application')
+      }
+    } catch (error) {
+      alert('Error communicating with server')
+    } finally {
+      setIsLoading(false)
+      setConfirmDelete(false)
     }
   }
 
@@ -102,9 +135,7 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
           <p className="text-sm text-gray-600 mb-2">{application.email}</p>
           
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-            <span>{application.followers} followers</span>
-            <span>•</span>
-            <span>{application.categories}</span>
+            <span>{JSON.parse(application.categories || '[]').join(', ')}</span>
           </div>
           
           <div className="flex items-center gap-2 mb-3">
@@ -123,6 +154,11 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
                 YouTube
               </span>
             )}
+            {application.facebook && (
+              <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                Facebook
+              </span>
+            )}
           </div>
           
           {application.bio && (
@@ -135,15 +171,12 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
         </div>
         
         <div className="flex flex-col gap-2">
-          <button
-            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-            onClick={() => {
-              // Open detail modal or navigate to detail page
-              alert(`View details for ${application.name} - Feature coming soon!`)
-            }}
+          <Link
+            href={`/admin/applications/influencer/${application.id}`}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors inline-block text-center"
           >
             View Details
-          </button>
+          </Link>
           
           {currentStatus === 'pending' && (
             <div className="flex gap-2">
@@ -163,6 +196,29 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
               </button>
             </div>
           )}
+          
+          {/* Delete Button */}
+          <button
+            onClick={handleDelete}
+            disabled={isLoading}
+            className={`px-2 py-1 text-sm rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-1 ${
+              confirmDelete 
+                ? 'bg-red-600 text-white hover:bg-red-700' 
+                : 'bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600'
+            }`}
+            title={confirmDelete ? 'Click again to confirm deletion' : 'Delete application'}
+          >
+            {isLoading ? (
+              '...'
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                {confirmDelete ? 'Confirm' : 'Delete'}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -172,6 +228,7 @@ export function InfluencerApplicationCard({ application }: InfluencerApplication
 export function BrandApplicationCard({ application }: BrandApplicationCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(application.status)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const handleAction = async (action: 'approve' | 'reject') => {
     setIsLoading(true)
@@ -197,6 +254,37 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
       alert('Error communicating with server')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      // Reset confirmation after 3 seconds if no second click
+      setTimeout(() => setConfirmDelete(false), 3000)
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/admin/applications/brand/${application.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        // Refresh page to update the list
+        window.location.reload()
+      } else {
+        alert('Error deleting application')
+      }
+    } catch (error) {
+      alert('Error communicating with server')
+    } finally {
+      setIsLoading(false)
+      setConfirmDelete(false)
     }
   }
 
@@ -251,15 +339,12 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
         </div>
         
         <div className="flex flex-col gap-2">
-          <button
-            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-            onClick={() => {
-              // Open detail modal or navigate to detail page
-              alert(`View details for ${application.brandName} - Feature coming soon!`)
-            }}
+          <Link
+            href={`/admin/applications/brand/${application.id}`}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors inline-block text-center"
           >
             View Details
-          </button>
+          </Link>
           
           {currentStatus === 'pending' && (
             <div className="flex gap-2">
@@ -279,6 +364,29 @@ export function BrandApplicationCard({ application }: BrandApplicationCardProps)
               </button>
             </div>
           )}
+          
+          {/* Delete Button */}
+          <button
+            onClick={handleDelete}
+            disabled={isLoading}
+            className={`px-2 py-1 text-sm rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-1 ${
+              confirmDelete 
+                ? 'bg-red-600 text-white hover:bg-red-700' 
+                : 'bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600'
+            }`}
+            title={confirmDelete ? 'Click again to confirm deletion' : 'Delete application'}
+          >
+            {isLoading ? (
+              '...'
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                {confirmDelete ? 'Confirm' : 'Delete'}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ interface FormData {
   instagram: string
   tiktok: string
   youtube: string
-  followers: string
+  facebook: string
   
   // Step 3: Content and Preferences
   categories: string[]
@@ -31,7 +31,7 @@ export default function MultiStepInfluencerForm() {
     instagram: '',
     tiktok: '',
     youtube: '',
-    followers: '',
+    facebook: '',
     categories: [],
     customCategory: '',
     bio: ''
@@ -100,12 +100,7 @@ export default function MultiStepInfluencerForm() {
         }
         break
       case 2:
-        if (!formData.followers) {
-          setMessage('Please select your number of followers.')
-          setMessageType('error')
-          return false
-        }
-        if (!formData.instagram && !formData.tiktok && !formData.youtube) {
+        if (!formData.instagram && !formData.tiktok && !formData.youtube && !formData.facebook) {
           setMessage('Please provide at least one social media profile.')
           setMessageType('error')
           return false
@@ -155,7 +150,7 @@ export default function MultiStepInfluencerForm() {
         instagram: formData.instagram,
         tiktok: formData.tiktok,
         youtube: formData.youtube,
-        followers: formData.followers,
+        facebook: formData.facebook,
                   categories: categoriesForSubmit,
           bio: formData.bio
       }
@@ -374,20 +369,15 @@ export default function MultiStepInfluencerForm() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
-                Largest Follower Count *
+                Facebook
               </label>
-              <select 
-                required
-                value={formData.followers}
-                onChange={(e) => setFormData(prev => ({...prev, followers: e.target.value}))}
+              <input
+                type="text"
+                value={formData.facebook}
+                onChange={(e) => setFormData(prev => ({...prev, facebook: e.target.value}))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              >
-                <option value="">Select range...</option>
-                <option value="1K-10K">1K - 10K</option>
-                <option value="10K-50K">10K - 50K</option>
-                <option value="50K-100K">50K - 100K</option>
-                <option value="100K+">100K+</option>
-              </select>
+                placeholder="Profile Name or URL"
+              />
             </div>
           </div>
 
