@@ -10,16 +10,43 @@ import BrandForm from "@/components/BrandForm";
 const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () => void; type: 'influencer' | 'brand' }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Redirect to appropriate login page
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const endpoint = type === 'influencer' ? '/api/auth/influencer/login' : '/api/auth/brand/login';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        onClose();
+        // Redirect to appropriate dashboard
     if (type === 'influencer') {
-      window.location.href = '/influencer/login';
+          window.location.href = '/influencer/dashboard';
+        } else {
+          window.location.href = '/partner-company';
+        }
     } else {
-      window.location.href = '/brand/login';
+        const errorData = await response.json();
+        setError(errorData.error || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -48,6 +75,12 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -78,9 +111,10 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
 
           <button
             type="submit"
-            className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+            disabled={isSubmitting}
+            className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
           >
-            Log In
+            {isSubmitting ? 'Logging in...' : 'Log In'}
           </button>
         </form>
 
@@ -161,6 +195,52 @@ const DropdownItem = ({ href, children, requiresAuth, authType }: {
   );
 };
 
+// Brand Login Button Component
+const BrandLoginButton = () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  return (
+    <>
+      <button 
+        onClick={() => setShowLoginModal(true)}
+        className="text-black px-6 py-2 rounded-full border border-gray-300 hover:border-black transition-colors font-medium"
+      >
+        Brand Login
+      </button>
+      {showLoginModal && (
+        <LoginModal 
+          isOpen={showLoginModal} 
+          onClose={() => setShowLoginModal(false)} 
+          type="brand"
+        />
+      )}
+    </>
+  );
+};
+
+// Influencer Login Button Component
+const InfluencerLoginButton = () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  return (
+    <>
+      <button 
+        onClick={() => setShowLoginModal(true)}
+        className="text-black px-6 py-2 rounded-full border border-gray-300 hover:border-black transition-colors font-medium"
+      >
+        Influencer Login
+      </button>
+      {showLoginModal && (
+        <LoginModal 
+          isOpen={showLoginModal} 
+          onClose={() => setShowLoginModal(false)} 
+          type="influencer"
+        />
+      )}
+    </>
+  );
+};
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
@@ -168,21 +248,15 @@ export default function Home() {
       <header className="px-6 lg:px-8 py-6 border-b border-gray-100">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-black tracking-tight">GOOZY</h1>
+            <Link href="/" className="text-3xl font-bold text-black tracking-tight hover:opacity-80 transition-opacity">
+              GOOZY
+            </Link>
           </div>
           <nav className="hidden lg:flex items-center space-x-8">
             <DropdownMenu title="For Influencers">
               <DropdownItem href="#for-influencers">How It Works</DropdownItem>
               <DropdownItem href="#influencer-form">Apply Now</DropdownItem>
-              <DropdownItem href="/products">Browse Products</DropdownItem>
               <DropdownItem href="/influencer/login">Login</DropdownItem>
-              <DropdownItem 
-                href="/influencer/dashboard" 
-                requiresAuth={true} 
-                authType="influencer"
-              >
-                Dashboard
-              </DropdownItem>
             </DropdownMenu>
 
             <DropdownMenu title="For Brands">
@@ -756,12 +830,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Login Section */}
+      <section className="px-6 lg:px-8 py-16 bg-gray-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-gray-600 mb-8 text-xl">Already have an account?</p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <BrandLoginButton />
+            <InfluencerLoginButton />
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="px-6 lg:px-8 py-12 border-t border-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
             <div className="flex items-center">
-              <h2 className="text-2xl font-bold text-black tracking-tight">GOOZY</h2>
+              <Link href="/" className="text-2xl font-bold text-black tracking-tight hover:opacity-80 transition-opacity">
+                GOOZY
+              </Link>
             </div>
             <div className="flex flex-wrap gap-8 text-sm">
               <Link href="/products" className="text-gray-600 hover:text-black transition-colors">

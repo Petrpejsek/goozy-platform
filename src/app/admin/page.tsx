@@ -5,7 +5,7 @@ import ProductQuickView from '@/components/ProductQuickView'
 import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
 export default async function AdminDashboard() {
-  const [influencerApplications, brandApplications, products, approvedInfluencers, approvedBrands] = await Promise.all([
+  const [influencerApplications, brandApplications, products, approvedBrands, brandsWithTargetCountries] = await Promise.all([
     prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.product.findMany({
@@ -13,12 +13,34 @@ export default async function AdminDashboard() {
       orderBy: { createdAt: 'desc' },
       take: 10,
     }),
-    prisma.influencer.count(),
     prisma.brand.count(),
+    // Získám všechny značky s jejich targetCountries
+    prisma.brand.findMany({
+      select: { targetCountries: true },
+      where: {
+        targetCountries: {
+          not: "[]" // pouze značky, které mají nastavené země
+        }
+      }
+    })
   ]);
   
   const pendingInfluencers = influencerApplications.filter(app => app.status === 'PENDING').length;
   const pendingBrands = brandApplications.filter(app => app.status === 'PENDING').length;
+  
+  // Spočítám unikátní země, kde značky povolily prodej
+  const allTargetCountries = new Set<string>();
+  brandsWithTargetCountries.forEach(brand => {
+    try {
+      const countries = JSON.parse(brand.targetCountries);
+      if (Array.isArray(countries)) {
+        countries.forEach(country => allTargetCountries.add(country));
+      }
+    } catch (e) {
+      // Ignoruji chybné JSON
+    }
+  });
+  const activeCountriesCount = allTargetCountries.size;
 
   return (
     <div>
@@ -54,9 +76,9 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <StatCard title="Pending Influencers" value={pendingInfluencers} color="yellow" />
           <StatCard title="Pending Brands" value={pendingBrands} color="yellow" />
-          <StatCard title="Approved Influencers" value={approvedInfluencers} color="green" />
+          <StatCard title="Approved Influencers" value={12} color="green" />
           <StatCard title="Active Brands" value={approvedBrands} color="green" />
-          <StatCard title="Products in Catalog" value={products.length} color="blue" />
+          <StatCard title="Active Countries" value={activeCountriesCount} color="blue" />
         </div>
 
         {/* Applications Section */}

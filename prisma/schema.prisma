@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,8 +6,6 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
-
-// === UŽIVATELÉ A ADMINISTRACE ===
 
 model SuperAdmin {
   id        String   @id @default(cuid())
@@ -26,43 +18,32 @@ model SuperAdmin {
   @@map("super_admins")
 }
 
-// === INFLUENCEŘI ===
-
 model Influencer {
-  id                String                 @id @default(cuid())
-  email             String                 @unique
-  password          String?
-  name              String
-  slug              String                 @unique // pro URL jako /influencer/jakub
-  avatar            String?
-  bio               String?
-  phone             String?
-  isApproved        Boolean                @default(false)
-  isActive          Boolean                @default(true)
-  commissionRate    Float                  @default(0.1) // 10% základní provize
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  
-  // Sociální sítě
-  socialNetworks    InfluencerSocial[]
-  
-  // Vybrané produkty pro propagaci
-  selectedProducts  InfluencerProduct[]
-  
-  // Generované kupóny
-  discountCodes     DiscountCode[]
-  
-  // Objednávky přes jejich odkazy
-  orders            Order[]
-  
-  // Vypočítané provize
-  commissions       Commission[]
-  
-  // Kategorie obsahu
-  contentCategories InfluencerCategory[]
-  
-  // Rozšířený profil
-  profile           InfluencerProfile?
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  password            String?
+  name                String
+  slug                String               @unique
+  avatar              String?
+  bio                 String?
+  phone               String?
+  isApproved          Boolean              @default(false)
+  isActive            Boolean              @default(true)
+  commissionRate      Float                @default(0.1)
+  originType          String?
+  originProspectId    String?
+  originApplicationId String?
+  onboardingStatus    String               @default("pending")
+  verificationStatus  String               @default("unverified")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  commissions         Commission[]
+  discountCodes       DiscountCode[]
+  contentCategories   InfluencerCategory[]
+  selectedProducts    InfluencerProduct[]
+  profile             InfluencerProfile?
+  socialNetworks      InfluencerSocial[]
+  orders              Order[]
 
   @@map("influencers")
 }
@@ -70,7 +51,7 @@ model Influencer {
 model InfluencerSocial {
   id           String     @id @default(cuid())
   influencerId String
-  platform     String     // "instagram", "tiktok", "youtube"
+  platform     String
   username     String
   followers    Int
   url          String?
@@ -82,176 +63,162 @@ model InfluencerSocial {
 model InfluencerCategory {
   id           String     @id @default(cuid())
   influencerId String
-  category     String     // "Fashion", "Lifestyle", "Beauty", etc.
+  category     String
   influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
 
   @@map("influencer_categories")
 }
 
-// === ZNAČKY A PARTNEŘI ===
-
 model Brand {
-  id          String    @id @default(cuid())
-  name        String
-  email       String    @unique
-  phone       String?
-  description String?
-  website     String?
-  logo        String?
-  isApproved  Boolean   @default(false)
-  isActive    Boolean   @default(true)
-  
-  // API konfigurace pro integraci
-  apiConfig   BrandApiConfig?
-  
-  // Produkty značky
-  products    Product[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String          @id @default(cuid())
+  name            String
+  email           String          @unique
+  password        String?
+  phone           String?
+  description     String?
+  website         String?
+  logo            String?
+  isApproved      Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  targetCountries String          @default("[]")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  apiConfig       BrandApiConfig?
+  campaigns       Campaign[]
+  products        Product[]
+  suppliers       Supplier[]
+  apiNotifications ApiNotification[]
 
   @@map("brands")
 }
 
 model BrandApiConfig {
-  id          String @id @default(cuid())
-  brandId     String @unique
+  id          String  @id @default(cuid())
+  brandId     String  @unique
   apiEndpoint String
   apiKey      String
   webhookUrl  String?
-  
-  brand       Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brand       Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@map("brand_api_configs")
 }
 
-// === PRODUKTY ===
-
 model Product {
-  id                String              @id @default(cuid())
-  brandId           String
-  externalId        String              // ID v systému značky
-  name              String
-  description       String?
-  price             Float
-  currency          String              @default("EUR")
-  images            String              // JSON string s URL obrázků
-  category          String
-  sizes             String              // JSON string s velikostmi
-  colors            String              // JSON string s barvami
-  sku               String
-  
-  // Inventory management
-  stockQuantity     Int                 @default(0)
-  isAvailable       Boolean             @default(true)
-  availabilityOverride Boolean?         // můžeme manuálně ovlivnit dostupnost
-  
-  brand             Brand               @relation(fields: [brandId], references: [id])
-  
-  // Které influenceři propagují tento produkt
-  influencerProducts InfluencerProduct[]
-  
-  // Objednávky tohoto produktu
-  orderItems        OrderItem[]
-  
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id                   String              @id @default(cuid())
+  brandId              String
+  externalId           String
+  name                 String
+  description          String?
+  price                Float
+  currency             String              @default("EUR")
+  images               String
+  category             String
+  sizes                String
+  colors               String
+  sku                  String
+  stockQuantity        Int                 @default(0)
+  isAvailable          Boolean             @default(true)
+  availabilityOverride Boolean?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  brand_name           String?
+  dimensions           String?
+  gender               String?
+  material             String?
+  weight               Float?
+  influencerProducts   InfluencerProduct[]
+  orderItems           OrderItem[]
+  brand                Brand               @relation(fields: [brandId], references: [id])
+  mappings             ProductMapping[]
 
   @@unique([brandId, externalId])
   @@map("products")
 }
 
-// === SPOJOVACÍ TABULKA INFLUENCER-PRODUKT ===
-
 model InfluencerProduct {
-  id           String     @id @default(cuid())
-  influencerId String
-  productId    String
-  isActive     Boolean    @default(true)
-  addedAt      DateTime   @default(now())
-  
-  // Personalizované doporučení od influencera
-  recommendation String?  // Text doporučení (max 300 znaků)
-  
-  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id             String     @id @default(cuid())
+  influencerId   String
+  productId      String
+  isActive       Boolean    @default(true)
+  addedAt        DateTime   @default(now())
+  recommendation String?
+  product        Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  influencer     Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
 
   @@unique([influencerId, productId])
   @@map("influencer_products")
 }
 
-// === SLEVOVÉ KUPÓNY ===
-
 model DiscountCode {
-  id           String     @id @default(cuid())
-  code         String     @unique
-  influencerId String
-  discountType String     // "percentage" nebo "fixed"
-  discountValue Float     // procenta nebo částka
-  currency     String?    // pro fixed slevy
-  isActive     Boolean    @default(true)
-  usageLimit   Int?       // kolikrát lze použít
-  usageCount   Int        @default(0)
-  expiresAt    DateTime?
-  
-  influencer   Influencer @relation(fields: [influencerId], references: [id])
-  
-  // Objednávky s tímto kupónem
-  orders       Order[]
-  
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  code          String     @unique
+  influencerId  String
+  discountType  String
+  discountValue Float
+  currency      String?
+  isActive      Boolean    @default(true)
+  usageLimit    Int?
+  usageCount    Int        @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  influencer    Influencer @relation(fields: [influencerId], references: [id])
+  orders        Order[]
 
   @@map("discount_codes")
 }
 
-// === OBJEDNÁVKY ===
+model Campaign {
+  id               String   @id @default(cuid())
+  brandId          String
+  name             String
+  description      String?
+  startDate        DateTime
+  endDate          DateTime
+  targetCountries  String
+  targetGender     String?
+  targetCategories String?
+  influencerIds    String
+  expectedReach    Int?
+  budgetAllocated  Float?
+  currency         String   @default("EUR")
+  status           String   @default("draft")
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  brand            Brand    @relation(fields: [brandId], references: [id])
+
+  @@map("campaigns")
+}
 
 model Order {
   id              String        @id @default(cuid())
   orderNumber     String        @unique
   influencerId    String?
   discountCodeId  String?
-  
-  // Zákaznické údaje
   customerEmail   String
   customerName    String
   customerPhone   String?
-  
-  // Dodací adresa
   shippingAddress Json
-  
-  // Fakturační adresa
   billingAddress  Json?
-  
-  // Finanční údaje
   subtotal        Float
   discountAmount  Float         @default(0)
   shippingCost    Float         @default(0)
   totalAmount     Float
   currency        String        @default("EUR")
-  
-  // Status
-  status          String        @default("pending") // pending, confirmed, shipped, delivered, cancelled
-  paymentStatus   String        @default("pending") // pending, paid, refunded
-  paymentIntentId String?       // Stripe payment intent ID
-  
-  // Tracking
+  status          String        @default("pending")
+  paymentStatus   String        @default("pending")
+  paymentIntentId String?
   trackingNumber  String?
   shippedAt       DateTime?
   deliveredAt     DateTime?
-  
-  influencer      Influencer?   @relation(fields: [influencerId], references: [id])
-  discountCode    DiscountCode? @relation(fields: [discountCodeId], references: [id])
-  
-  // Položky objednávky
-  items           OrderItem[]
-  
-  // Provize z této objednávky
-  commission      Commission?
-  
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  commission      Commission?
+  items           OrderItem[]
+  discountCode    DiscountCode? @relation(fields: [discountCodeId], references: [id])
+  influencer      Influencer?   @relation(fields: [influencerId], references: [id])
+  submissions     OrderSubmission[]
 
   @@map("orders")
 }
@@ -263,58 +230,51 @@ model OrderItem {
   quantity  Int
   size      String?
   color     String?
-  price     Float   // cena v době nákupu
+  price     Float
   currency  String  @default("EUR")
-  
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
 }
 
-// === PROVIZE ===
-
 model Commission {
-  id              String     @id @default(cuid())
-  orderId         String     @unique
-  influencerId    String
-  amount          Float
-  currency        String     @default("EUR")
-  rate            Float      // použitá provizní sazba
-  status          String     @default("pending") // pending, approved, paid
-  
-  // Vypočítané datum výplaty (14 dní po odeslání)
-  payoutDate      DateTime?
-  paidAt          DateTime?
-  
-  order           Order      @relation(fields: [orderId], references: [id])
-  influencer      Influencer @relation(fields: [influencerId], references: [id])
-  
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id           String     @id @default(cuid())
+  orderId      String     @unique
+  influencerId String
+  amount       Float
+  currency     String     @default("EUR")
+  rate         Float
+  status       String     @default("pending")
+  payoutDate   DateTime?
+  paidAt       DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  influencer   Influencer @relation(fields: [influencerId], references: [id])
+  order        Order      @relation(fields: [orderId], references: [id])
 
   @@map("commissions")
 }
 
-// === FORMULÁŘE Z LANDING PAGE ===
-
 model InfluencerApplication {
-  id                 String   @id @default(cuid())
-  name               String
-  email              String
-  password           String   // hashované heslo
-  instagram          String?
-  tiktok             String?  // nové pole
-  youtube            String?  // nové pole
-  followers          String   // "1K-10K", "10K-50K", etc.
-  categories         String   // JSON string s kategoriemi
-  bio                String?  // nové pole
-  collaborationTypes String?  // JSON string s typy spolupráce
-  status             String   @default("pending") // pending, approved, rejected
-  notes              String?  // poznámky od adminů
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  name                 String
+  email                String
+  password             String
+  instagram            String?
+  tiktok               String?
+  youtube              String?
+  facebook             String?
+  categories           String
+  bio                  String?
+  collaborationTypes   String?
+  status               String   @default("pending")
+  notes                String?
+  possibleDuplicateIds String?
+  mergeStatus          String   @default("none")
+  mergeData            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   @@map("influencer_applications")
 }
@@ -325,222 +285,303 @@ model BrandApplication {
   email       String
   phone       String?
   description String?
-  status      String   @default("pending") // pending, approved, rejected
-  notes       String?  // poznámky od adminů
-  
+  status      String   @default("pending")
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("brand_applications")
 }
 
-// === SCRAPING SYSTEM ===
-
-// === HASHTAG DATABASE BUILDER ===
 model InfluencerDatabase {
-  id              String   @id @default(cuid())
-  
-  // Základní údaje
-  name            String
-  username        String   // hlavní username (Instagram přednostně)
-  email           String?
-  bio             String?
-  avatar          String?
-  country         String?
-  location        String?
-  
-  // Platform data
-  instagramUsername String? @unique
-  instagramUrl      String?
-  instagramData     String? // JSON s Instagram daty
-  tiktokUsername    String?
-  tiktokUrl         String?
-  tiktokData        String?  // JSON s TikTok daty
-  youtubeChannel    String?
-  youtubeUrl        String?
-  youtubeData       String? // JSON s YouTube daty
-  
-  // Agregované statistiky
-  totalFollowers    Int     @default(0)
-  engagementRate    Float?
-  avgLikes          Int?
-  avgComments       Int?
-  
-  // Source tracking - jaký hashtag search jej našel
-  sourceHashtags    String? // JSON array hashtagů ["czechfashion", "prague"]
-  sourceCountry     String? // země kterou jsme hledali
-  foundBy           String? // "hashtag_search", "manual_import"
-  
-  // Status a validace
-  isValidated       Boolean @default(false)
-  hasEmail          Boolean @default(false)
-  isActive          Boolean @default(true)
-  lastScrapedAt     DateTime?
-  notes             String?
-  
-  // Relace k scraping attempts
-  scrapingAttempts  ScrapingAttempt[]
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                     String            @id @default(cuid())
+  name                   String
+  username               String
+  email                  String?
+  bio                    String?
+  avatar                 String?
+  country                String?
+  location               String?
+  instagramUsername      String?           @unique
+  instagramUrl           String?
+  instagramData          String?
+  tiktokUsername         String?
+  tiktokUrl              String?
+  tiktokData             String?
+  youtubeChannel         String?
+  youtubeUrl             String?
+  youtubeData            String?
+  totalFollowers         Int               @default(0)
+  engagementRate         Float?
+  avgLikes               Int?
+  avgComments            Int?
+  sourceHashtags         String?
+  sourceCountry          String?
+  foundBy                String?
+  isValidated            Boolean           @default(false)
+  hasEmail               Boolean           @default(false)
+  isActive               Boolean           @default(true)
+  lastScrapedAt          DateTime?
+  notes                  String?
+  promotionStatus        String            @default("none")
+  promotedToProspectIds  String?
+  promotedToInfluencerId String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  scrapingAttempts       ScrapingAttempt[]
 
   @@map("influencer_database")
 }
 
 model ScrapingConfig {
-  id                String   @id @default(cuid())
-  name              String   // název konfigurace
-  countries         String   // JSON array zemí ["CZ", "SK"]
-  minFollowers      Int      @default(3000)
-  maxFollowers      Int      @default(500000)
-  platforms         String   // JSON array ["instagram", "tiktok", "youtube"]
-  targetCount       Int      @default(100) // kolik unikátních účtů chceme najít
-  /// Hash-tagy použití pro cílené vyhledávání (JSON array ["fashion", "beauty"])
-  hashtags          String?  // JSON array string[]
-
-  /// Povinná klíčová slova (JSON array) – profil musí obsahovat alespoň jedno
-  keywords          String?  // JSON array string[]
-
+  id              String        @id @default(cuid())
+  name            String
+  countries       String
+  minFollowers    Int           @default(3000)
+  maxFollowers    Int           @default(500000)
+  platforms       String
+  targetCount     Int           @default(100)
+  isActive        Boolean       @default(false)
+  lastRunAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   /// Klíčová slova k vyloučení (JSON array) – profil nesmí obsahovat žádné
-  excludeKeywords   String?  // JSON array string[]
-  isActive          Boolean  @default(false)
-  lastRunAt         DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Scraping runs pro tuto konfiguraci
-  scrapingRuns      ScrapingRun[]
+  excludeKeywords String?
+  /// Hash-tagy použití pro cílené vyhledávání (JSON array ["fashion", "beauty"])
+  hashtags        String?
+  /// Povinná klíčová slova (JSON array) – profil musí obsahovat alespoň jedno
+  keywords        String?
+  scrapingRuns    ScrapingRun[]
 
   @@map("scraping_configs")
 }
 
 model ScrapingRun {
-  id              String         @id @default(cuid())
-  configId        String
-  type            String         @default("google_search") // "google_search" | "instagram_scraping"
-  sourceFilter    String?        // JSON filter pro Instagram scraping (země, specifické profily)
-  status          String         @default("running") // running, completed, failed
-  totalFound      Int            @default(0)
-  totalProcessed  Int            @default(0)
-  errors          String?        // JSON array chyb
-  startedAt       DateTime       @default(now())
-  completedAt     DateTime?
-  
-  config          ScrapingConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
-  
-  // Nalezení prospekti
-  prospects       InfluencerProspect[]
-  
-  // Všechny pokusy o scraping (úspěšné i neúspěšné)
+  id               String               @id @default(cuid())
+  configId         String
+  type             String               @default("google_search")
+  sourceFilter     String?
+  status           String               @default("running")
+  totalFound       Int                  @default(0)
+  totalProcessed   Int                  @default(0)
+  errors           String?
+  startedAt        DateTime             @default(now())
+  completedAt      DateTime?
+  prospects        InfluencerProspect[]
   scrapingAttempts ScrapingAttempt[]
+  config           ScrapingConfig       @relation(fields: [configId], references: [id], onDelete: Cascade)
 
   @@map("scraping_runs")
 }
 
 model ScrapingAttempt {
-  id              String      @id @default(cuid())
+  id              String              @id @default(cuid())
   scrapingRunId   String
-  targetProfileId String?     // ID z InfluencerDatabase pro Instagram scraping
-  
-  // Profil který se snažíme scrape-ovat
-  platform        String      // "instagram", "tiktok", "youtube"
-  username        String      // username profilu
-  profileUrl      String?     // URL profilu
-  country         String?     // pro kterou zemi byl nalezen
-  
-  // Status pokusu
-  status          String      // "success", "failed", "timeout", "not_found", "skipped_private"
-  errorMessage    String?     // chyba pokud selhal
-  
-  // Stažená data (pokud úspěšný)
-  scrapedData     String?     // JSON s nastaženými daty
-  
-  // Prospect vytvořený z tohoto pokusu (pokud úspěšný)
-  prospectId      String?     // ID vytvořeného prospect
-  
-  // Metadata
-  attemptedAt     DateTime    @default(now())
-  duration        Int?        // doba v milisekundách
-  
-  scrapingRun     ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
-  targetProfile   InfluencerDatabase? @relation(fields: [targetProfileId], references: [id], onDelete: SetNull)
-  
+  targetProfileId String?
+  platform        String
+  username        String
+  profileUrl      String?
+  country         String?
+  status          String
+  errorMessage    String?
+  scrapedData     String?
+  prospectId      String?
+  attemptedAt     DateTime            @default(now())
+  duration        Int?
+  targetProfile   InfluencerDatabase? @relation(fields: [targetProfileId], references: [id])
+  scrapingRun     ScrapingRun         @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
+
   @@map("scraping_attempts")
 }
 
 model InfluencerProspect {
-  id              String      @id @default(cuid())
-  scrapingRunId   String
-  
-  // Základní údaje
-  name            String
-  email           String?
-  bio             String?
-  avatar          String?     // cesta k uložené profilové fotce
-  country         String?
-  
-  // Unikátní identifikátory pro detekci duplikátů
-  instagramUsername String?   // @username bez @ 
-  instagramUrl      String?   // plná URL k profilu
-  tiktokUsername    String?
-  tiktokUrl         String?
-  youtubeChannel    String?
-  youtubeUrl        String?
-  
-  // Platform data - JSON objects
-  instagramData   String?     // JSON s Instagram daty
-  tiktokData      String?     // JSON s TikTok daty  
-  youtubeData     String?     // JSON s YouTube daty
-  
-  // Agregované statistiky
-  totalFollowers  Int         @default(0)
-  engagementRate  Float?
-  avgLikes        Int?
-  avgComments     Int?
-  
-  // Status
-  status          String      @default("pending") // pending, approved, rejected, duplicate
-  duplicateOf     String?     // ID jiného prospectu pokud je duplikát
-  duplicateReason String?     // proč je označen jako duplikát (username, email, url)
-  notes           String?     // poznámky admina
-  
-  scrapingRun     ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
-  
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                     String      @id @default(cuid())
+  scrapingRunId          String
+  name                   String
+  email                  String?
+  bio                    String?
+  avatar                 String?
+  country                String?
+  instagramUsername      String?
+  instagramUrl           String?
+  tiktokUsername         String?
+  tiktokUrl              String?
+  youtubeChannel         String?
+  youtubeUrl             String?
+  instagramData          String?
+  tiktokData             String?
+  youtubeData            String?
+  totalFollowers         Int         @default(0)
+  engagementRate         Float?
+  avgLikes               Int?
+  avgComments            Int?
+  status                 String      @default("pending")
+  duplicateOf            String?
+  duplicateReason        String?
+  notes                  String?
+  originDatabaseId       String?
+  promotionStatus        String      @default("none")
+  promotedToInfluencerId String?
+  promotedAt             DateTime?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  scrapingRun            ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
 
   @@map("influencer_prospects")
 }
 
-// === ADDITIONAL PROFILE DATA FOR EXISTING INFLUENCERS ===
-
 model InfluencerProfile {
-  id                    String     @id @default(cuid())
-  influencerId          String     @unique
-  
-  // Demografické údaje influencera
-  age                   Int?
-  gender                String?    // "male", "female", "other"
-  location              String?    // město/země
-  
-  // Údaje o publiku (budou vyplňovat sami)
-  audienceAgeGroups     String?    // JSON {"18-24": 30, "25-34": 45, ...}
-  audienceGenders       String?    // JSON {"male": 40, "female": 60}
-  audienceCountries     String?    // JSON {"CZ": 60, "SK": 25, "DE": 15}
-  
-  // Performance metriky
-  avgReach              Int?
-  avgComments           Int?
-  avgStoryViews         Int?
-  clickThroughRate      Float?
-  
-  // Obsahové kategorie (checkboxy/tagy)
-  contentCategories     String?    // JSON array ["Fashion", "Beauty", "Lifestyle"]
-  
-  influencer            Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  influencerId      String     @unique
+  age               Int?
+  gender            String?
+  location          String?
+  audienceAgeGroups String?
+  audienceGenders   String?
+  audienceCountries String?
+  avgReach          Int?
+  avgComments       Int?
+  avgStoryViews     Int?
+  clickThroughRate  Float?
+  contentCategories String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  influencer        Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
 
   @@map("influencer_profiles")
+}
+
+// API Integration Framework Models
+
+model Supplier {
+  id          String   @id @default(cuid())
+  brandId     String
+  name        String
+  email       String
+  phone       String?
+  website     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  brand           Brand                @relation(fields: [brandId], references: [id])
+  apiConnections  SupplierApiConnection[]
+  inventoryLogs   InventoryLog[]
+  orderSubmissions OrderSubmission[]
+  productMappings ProductMapping[]
+  apiNotifications ApiNotification[]
+  
+  @@map("suppliers")
+}
+
+model SupplierApiConnection {
+  id                String   @id @default(cuid())
+  supplierId        String
+  connectionName    String
+  apiEndpoint       String
+  apiKey            String
+  apiSecret         String?
+  webhookUrl        String?
+  authType          String   @default("api_key")
+  isActive          Boolean  @default(true)
+  lastTestAt        DateTime?
+  lastTestStatus    String?
+  lastTestError     String?
+  capabilities      String
+  configuration     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  supplier         Supplier           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  inventoryLogs    InventoryLog[]
+  orderSubmissions OrderSubmission[]
+  
+  @@map("supplier_api_connections")
+}
+
+model InventoryLog {
+  id               String   @id @default(cuid())
+  supplierId       String
+  connectionId     String
+  syncType         String
+  status           String
+  productsChecked  Int      @default(0)
+  productsUpdated  Int      @default(0)
+  errors           String?
+  responseTime     Int?
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  
+  // Relations
+  supplier    Supplier              @relation(fields: [supplierId], references: [id])
+  connection  SupplierApiConnection @relation(fields: [connectionId], references: [id])
+  
+  @@map("inventory_logs")
+}
+
+model OrderSubmission {
+  id                String   @id @default(cuid())
+  orderId           String
+  supplierId        String
+  connectionId      String
+  submissionMethod  String
+  status            String
+  attempts          Int      @default(1)
+  maxAttempts       Int      @default(3)
+  lastAttemptAt     DateTime @default(now())
+  nextRetryAt       DateTime?
+  responseData      String?
+  errorMessage      String?
+  submittedData     String
+  
+  // Relations
+  order       Order                 @relation(fields: [orderId], references: [id])
+  supplier    Supplier              @relation(fields: [supplierId], references: [id])
+  connection  SupplierApiConnection @relation(fields: [connectionId], references: [id])
+  
+  @@map("order_submissions")
+}
+
+model ProductMapping {
+  id                String   @id @default(cuid())
+  productId         String
+  supplierId        String
+  supplierProductId String
+  supplierSku       String?
+  variantMapping    String?
+  isActive          Boolean  @default(true)
+  lastSyncAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  
+  @@unique([productId, supplierId])
+  @@map("product_mappings")
+}
+
+model ApiNotification {
+  id          String   @id @default(cuid())
+  type        String
+  category    String
+  title       String
+  message     String
+  supplierId  String?
+  brandId     String?
+  isRead      Boolean  @default(false)
+  severity    String   @default("medium")
+  metadata    String?
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+  
+  // Relations
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
+  brand    Brand?    @relation(fields: [brandId], references: [id])
+  
+  @@map("api_notifications")
 }
