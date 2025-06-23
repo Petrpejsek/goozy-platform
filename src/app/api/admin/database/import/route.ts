@@ -5,6 +5,7 @@ import { cache, CacheKeys } from '@/lib/cache'
 interface RequestBody {
   urls: string[]
   country: string
+  foundBy?: string // Volitelný parametr pro označení zdroje
 }
 
 export async function POST(req: NextRequest) {
@@ -12,7 +13,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     console.log('Import request body:', body)
     
-    const { urls, country }: RequestBody = body
+    const { urls, country, foundBy = 'google-search' }: RequestBody = body
 
     if (!Array.isArray(urls) || urls.length === 0) {
       console.error('Invalid urls:', urls)
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
         instagramUsername: username,
         instagramUrl: url,
         country,
-        foundBy: 'google',
+        foundBy: foundBy,
         isActive: true,
         totalFollowers: 0
       }))
@@ -130,7 +131,7 @@ export async function POST(req: NextRequest) {
                 instagramUsername: username,
                 instagramUrl: url,
                 country,
-                foundBy: 'google',
+                foundBy: foundBy,
                 isActive: true,
                 totalFollowers: 0
               }

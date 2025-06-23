@@ -131,6 +131,10 @@ async function startInstagramScrapingProcess(
 ) {
   console.log(`🎬 [DEBUG] Starting Instagram scraping process for run ${runId}`)
 
+  // Maximum runtime protection (30 minut)
+  const maxRuntime = 30 * 60 * 1000 // 30 minut v milisekundách
+  const startTime = Date.now()
+
   try {
     // Import Instagram scraper
     const { InstagramScraper } = await import('@/lib/scraping/instagram-scraper')
@@ -145,6 +149,25 @@ async function startInstagramScrapingProcess(
     console.log(`🔧 [DEBUG] Processing ${profiles.length} profiles...`)
 
     for (let i = 0; i < profiles.length; i++) {
+      // Check if maximum runtime exceeded
+      if (Date.now() - startTime > maxRuntime) {
+        console.log(`⏰ [WARNING] Maximum runtime (30 min) exceeded, stopping scraping...`)
+        await scraper.close()
+        
+        // Mark run as partially completed
+        await prisma.scrapingRun.update({
+          where: { id: runId },
+          data: {
+            status: 'completed',
+            totalFound: successCount,
+            totalProcessed: i,
+            completedAt: new Date(),
+            errors: JSON.stringify([`Stopped after 30 minutes: processed ${i}/${profiles.length} profiles`])
+          }
+        })
+        return
+      }
+
       const profile = profiles[i]
       const username = profile.instagramUsername
 
@@ -162,8 +185,16 @@ async function startInstagramScrapingProcess(
       let scrapedData: string | undefined
 
       try {
-        // Scrape the Instagram profile
-        const instagramProfile = await scraper.scrapeProfile(username)
+        // Timeout pro jednotlivý profil (2 minuty)
+        const profileTimeout = 2 * 60 * 1000 // 2 minuty
+        
+        const scrapePromise = scraper.scrapeProfile(username)
+        const timeoutPromise = new Promise<null>((_, reject) => {
+          setTimeout(() => reject(new Error('Profile scraping timeout (2 min)')), profileTimeout)
+        })
+
+        // Race between scraping and timeout
+        const instagramProfile = await Promise.race([scrapePromise, timeoutPromise])
 
         if (instagramProfile) {
           attemptStatus = 'success'
@@ -196,6 +227,18 @@ async function startInstagramScrapingProcess(
         errorCount++
         
         console.error(`❌ [DEBUG] Error scraping @${username}:`, error)
+        
+        // Pokud je příliš mnoho chyb za sebou, restartuj browser
+        if (errorCount % 5 === 0 && errorCount > 0) {
+          console.log(`🔄 [DEBUG] Too many errors (${errorCount}), restarting browser...`)
+          try {
+            await scraper.close()
+            await scraper.initialize()
+            console.log(`✅ [DEBUG] Browser restarted successfully`)
+          } catch (restartError) {
+            console.error(`❌ [ERROR] Failed to restart browser:`, restartError)
+          }
+        }
       }
 
       // Save the scraping attempt

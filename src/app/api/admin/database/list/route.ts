@@ -22,14 +22,11 @@ export async function POST(request: NextRequest) {
     }
 
     const googleScraper = new GoogleSearchScraper()
-    const allUsernames: string[] = []
-
-    // Pro každý term sestavíme jednoduchý Google dotaz a vytáhneme usernames
-    for (const term of searchTerms) {
-      const query = `site:instagram.com ${term} ${country}`.trim()
-      const usernames = await googleScraper.searchInstagramProfiles(query, country, maxResultsPerQuery)
-      allUsernames.push(...usernames)
-    }
+    await googleScraper.initialize()
+    
+    // Sestavit search queries pro Instagram profily - optimalizováno pro španělskou IP
+    const searchQueries = searchTerms.map(term => `site:instagram.com ${term} ${country}`.trim())
+    const allUsernames = await googleScraper.searchInstagramProfiles(searchQueries, country || 'ES')
 
     // Odstranit duplicity a převést na plné URL
     const uniqueUsernames = [...new Set(allUsernames)]

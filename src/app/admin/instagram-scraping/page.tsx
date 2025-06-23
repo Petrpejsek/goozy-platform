@@ -68,6 +68,10 @@ export default function InstagramScrapingPage() {
   const [runDetails, setRunDetails] = useState<RunDetails | null>(null)
   const [showRunDetails, setShowRunDetails] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [cooldownEnd, setCooldownEnd] = useState<Date | null>(null)
+  const [cooldownRemaining, setCooldownRemaining] = useState<string>('')
+  const [buttonCooldownEnd, setButtonCooldownEnd] = useState<Date | null>(null)
+  const [buttonCooldownRemaining, setButtonCooldownRemaining] = useState<string>('')
   const [batchConfig, setBatchConfig] = useState<BatchConfig>({
     country: 'CZ',
     batchSize: 20,
@@ -80,7 +84,67 @@ export default function InstagramScrapingPage() {
   // Load stats and runs on component mount
   useEffect(() => {
     loadStatsAndRuns()
+    loadCooldownFromStorage()
+    loadButtonCooldownFromStorage()
+    loadLastCountryFromStorage()
   }, [])
+
+  // Načíst poslední vybranou zemi z localStorage
+  const loadLastCountryFromStorage = () => {
+    if (typeof window !== 'undefined') {
+      const savedCountry = localStorage.getItem('last_selected_country')
+      if (savedCountry) {
+        setBatchConfig(prev => ({
+          ...prev,
+          country: savedCountry
+        }))
+      }
+    }
+  }
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldownEnd) {
+      const interval = setInterval(() => {
+        const now = new Date()
+        const remaining = cooldownEnd.getTime() - now.getTime()
+        
+        if (remaining <= 0) {
+          setCooldownEnd(null)
+          setCooldownRemaining('')
+          localStorage.removeItem('scraping_cooldown_end')
+        } else {
+          const minutes = Math.floor(remaining / 60000)
+          const seconds = Math.floor((remaining % 60000) / 1000)
+          setCooldownRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`)
+        }
+      }, 1000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [cooldownEnd])
+
+  // Button cooldown timer effect (5 minutes)
+  useEffect(() => {
+    if (buttonCooldownEnd) {
+      const interval = setInterval(() => {
+        const now = new Date()
+        const remaining = buttonCooldownEnd.getTime() - now.getTime()
+        
+        if (remaining <= 0) {
+          setButtonCooldownEnd(null)
+          setButtonCooldownRemaining('')
+          localStorage.removeItem('button_cooldown_end')
+        } else {
+          const minutes = Math.floor(remaining / 60000)
+          const seconds = Math.floor((remaining % 60000) / 1000)
+          setButtonCooldownRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`)
+        }
+      }, 1000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [buttonCooldownEnd])
 
   // Poll for updates when scraping is running
   useEffect(() => {
@@ -117,6 +181,44 @@ export default function InstagramScrapingPage() {
     }
   }
 
+  const loadCooldownFromStorage = () => {
+    const storedCooldownEnd = localStorage.getItem('scraping_cooldown_end')
+    if (storedCooldownEnd) {
+      const cooldownDate = new Date(storedCooldownEnd)
+      if (cooldownDate > new Date()) {
+        setCooldownEnd(cooldownDate)
+      } else {
+        localStorage.removeItem('scraping_cooldown_end')
+      }
+    }
+  }
+
+  const loadButtonCooldownFromStorage = () => {
+    const storedButtonCooldownEnd = localStorage.getItem('button_cooldown_end')
+    if (storedButtonCooldownEnd) {
+      const cooldownDate = new Date(storedButtonCooldownEnd)
+      if (cooldownDate > new Date()) {
+        setButtonCooldownEnd(cooldownDate)
+      } else {
+        localStorage.removeItem('button_cooldown_end')
+      }
+    }
+  }
+
+  const startCooldown = () => {
+    const cooldownDuration = 15 * 60 * 1000 // 15 minut v milisekundách
+    const endTime = new Date(Date.now() + cooldownDuration)
+    setCooldownEnd(endTime)
+    localStorage.setItem('scraping_cooldown_end', endTime.toISOString())
+  }
+
+  const startButtonCooldown = () => {
+    const cooldownDuration = 5 * 60 * 1000 // 5 minut v milisekundách
+    const endTime = new Date(Date.now() + cooldownDuration)
+    setButtonCooldownEnd(endTime)
+    localStorage.setItem('button_cooldown_end', endTime.toISOString())
+  }
+
   const pollRunStatus = async (runId: string) => {
     try {
       const response = await fetch(`/api/admin/instagram-scraping/runs/${runId}/status`)
@@ -130,6 +232,11 @@ export default function InstagramScrapingPage() {
           if (data.run.status === 'completed' || data.run.status === 'failed') {
             loadStatsAndRuns() // Refresh stats and runs list
             setCurrentRun(null)
+            
+            // Start 15-minute cooldown only if completed successfully
+            if (data.run.status === 'completed') {
+              startCooldown()
+            }
           }
         } else {
           console.warn('No run data received from API')
@@ -150,6 +257,9 @@ export default function InstagramScrapingPage() {
   }
 
   const startScraping = async () => {
+    // Spustit 5minutový odpočet pro tlačítko
+    startButtonCooldown()
+    
     try {
       const response = await fetch('/api/admin/instagram-scraping/start', {
         method: 'POST',
@@ -183,6 +293,30 @@ export default function InstagramScrapingPage() {
       }
     } catch (error) {
       console.error('Failed to load run details:', error)
+    }
+  }
+
+  const cancelRun = async (runId: string) => {
+    if (!confirm('Opravdu chcete zrušit tento scraping run?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/instagram-scraping/runs/${runId}/cancel`, {
+        method: 'POST'
+      })
+      
+      if (response.ok) {
+        alert('Run byl úspěšně zrušen')
+        loadStatsAndRuns()
+        setCurrentRun(null)
+      } else {
+        const error = await response.json()
+        alert(`Chyba při rušení: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Failed to cancel run:', error)
+      alert('Chyba při rušení run')
     }
   }
 
@@ -276,7 +410,11 @@ export default function InstagramScrapingPage() {
               <select 
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 value={batchConfig.country}
-                onChange={(e) => setBatchConfig({...batchConfig, country: e.target.value})}
+                onChange={(e) => {
+                  const newCountry = e.target.value
+                  setBatchConfig({...batchConfig, country: newCountry})
+                  localStorage.setItem('last_selected_country', newCountry)
+                }}
               >
                 <option value="">All Countries</option>
                 <option value="CZ">🇨🇿 Czech Republic</option>
@@ -334,14 +472,88 @@ export default function InstagramScrapingPage() {
             </label>
           </div>
           
-          <div className="mt-6">
+          <div className="mt-6 flex space-x-4">
             <button 
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               onClick={startScraping}
-              disabled={currentRun?.status === 'running'}
+              disabled={currentRun?.status === 'running' || cooldownEnd !== null || buttonCooldownEnd !== null}
             >
-              {currentRun?.status === 'running' ? 'Running...' : 'Start Instagram Scraping'}
+              {currentRun?.status === 'running' 
+                ? 'Running...' 
+                : cooldownEnd !== null 
+                  ? `Wait ${cooldownRemaining}` 
+                  : buttonCooldownEnd !== null
+                    ? `Počkej ${buttonCooldownRemaining}`
+                    : 'Start Instagram Scraping'
+              }
             </button>
+            
+            {currentRun?.status === 'running' && (
+              <button 
+                className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700"
+                onClick={() => currentRun && cancelRun(currentRun.id)}
+              >
+                Cancel Running Scraping
+              </button>
+            )}
+            
+            {cooldownEnd && (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Cooldown: {cooldownRemaining} remaining</span>
+                <button
+                  onClick={() => {
+                    setCooldownEnd(null)
+                    setCooldownRemaining('')
+                    localStorage.removeItem('scraping_cooldown_end')
+                  }}
+                  className="text-red-600 hover:text-red-800 text-xs underline"
+                >
+                  Skip
+                </button>
+              </div>
+            )}
+
+            {buttonCooldownEnd && (
+              <div className="flex items-center space-x-2 text-sm text-orange-600">
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Odpočet tlačítka: {buttonCooldownRemaining} zbývá</span>
+                <button
+                  onClick={() => {
+                    setButtonCooldownEnd(null)
+                    setButtonCooldownRemaining('')
+                    localStorage.removeItem('button_cooldown_end')
+                  }}
+                  className="text-red-600 hover:text-red-800 text-xs underline"
+                >
+                  Skip
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Cooldown & Safety Info */}
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-amber-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <h4 className="text-sm font-medium text-amber-800">Safety & IP Rotation</h4>
+              <div className="mt-1 text-sm text-amber-700">
+                <p>• 🔄 <strong>IP rotation enabled</strong> - automatic proxy switching for stealth</p>
+                <p>• ⏰ Automatic 15-minute cooldown between runs</p>
+                <p>• 🕐 <strong>1-minute button delay</strong> - prevents accidental multiple clicks</p>
+                <p>• 📊 Maximum 100-150 profiles per day recommended</p>
+                <p>• 🌐 Best success with residential proxy networks (Bright Data, Oxylabs)</p>
+                <p>• 🎯 Proxy rotates every 3 failures or timeouts automatically</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -394,12 +606,22 @@ export default function InstagramScrapingPage() {
                       {run.completedAt ? formatDate(run.completedAt) : '-'}
                     </td>
                     <td className="px-4 py-2">
-                      <button
-                        onClick={() => loadRunDetails(run.id)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        View Details
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => loadRunDetails(run.id)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          View Details
+                        </button>
+                        {run.status === 'running' && (
+                          <button
+                            onClick={() => cancelRun(run.id)}
+                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

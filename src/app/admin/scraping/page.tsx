@@ -31,6 +31,8 @@ export default function ScrapingPage() {
   const [scrapingRuns, setScrapingRuns] = useState<ScrapingResult[]>([])
   const [isScrapingRunning, setIsScrapingRunning] = useState(false)
   const [currentHashtag, setCurrentHashtag] = useState('')
+  const [buttonCooldownEnd, setButtonCooldownEnd] = useState<Date | null>(null)
+  const [buttonCooldownRemaining, setButtonCooldownRemaining] = useState<string>('')
   
   const [config, setConfig] = useState<ScrapingConfig>({
     country: 'CZ',
@@ -52,11 +54,71 @@ export default function ScrapingPage() {
     { code: 'AT', name: 'Austria', flag: '🇦🇹' },
   ]
 
+  // Načíst poslední vybranou zemi z localStorage při načtení komponenty
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedCountry = localStorage.getItem('last_selected_country')
+      if (savedCountry) {
+        setConfig(prev => ({
+          ...prev,
+          country: savedCountry
+        }))
+      }
+      loadButtonCooldownFromStorage()
+    }
+  }, [])
+
+  // Button cooldown timer effect (15 minutes)
+  useEffect(() => {
+    if (buttonCooldownEnd) {
+      const interval = setInterval(() => {
+        const now = new Date()
+        const remaining = buttonCooldownEnd.getTime() - now.getTime()
+        
+        if (remaining <= 0) {
+          setButtonCooldownEnd(null)
+          setButtonCooldownRemaining('')
+          localStorage.removeItem('google_scraping_button_cooldown_end')
+        } else {
+          const minutes = Math.floor(remaining / 60000)
+          const seconds = Math.floor((remaining % 60000) / 1000)
+          setButtonCooldownRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`)
+        }
+      }, 1000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [buttonCooldownEnd])
+
+  const loadButtonCooldownFromStorage = () => {
+    if (typeof window !== 'undefined') {
+      const storedButtonCooldownEnd = localStorage.getItem('google_scraping_button_cooldown_end')
+      if (storedButtonCooldownEnd) {
+        const cooldownDate = new Date(storedButtonCooldownEnd)
+        if (cooldownDate > new Date()) {
+          setButtonCooldownEnd(cooldownDate)
+        } else {
+          localStorage.removeItem('google_scraping_button_cooldown_end')
+        }
+      }
+    }
+  }
+
+  const startButtonCooldown = () => {
+    const cooldownDuration = 15 * 60 * 1000 // 15 minut v milisekundách (pokrývá i 429 retry 5-10min)
+    const endTime = new Date(Date.now() + cooldownDuration)
+    setButtonCooldownEnd(endTime)
+    localStorage.setItem('google_scraping_button_cooldown_end', endTime.toISOString())
+  }
+
   const startScraping = async () => {
     if (config.hashtags.length === 0) {
       console.log('Please add at least one hashtag')
       return
     }
+    
+    // Spustit 15minutový odpočet pro tlačítko (pokrývá i 429 retry 5-10min)
+    startButtonCooldown()
     
     setIsScrapingRunning(true)
     try {
@@ -181,7 +243,19 @@ export default function ScrapingPage() {
   const loadScrapingRuns = async () => {
     try {
       const response = await fetch('/api/admin/scraping/runs')
-      const data = await response.json()
+      
+      if (!response.ok) {
+        console.error('Failed to fetch scraping runs:', response.status)
+        return
+      }
+      
+      const text = await response.text()
+      if (!text.trim()) {
+        console.warn('Empty response from scraping runs API')
+        return
+      }
+      
+      const data = JSON.parse(text)
       
       // Transform data to match our interface
       const runs = Array.isArray(data) ? data : (data.runs || [])
@@ -265,7 +339,10 @@ export default function ScrapingPage() {
                       {countries.map((country) => (
                         <button
                           key={country.code}
-                          onClick={() => setConfig({ ...config, country: country.code })}
+                          onClick={() => {
+                            setConfig({ ...config, country: country.code })
+                            localStorage.setItem('last_selected_country', country.code)
+                          }}
                           className={`flex items-center p-3 rounded-lg border transition-colors ${
                             config.country === country.code
                               ? 'border-green-500 bg-green-50 text-green-700'
@@ -355,6 +432,13 @@ export default function ScrapingPage() {
                             <span>Automatic human-like delays (3-8 seconds) and extended runtime limits (8 hours) are applied for maximum discovery</span>
                           </div>
                         </div>
+                        
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <span className="mr-2">🕐</span>
+                            <span><strong>15-minute button cooldown</strong> - prevents accidental multiple runs & covers 429 retry delays (5-10min)</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -366,13 +450,18 @@ export default function ScrapingPage() {
                       </p>
                       <button
                         onClick={startScraping}
-                        disabled={isScrapingRunning || config.hashtags.length === 0}
+                        disabled={isScrapingRunning || config.hashtags.length === 0 || buttonCooldownEnd !== null}
                         className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center justify-center"
                       >
                         {isScrapingRunning ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                             Starting...
+                          </>
+                        ) : buttonCooldownEnd !== null ? (
+                          <>
+                            <span className="mr-2">⏰</span>
+                            Počkej {buttonCooldownRemaining}
                           </>
                         ) : (
                           <>
@@ -381,6 +470,26 @@ export default function ScrapingPage() {
                           </>
                         )}
                       </button>
+                      
+                      {/* Cooldown indikátor */}
+                      {buttonCooldownEnd && (
+                        <div className="mt-4 flex items-center justify-center space-x-2 text-sm text-orange-600">
+                          <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Odpočet tlačítka: {buttonCooldownRemaining} zbývá</span>
+                          <button
+                            onClick={() => {
+                              setButtonCooldownEnd(null)
+                              setButtonCooldownRemaining('')
+                              localStorage.removeItem('google_scraping_button_cooldown_end')
+                            }}
+                            className="text-red-600 hover:text-red-800 text-xs underline"
+                          >
+                            Přeskočit
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

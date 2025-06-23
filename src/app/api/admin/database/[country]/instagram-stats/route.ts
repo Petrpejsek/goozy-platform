@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { country: string } }
+  { params }: { params: Promise<{ country: string }> }
 ) {
   try {
-    const country = params.country
+    const { country } = await params
 
     console.log(`📊 [DEBUG] GET /api/admin/database/${country}/instagram-stats called`)
 
@@ -95,7 +95,7 @@ export async function GET(
     return NextResponse.json(stats)
 
   } catch (error) {
-    console.error(`❌ [ERROR] Error getting Instagram scraping stats for ${params.country}:`, error)
+    console.error(`❌ [ERROR] Error getting Instagram scraping stats:`, error)
     return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 })
   }
 } 

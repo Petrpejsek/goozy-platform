@@ -12,7 +12,8 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.1.1",
-    "@prisma/client": "^6.9.0",
+    "@playwright/test": "^1.53.1",
+    "@prisma/client": "^6.10.1",
     "@stripe/stripe-js": "^7.3.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.9",
@@ -20,6 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.515.0",
     "next": "15.3.3",
+    "playwright": "^1.53.1",
     "prisma": "^6.9.0",
     "puppeteer": "^24.10.2",
     "react": "^19.0.0",

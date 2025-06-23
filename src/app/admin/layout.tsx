@@ -11,6 +11,7 @@ const AdminSidebar = () => {
     if (pathname === '/admin') return 'dashboard'
     if (pathname.startsWith('/admin/database')) return 'database'
     if (pathname.startsWith('/admin/scraping')) return 'scraping'
+    if (pathname.startsWith('/admin/bing-search')) return 'bing-search'
     if (pathname.startsWith('/admin/instagram-scraping')) return 'instagram-scraping'
     if (pathname.startsWith('/admin/products')) return 'products'
     return 'dashboard'
@@ -83,13 +84,23 @@ const AdminSidebar = () => {
     },
     { 
       id: 'scraping', 
-      label: 'Discovery', 
+      label: 'Google Search', 
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       ), 
       href: '/admin/scraping' 
+    },
+    { 
+      id: 'bing-search', 
+      label: 'Bing Search', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ), 
+      href: '/admin/bing-search' 
     },
     { 
       id: 'instagram-scraping', 

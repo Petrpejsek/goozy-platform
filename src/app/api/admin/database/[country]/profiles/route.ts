@@ -7,10 +7,10 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { country: string } }
+  { params }: { params: Promise<{ country: string }> }
 ) {
   try {
-    const country = await params.country
+    const { country } = await params
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category') || 'all'
 
@@ -174,7 +174,7 @@ export async function GET(
     return NextResponse.json(result)
 
   } catch (error) {
-    console.error(`❌ [ERROR] Error getting profiles for ${country}:`, error)
+    console.error(`❌ [ERROR] Error getting profiles:`, error)
     return NextResponse.json({ error: 'Failed to get profiles' }, { status: 500 })
   }
 } 
