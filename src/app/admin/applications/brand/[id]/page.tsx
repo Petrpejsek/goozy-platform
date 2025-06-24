@@ -4,14 +4,15 @@ import Link from 'next/link'
 import BrandApplicationActions from './BrandApplicationActions'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function BrandApplicationDetail({ params }: PageProps) {
+  const { id } = await params
   const application = await prisma.brandApplication.findUnique({
-    where: { id: params.id }
+    where: { id: id }
   })
 
   if (!application) {
