@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-
-const prisma = new PrismaClient()
+import jwt from 'jsonwebtoken'
 
 export async function POST(request: NextRequest) {
   if (request.method !== 'POST') {
@@ -16,28 +15,76 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
 
-    // Find brand by email
-    // For now, we'll use a simple check since brand authentication isn't fully implemented
-    // TODO: Implement proper brand authentication with database lookup
-    
-    // Temporary placeholder - in production, you would:
-    // 1. Look up brand in database by email
-    // 2. Verify password hash
-    // 3. Create session/JWT token
-    // 4. Return success response with token
-    
-    if (email === 'admin@brand.com' && password === 'password123') {
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Login successful',
-        redirect: '/partner-company'
-      }, { status: 200 })
+    // Najdi brand aplikaci v databázi
+    const brandApplication = await prisma.brandApplication.findFirst({
+      where: { 
+        email: email.toLowerCase().trim()
+      }
+    })
+
+    if (!brandApplication) {
+      return NextResponse.json({ error: 'No application found for this email' }, { status: 401 })
     }
 
-    return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    // Zkontroluj, jestli je aplikace schválená
+    if (brandApplication.status !== 'approved') {
+      return NextResponse.json({ 
+        error: `Application status is "${brandApplication.status}". Please wait for approval or contact support.`,
+        status: brandApplication.status
+      }, { status: 401 })
+    }
+
+    // Zkontroluj heslo
+    if (!brandApplication.password) {
+      return NextResponse.json({ 
+        error: 'No password set for this account. Please contact support.',
+      }, { status: 401 })
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, brandApplication.password)
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+    
+    // Úspěšné přihlášení - vytvoř JWT token pro session
+    const token = jwt.sign(
+      { 
+        brandId: brandApplication.id,
+        email: brandApplication.email,
+        brandName: brandApplication.brandName
+      },
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '24h' }
+    )
+    
+    console.log(`✅ [BRAND-LOGIN] Successful login for ${email} (${brandApplication.brandName})`)
+    
+    // Vytvoř response s user daty
+    const response = NextResponse.json({ 
+      success: true, 
+      message: 'Login successful',
+      brand: {
+        id: brandApplication.id,
+        name: brandApplication.brandName,
+        email: brandApplication.email,
+        contactName: brandApplication.contactName
+      },
+      redirect: '/partner-company'
+    }, { status: 200 })
+
+    // Nastav authentication cookie
+    response.cookies.set('brand-auth', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 24 * 60 * 60 // 24 hodin v sekundách
+    })
+
+    return response
 
   } catch (error) {
-    console.error('Brand login error:', error)
+    console.error('❌ [BRAND-LOGIN] Error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

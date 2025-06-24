@@ -1,70 +1,61 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
-// Mock data
-const mockCampaigns = [
-  {
-    id: 1,
-    name: 'Summer Fashion 2024',
-    description: 'Promote our new summer collection',
-    startDate: '2024-06-15',
-    endDate: '2024-07-15',
-    targetCountries: ['CZ', 'SK'],
-    targetGender: 'women',
-    influencers: ['Alice Fashion', 'Prague Style', 'Czech Trendy'],
-    expectedReach: 125000,
-    budgetAllocated: 5000,
-    status: 'active'
-  },
-  {
-    id: 2,
-    name: 'Denim Collection',
-    description: 'Launch our premium denim line',
-    startDate: '2024-06-20',
-    endDate: '2024-07-20',
-    targetCountries: ['CZ'],
-    targetGender: 'unisex',
-    influencers: ['Fashion Guru', 'Style Expert'],
-    expectedReach: 85000,
-    budgetAllocated: 3500,
-    status: 'active'
-  },
-  {
-    id: 3,
-    name: 'Winter Preview',
-    description: 'Early preview of winter collection',
-    startDate: '2024-07-01',
-    endDate: '2024-08-01',
-    targetCountries: ['CZ', 'SK', 'PL'],
-    targetGender: 'all',
-    influencers: [],
-    expectedReach: 200000,
-    budgetAllocated: 8000,
-    status: 'draft'
-  }
-]
+interface BrandData {
+  brandName: string
+  contactName: string
+  email: string
+}
 
-const availableCountries = [
-  { code: 'CZ', name: 'Czech Republic' },
-  { code: 'SK', name: 'Slovakia' },
-  { code: 'PL', name: 'Poland' },
-  { code: 'HU', name: 'Hungary' },
-  { code: 'AT', name: 'Austria' }
-]
+// Zatím žádné skutečné kampaně - všechny hodnoty jsou nula
+const realCampaigns: any[] = [] // Prázdný seznam - žádné kampaně
 
 export default function CampaignsPage() {
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    targetCountries: [],
-    targetGender: 'all',
-    budgetAllocated: '',
-    expectedReach: ''
-  })
+  const [brandData, setBrandData] = useState<BrandData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchBrandData = async () => {
+      try {
+        const response = await fetch('/api/auth/brand/verify')
+        if (response.ok) {
+          const data = await response.json()
+          setBrandData(data.brand)
+        }
+      } catch (err) {
+        console.error('Error loading brand data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBrandData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div>
+        <header className="bg-white border-b border-gray-100 h-16 fixed top-0 left-64 right-0 z-30">
+          <div className="flex items-center justify-between h-full px-8">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Campaign Overview</h2>
+              <p className="text-sm text-gray-500">Your marketing campaigns status</p>
+            </div>
+          </div>
+        </header>
+        
+        <main className="pt-24 p-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading campaigns...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -84,21 +75,11 @@ export default function CampaignsPage() {
   return (
     <div>
       {/* Top Header */}
-      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-0 z-30">
+      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 left-64 right-0 z-30">
         <div className="flex items-center justify-between h-full px-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Campaign Management</h2>
-            <p className="text-sm text-gray-500">Manage your marketing campaigns</p>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Create Campaign
-            </button>
+            <h2 className="text-xl font-semibold text-gray-900">Campaign Overview</h2>
+            <p className="text-sm text-gray-500">Your marketing campaigns status</p>
           </div>
         </div>
       </header>
@@ -119,29 +100,7 @@ export default function CampaignsPage() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Active Campaigns</dt>
-                  <dd className="text-3xl font-bold text-gray-900">
-                    {mockCampaigns.filter(c => c.status === 'active').length}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Draft Campaigns</dt>
-                  <dd className="text-3xl font-bold text-gray-900">
-                    {mockCampaigns.filter(c => c.status === 'draft').length}
-                  </dd>
+                  <dd className="text-3xl font-bold text-gray-900">0</dd>
                 </dl>
               </div>
             </div>
@@ -158,10 +117,26 @@ export default function CampaignsPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Expected Reach</dt>
-                  <dd className="text-3xl font-bold text-gray-900">
-                    {(mockCampaigns.reduce((acc, c) => acc + c.expectedReach, 0) / 1000).toFixed(0)}K
-                  </dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Reach</dt>
+                  <dd className="text-3xl font-bold text-gray-900">0</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Budget</dt>
+                  <dd className="text-3xl font-bold text-gray-900">Kč0</dd>
                 </dl>
               </div>
             </div>
@@ -172,119 +147,71 @@ export default function CampaignsPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
           <div className="px-6 py-4 border-b border-gray-100">
             <h3 className="text-lg font-bold text-gray-900">Your Campaigns</h3>
+            <p className="text-sm text-gray-500 mt-1">Overview of your marketing campaigns managed by our team</p>
           </div>
-          <div className="divide-y divide-gray-100">
-            {mockCampaigns.map((campaign) => (
-              <div key={campaign.id} className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <h4 className="text-lg font-medium text-gray-900">
-                        {campaign.name}
-                      </h4>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                        {campaign.status}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-gray-600">{campaign.description}</p>
-                    <div className="mt-2 flex items-center space-x-6 text-sm text-gray-500">
-                      <span>
-                        📅 {new Date(campaign.startDate).toLocaleDateString('cs-CZ')} - {new Date(campaign.endDate).toLocaleDateString('cs-CZ')}
-                      </span>
-                      <span>
-                        🌍 {campaign.targetCountries.join(', ')}
-                      </span>
-                      <span>
-                        👥 {campaign.expectedReach.toLocaleString()} reach
-                      </span>
-                      <span>
-                        💰 Kč{campaign.budgetAllocated.toLocaleString()}
-                      </span>
-                    </div>
-                    {campaign.influencers.length > 0 && (
-                      <div className="mt-2">
-                        <span className="text-sm text-gray-500">Influencers: </span>
-                        <span className="text-sm text-gray-700">{campaign.influencers.join(', ')}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                      Edit
-                    </button>
-                    <button className="text-gray-400 hover:text-gray-600 text-sm font-medium">
-                      View
-                    </button>
-                  </div>
-                </div>
+          
+          {realCampaigns.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Create Campaign Form (Hidden by default) */}
-        {showCreateForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Campaign</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Campaign Name</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    rows={3}
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Start Date</label>
-                    <input
-                      type="date"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">End Date</label>
-                    <input
-                      type="date"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({...formData, endDate: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
-                >
-                  Create Campaign
-                </button>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No campaigns yet</h3>
+              <p className="text-gray-500 max-w-md mx-auto">
+                Your marketing campaigns will appear here once our team starts working on promoting your products with influencers.
+              </p>
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  <strong>Next step:</strong> Our team will contact you to discuss campaign strategy and start creating campaigns for your brand.
+                </p>
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {realCampaigns.map((campaign: any) => (
+                <div key={campaign.id} className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <h4 className="text-lg font-medium text-gray-900">
+                          {campaign.name}
+                        </h4>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                          {campaign.status}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-600">{campaign.description}</p>
+                      <div className="mt-2 flex items-center space-x-6 text-sm text-gray-500">
+                        <span>
+                          📅 {new Date(campaign.startDate).toLocaleDateString('cs-CZ')} - {new Date(campaign.endDate).toLocaleDateString('cs-CZ')}
+                        </span>
+                        <span>
+                          🌍 {campaign.targetCountries.join(', ')}
+                        </span>
+                        <span>
+                          👥 {campaign.expectedReach.toLocaleString()} reach
+                        </span>
+                        <span>
+                          💰 Kč{campaign.budgetAllocated.toLocaleString()}
+                        </span>
+                      </div>
+                      {campaign.influencers && campaign.influencers.length > 0 && (
+                        <div className="mt-2">
+                          <span className="text-sm text-gray-500">Influencers: </span>
+                          <span className="text-sm text-gray-700">{campaign.influencers.join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-400 italic">Read-only</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

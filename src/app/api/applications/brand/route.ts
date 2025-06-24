@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import bcrypt from 'bcryptjs'
 
 // Schema for brand form validation
 const brandApplicationSchema = z.object({
-  brandName: z.string().min(2, 'Brand name must be at least 2 characters'),
+  contactName: z.string().min(1, 'Contact name is required'),
+  brandName: z.string().min(2, 'Company name must be at least 2 characters'),
   email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  website: z.string().min(1, 'Website is required').refine((url) => {
+    // Povoluje URL s HTTP/HTTPS, www. alebo len domain názov
+    const urlPattern = /^(https?:\/\/)?(www\.)?[\w\-.]+(\.[\w]{2,})(\/.*)?$/;
+    return urlPattern.test(url);
+  }, 'Invalid website URL'),
   phone: z.string().optional(),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  description: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -29,29 +37,38 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Hash the password
+    const saltRounds = 12
+    const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds)
+    
     // Save application to database
     const application = await prisma.brandApplication.create({
       data: {
+        contactName: validatedData.contactName,
         brandName: validatedData.brandName,
         email: validatedData.email,
+        password: hashedPassword,
+        website: validatedData.website,
         phone: validatedData.phone,
         description: validatedData.description,
         status: 'pending'
       }
     })
     
+    console.log(`✅ [BRAND-APPLICATION] New application from ${validatedData.email} (${validatedData.brandName})`)
+    
     // TODO: Send notification email to admins
     
     return NextResponse.json(
       { 
-        message: 'Application submitted successfully! We will contact you within 24 hours.',
+        message: 'Application submitted successfully! We will contact you within 48 hours.',
         applicationId: application.id
       },
       { status: 201 }
     )
     
   } catch (error) {
-    console.error('Failed to process brand application:', error)
+    console.error('❌ [BRAND-APPLICATION] Failed to process application:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

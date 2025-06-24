@@ -17,7 +17,6 @@ export default function BrandLoginPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Replace with actual brand login API
       const response = await fetch('/api/auth/brand/login', {
         method: 'POST',
         headers: {
@@ -28,7 +27,7 @@ export default function BrandLoginPage() {
 
       if (response.ok) {
         const data = await response.json()
-        // TODO: Handle session/token
+        console.log('Login successful:', data)
         router.push('/partner-company')
       } else {
         const errorData = await response.json()
@@ -68,7 +67,7 @@ export default function BrandLoginPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Email
+              Email Address
             </label>
             <input
               id="email"
@@ -79,7 +78,7 @@ export default function BrandLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              placeholder="you@company.com"
+              placeholder="Enter your registered email"
             />
           </div>
 
@@ -99,7 +98,7 @@ export default function BrandLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              placeholder="Your password"
+              placeholder="Enter your password"
             />
           </div>
 
@@ -123,11 +122,15 @@ export default function BrandLoginPage() {
         </form>
 
         <p className="mt-8 text-center text-sm text-gray-500">
-          New to Goozy?{' '}
+          Haven't applied yet?{' '}
           <Link href="/#brand-form" className="font-medium text-black hover:underline">
-            Start collaborating
+            Submit brand application
           </Link>
         </p>
+        
+        <div className="mt-4 text-center text-xs text-gray-400">
+          <p>Only approved brand applications can access the dashboard.</p>
+        </div>
       </div>
     </div>
   )

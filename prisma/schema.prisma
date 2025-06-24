@@ -170,6 +170,7 @@ model DiscountCode {
 
 model Campaign {
   id               String   @id @default(cuid())
+  slug             String   @unique // Unikátní slug pro URL kampaně
   brandId          String
   name             String
   description      String?
@@ -281,8 +282,11 @@ model InfluencerApplication {
 
 model BrandApplication {
   id          String   @id @default(cuid())
+  contactName String?
   brandName   String
   email       String
+  password    String?  // Hashované heslo pro přihlášení
+  website     String?
   phone       String?
   description String?
   status      String   @default("pending")
@@ -584,4 +588,17 @@ model ApiNotification {
   brand    Brand?    @relation(fields: [brandId], references: [id])
   
   @@map("api_notifications")
+}
+
+model CommissionRate {
+  id          String   @id @default(cuid())
+  type        String   // "global", "brand", "category", "product"
+  entityId    String?  // brandId, category name, nebo productId
+  rate        Float    // Provize v %
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([type, entityId]) // Jeden rate per entita
+  @@map("commission_rates")
 }

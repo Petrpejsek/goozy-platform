@@ -31,8 +31,16 @@ export default function ProductQuickView({ product }: ProductQuickViewProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   
   const images = product.images ? JSON.parse(product.images) : []
-  const sizes = product.sizes ? JSON.parse(product.sizes) : []
-  const colors = product.colors ? JSON.parse(product.colors) : []
+  const sizes = product.sizes ? (
+    typeof product.sizes === 'string' && product.sizes.startsWith('[') 
+      ? JSON.parse(product.sizes) 
+      : product.sizes.split(',').map(s => s.trim())
+  ) : []
+  const colors = product.colors ? (
+    typeof product.colors === 'string' && product.colors.startsWith('[') 
+      ? JSON.parse(product.colors) 
+      : product.colors.split(',').map(c => c.trim())
+  ) : []
 
   return (
     <>

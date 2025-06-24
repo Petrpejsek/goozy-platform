@@ -10,25 +10,20 @@ interface PageProps {
 }
 
 export default async function BrandApplicationDetail({ params }: PageProps) {
-  const { id } = await params
-  
   const application = await prisma.brandApplication.findUnique({
-    where: { id }
+    where: { id: params.id }
   })
 
   if (!application) {
     notFound()
   }
 
-  // Get status styling
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200'
-      default:
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    switch (status) {
+      case 'approved': return 'bg-green-50 text-green-800 border-green-200'
+      case 'rejected': return 'bg-red-50 text-red-800 border-red-200'
+      case 'pending': return 'bg-yellow-50 text-yellow-800 border-yellow-200'
+      default: return 'bg-gray-50 text-gray-800 border-gray-200'
     }
   }
 
@@ -64,17 +59,36 @@ export default async function BrandApplicationDetail({ params }: PageProps) {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-6">{application.brandName}</h1>
               
-              {/* Brand Information */}
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Brand Information</h2>
+              {/* Company Information */}
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {application.contactName && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+                    <p className="text-sm text-gray-900 font-medium">{application.contactName}</p>
+                  </div>
+                )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
                   <p className="text-sm text-gray-900 font-medium">{application.brandName}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
                   <p className="text-sm text-gray-900">{application.email}</p>
                 </div>
+                {application.website && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                    <a 
+                      href={application.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      {application.website}
+                    </a>
+                  </div>
+                )}
                 {application.phone && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
@@ -108,10 +122,10 @@ export default async function BrandApplicationDetail({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Brand Description */}
+            {/* Company Description */}
             {application.description && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Brand Description</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">About the Company</h2>
                 <p className="text-gray-700 leading-relaxed">{application.description}</p>
               </div>
             )}
@@ -136,6 +150,27 @@ export default async function BrandApplicationDetail({ params }: PageProps) {
                     </a>
                   </div>
                 </div>
+
+                {application.website && (
+                  <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+                    <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Website</p>
+                      <a 
+                        href={application.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-purple-600 hover:text-purple-800"
+                      >
+                        {application.website}
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {application.phone && (
                   <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">

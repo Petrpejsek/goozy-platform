@@ -5,19 +5,19 @@ import React, { useState } from 'react'
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile')
   const [companyData, setCompanyData] = useState({
-    name: 'Fashion Forward Ltd.',
-    email: 'contact@fashionforward.com',
-    phone: '+420 123 456 789',
-    website: 'www.fashionforward.com',
-    address: 'Wenceslas Square 1, Prague, Czech Republic',
-    description: 'Leading fashion brand focusing on sustainable and trendy clothing.'
+    name: '',
+    email: '',
+    phone: '',
+    website: '',
+    address: '',
+    description: ''
   })
 
-  const [targetCountries, setTargetCountries] = useState(['CZ', 'SK'])
+  const [targetCountries, setTargetCountries] = useState([])
   const [apiSettings, setApiSettings] = useState({
-    apiKey: 'ff_12345678901234567890',
-    webhookUrl: 'https://api.fashionforward.com/webhook',
-    autoSync: true
+    apiKey: '',
+    webhookUrl: '',
+    autoSync: false
   })
 
   const [passwordData, setPasswordData] = useState({
@@ -27,9 +27,8 @@ export default function SettingsPage() {
   })
 
   const [loginData, setLoginData] = useState({
-    email: 'admin@fashionforward.com',
-    twoFactorEnabled: false,
-    lastLogin: '2024-06-21 14:30'
+    email: '',
+    lastLogin: ''
   })
 
   const availableCountries = [
@@ -37,8 +36,10 @@ export default function SettingsPage() {
     { code: 'SK', name: 'Slovakia' },
     { code: 'PL', name: 'Poland' },
     { code: 'HU', name: 'Hungary' },
-    { code: 'AT', name: 'Austria' },
-    { code: 'DE', name: 'Germany' }
+    { code: 'FR', name: 'France' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'AT', name: 'Austria' }
   ]
 
   const handleCountryToggle = (countryCode: string) => {
@@ -47,25 +48,26 @@ export default function SettingsPage() {
         ? prev.filter(c => c !== countryCode)
         : [...prev, countryCode]
     )
-  }
+    }
 
   const regenerateApiKey = () => {
-    const newKey = 'ff_' + Math.random().toString(36).substring(2, 22)
+    // Generování API klíče pro partnera pro nahrávání produktů
+    const newKey = 'goozy_partner_' + Math.random().toString(36).substring(2, 22)
     setApiSettings(prev => ({ ...prev, apiKey: newKey }))
-    alert('New API key generated successfully!')
+    alert('New API key generated successfully! Use this key to upload products to Goozy platform.')
   }
 
   const tabs = [
     { id: 'profile', name: 'Company Profile', icon: '🏢' },
     { id: 'security', name: 'Security & Login', icon: '🔒' },
     { id: 'countries', name: 'Target Countries', icon: '🌍' },
-    { id: 'api', name: 'API Configuration', icon: '🔗' }
+    { id: 'api', name: 'API & Integration', icon: '🔗' }
   ]
 
   return (
     <div>
-      {/* Top Header */}
-      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-0 z-30">
+      {/* Top Header - properly positioned for sidebar layout */}
+      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 left-64 right-0 z-30">
         <div className="flex items-center justify-between h-full px-8">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Settings</h2>
@@ -222,30 +224,12 @@ export default function SettingsPage() {
                   />
                 </div>
                 
-                <div className="flex items-center justify-between py-4 border-t border-gray-200">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">Two-Factor Authentication</h4>
-                    <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
-                  </div>
-                  <button
-                    onClick={() => setLoginData(prev => ({ ...prev, twoFactorEnabled: !prev.twoFactorEnabled }))}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      loginData.twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        loginData.twoFactorEnabled ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
+
 
                 <div className="border-t border-gray-200 pt-4">
                   <h4 className="text-sm font-medium text-gray-900 mb-2">Account Activity</h4>
                   <div className="text-sm text-gray-600">
-                    <p>Last login: {loginData.lastLogin}</p>
-                    <p className="mt-1">Login location: Prague, Czech Republic</p>
+                    <p>No activity data available yet</p>
                   </div>
                 </div>
               </div>
@@ -257,30 +241,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Danger Zone */}
-            <div className="bg-red-50 rounded-2xl p-6 border border-red-200">
-              <h3 className="text-lg font-bold text-red-900 mb-4">Danger Zone</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-red-900">Log out from all devices</h4>
-                    <p className="text-sm text-red-700">This will log you out from all active sessions</p>
-                  </div>
-                  <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                    Log Out All
-                  </button>
-                </div>
-                <div className="border-t border-red-200 pt-4 flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-red-900">Delete Account</h4>
-                    <p className="text-sm text-red-700">Permanently delete your account and all data</p>
-                  </div>
-                  <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                    Delete Account
-                  </button>
-                </div>
-              </div>
-            </div>
+
           </div>
         )}
 
@@ -314,49 +275,92 @@ export default function SettingsPage() {
 
         {activeTab === 'api' && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">API Configuration</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-6">API & Integration Configuration</h3>
+            
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
-                <div className="flex">
-                  <input
-                    type="text"
-                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={apiSettings.apiKey}
-                    readOnly
-                  />
-                  <button
-                    onClick={regenerateApiKey}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-r-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                  >
-                    Regenerate
-                  </button>
+              {/* API Key Section */}
+              <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <h4 className="text-lg font-semibold text-blue-900 mb-3">🔑 Product Upload API</h4>
+                <p className="text-blue-800 mb-4">
+                  Use this API key to upload your product catalog to the Goozy platform programmatically.
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-blue-900 mb-2">API Key</label>
+                  <div className="flex">
+                    <input
+                      type="text"
+                      className="flex-1 rounded-l-md border-blue-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={apiSettings.apiKey}
+                      readOnly
+                      placeholder="No API key generated yet"
+                    />
+                    <button
+                      onClick={regenerateApiKey}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      {apiSettings.apiKey ? 'Regenerate' : 'Generate'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-blue-700 mt-2">Include this key in the Authorization header of your API requests</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Use this key to authenticate API requests</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Webhook URL</label>
-                <input
-                  type="url"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={apiSettings.webhookUrl}
-                  onChange={(e) => setApiSettings(prev => ({ ...prev, webhookUrl: e.target.value }))}
-                />
-                <p className="text-xs text-gray-500 mt-1">We'll send order notifications to this URL</p>
+
+              {/* Webhook Section */}
+              <div className="bg-green-50 rounded-lg p-6 border border-green-200">
+                <h4 className="text-lg font-semibold text-green-900 mb-3">🔔 Order Notifications</h4>
+                <p className="text-green-800 mb-4">
+                  Receive real-time notifications when customers order your products through influencer campaigns.
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-green-900 mb-2">Webhook URL</label>
+                  <input
+                    type="url"
+                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                    value={apiSettings.webhookUrl}
+                    onChange={(e) => setApiSettings(prev => ({ ...prev, webhookUrl: e.target.value }))}
+                    placeholder="https://your-domain.com/webhooks/goozy-orders"
+                  />
+                  <p className="text-xs text-green-700 mt-2">We'll send POST requests with order details to this URL</p>
+                </div>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="autoSync"
-                  checked={apiSettings.autoSync}
-                  onChange={(e) => setApiSettings(prev => ({ ...prev, autoSync: e.target.checked }))}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="autoSync" className="ml-3 text-sm text-gray-700">
-                  Enable automatic product synchronization
-                </label>
+
+              {/* Auto Sync Section */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-700 mb-3">⚙️ Synchronization Settings</h4>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="autoSync"
+                    checked={apiSettings.autoSync}
+                    onChange={(e) => setApiSettings(prev => ({ ...prev, autoSync: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="autoSync" className="ml-3 text-sm text-gray-700">
+                    Enable automatic inventory synchronization
+                  </label>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">Automatically sync stock levels and product availability</p>
+              </div>
+
+              {/* API Documentation */}
+              <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+                <h4 className="text-lg font-semibold text-yellow-900 mb-3">📚 API Documentation</h4>
+                <p className="text-yellow-800 mb-3">
+                  Complete API guide for integrating your systems with Goozy platform.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="text-sm text-yellow-700">
+                    <p>• <strong>Products API</strong> - Upload/update product catalog</p>
+                    <p>• <strong>Inventory API</strong> - Manage stock levels</p>
+                  </div>
+                  <div className="text-sm text-yellow-700">
+                    <p>• <strong>Orders Webhook</strong> - Receive order notifications</p>
+                    <p>• <strong>Analytics API</strong> - Access sales performance data</p>
+                  </div>
+                </div>
               </div>
             </div>
+
             <div className="mt-6 flex justify-end">
               <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Save API Settings

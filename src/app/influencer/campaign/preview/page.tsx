@@ -227,8 +227,8 @@ const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: bo
               <p className="text-gray-600 mb-4">{product.brand}</p>
               
               <div className="flex items-center gap-3 mb-6">
-                <span className="text-3xl font-bold text-black">€{product.discountedPrice}</span>
-                <span className="text-xl text-gray-400 line-through">€{product.price}</span>
+                <span className="text-3xl font-bold text-black">€{product.discountedPrice.toFixed(2)}</span>
+                <span className="text-xl text-gray-400 line-through">€{product.price.toFixed(2)}</span>
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
                   {mockInfluencer.discountPercent}% OFF
                 </span>
@@ -265,7 +265,7 @@ export default function CampaignPreview() {
 
   const router = useRouter();
 
-  // Load products from localStorage on component mount
+  // Load products and recommendations from localStorage on component mount
   useEffect(() => {
     const savedProducts = localStorage.getItem('selectedProducts');
     if (savedProducts) {
@@ -290,6 +290,18 @@ export default function CampaignPreview() {
     } else {
       // Use mock data if no saved products
       setProducts(mockSelectedProducts);
+    }
+
+    // Load saved recommendations
+    const savedRecommendations = localStorage.getItem('productRecommendations');
+    if (savedRecommendations) {
+      try {
+        const parsedRecommendations = JSON.parse(savedRecommendations);
+        setProductRecommendations(parsedRecommendations);
+        console.log('Loaded recommendations from localStorage:', parsedRecommendations);
+      } catch (error) {
+        console.error('Error parsing saved recommendations:', error);
+      }
     }
   }, []);
 
@@ -431,10 +443,19 @@ export default function CampaignPreview() {
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulace network delay
       
       // Uložit do local state
-      setProductRecommendations(prev => ({
-        ...prev,
+      const updatedRecommendations = {
+        ...productRecommendations,
         [editingRecommendation]: recommendationText.trim()
-      }));
+      };
+      
+      setProductRecommendations(updatedRecommendations);
+      
+      // Uložit do localStorage pro persistenci
+      localStorage.setItem('productRecommendations', JSON.stringify(updatedRecommendations));
+      console.log('Saved recommendation to localStorage:', {
+        productId: editingRecommendation,
+        text: recommendationText.trim()
+      });
       
     } catch (error) {
       console.error('Error saving recommendation:', error);
@@ -445,6 +466,23 @@ export default function CampaignPreview() {
   };
 
   const handleCancelRecommendation = () => {
+    setEditingRecommendation(null);
+    setRecommendationText('');
+  };
+
+  const handleDeleteRecommendation = () => {
+    if (!editingRecommendation) return;
+
+    // Smazat z local state
+    const updatedRecommendations = { ...productRecommendations };
+    delete updatedRecommendations[editingRecommendation];
+    
+    setProductRecommendations(updatedRecommendations);
+    
+    // Aktualizovat localStorage
+    localStorage.setItem('productRecommendations', JSON.stringify(updatedRecommendations));
+    console.log('Deleted recommendation from localStorage:', editingRecommendation);
+    
     setEditingRecommendation(null);
     setRecommendationText('');
   };
@@ -662,8 +700,8 @@ export default function CampaignPreview() {
                   <p className="text-sm text-gray-500 mb-3">{product.brand}</p>
                   
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg font-bold text-black">€{product.discountedPrice}</span>
-                    <span className="text-sm text-gray-400 line-through">€{product.price}</span>
+                    <span className="text-lg font-bold text-black">€{product.discountedPrice.toFixed(2)}</span>
+                    <span className="text-sm text-gray-400 line-through">€{product.price.toFixed(2)}</span>
                   </div>
                   
                   {/* Recommendation Section */}
@@ -1017,6 +1055,17 @@ export default function CampaignPreview() {
               >
                 Cancel
               </button>
+              
+              {/* Delete button - only show if recommendation already exists */}
+              {editingRecommendation && productRecommendations[editingRecommendation] && (
+                <button
+                  onClick={handleDeleteRecommendation}
+                  className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  Delete
+                </button>
+              )}
+              
               <button
                 onClick={handleSaveRecommendation}
                 disabled={!recommendationText.trim()}

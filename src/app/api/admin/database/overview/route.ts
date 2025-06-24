@@ -76,11 +76,20 @@ export async function GET() {
     // Globální statistiky
     const totalProfiles = countries.reduce((sum, c) => sum + c.totalProfiles, 0)
     const totalCountries = countries.length
+    const totalCategories = 8 // pevný počet simulovaných kategorií
+    const totalActiveProfiles = await prisma.influencerDatabase.count({
+      where: { isActive: true }
+    })
+    const activeRate = totalProfiles > 0 ? (totalActiveProfiles / totalProfiles) * 100 : 0
 
     return NextResponse.json({
-      totalProfiles,
-      totalCountries,
-      countries
+      countries,
+      globalStats: {
+        totalProfiles,
+        totalCountries,
+        totalCategories,
+        activeRate
+      }
     })
 
   } catch (error) {

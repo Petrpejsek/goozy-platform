@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 import MultiStepInfluencerForm from "@/components/MultiStepInfluencerForm";
 import BrandForm from "@/components/BrandForm";
+import AuthHeader from "@/components/AuthHeader";
+import AuthDebug from "@/components/AuthDebug";
 
 // Login Modal Component
 const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () => void; type: 'influencer' | 'brand' }) => {
@@ -252,19 +254,7 @@ export default function Home() {
               GOOZY
             </Link>
           </div>
-          <nav className="hidden lg:flex items-center space-x-8">
-            <DropdownMenu title="For Influencers">
-              <DropdownItem href="#for-influencers">How It Works</DropdownItem>
-              <DropdownItem href="#influencer-form">Apply Now</DropdownItem>
-              <DropdownItem href="/influencer/login">Login</DropdownItem>
-            </DropdownMenu>
-
-            <DropdownMenu title="For Brands">
-              <DropdownItem href="#for-brands">Partnership Info</DropdownItem>
-              <DropdownItem href="#brand-form">Get Started</DropdownItem>
-              <DropdownItem href="/brand/login">Brand Login</DropdownItem>
-            </DropdownMenu>
-          </nav>
+          <AuthHeader />
 
           {/* Mobile menu button */}
           <div className="lg:hidden">
@@ -286,8 +276,7 @@ export default function Home() {
             <span className="italic font-light">shoppable.</span>
           </h1>
           <p className="text-xl lg:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-            Join the platform where influencers earn from selling clothes
-            to their followers with exclusive discounts and commissions.
+            The leading platform connecting micro & nano influencers with brands.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link
@@ -759,17 +748,17 @@ export default function Home() {
       </section>
 
       {/* Influencer Form Section */}
-      <section id="influencer-form" className="px-6 lg:px-8 py-32 bg-black">
+      <section id="influencer-form" className="px-6 lg:px-8 py-24 bg-black">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
             Join the ultimate platform to monetize<br />
             <span className="italic font-light text-gray-400">your influence</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
             Join thousands of influencers who are already earning with Goozy.
           </p>
           
-          <div className="bg-white p-8 lg:p-12 rounded-3xl">
+          <div className="bg-white rounded-3xl">
             <MultiStepInfluencerForm />
           </div>
         </div>
@@ -778,53 +767,65 @@ export default function Home() {
       {/* Brand Section */}
       <section id="for-brands" className="px-6 lg:px-8 py-32">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-5xl lg:text-6xl font-bold text-black mb-8 tracking-tight leading-tight">
+          <div className="grid lg:grid-cols-2 gap-16 items-stretch min-h-[700px]">
+            <div className="flex flex-col justify-center">
+              <h2 className="text-3xl lg:text-4xl font-bold text-black mb-4 tracking-tight leading-tight">
                 Grow your brand with<br />
                 <span className="italic font-light text-gray-400">authentic</span><br />
                 partnerships
               </h2>
-              <p className="text-xl text-gray-600 mb-12 font-light leading-relaxed">
+              <p className="text-base text-gray-600 mb-6 font-light leading-relaxed">
                 Expand your reach through verified influencers with a quality community.
               </p>
               
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-white text-sm">✓</span>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">Verified Influencers</h4>
-                    <p className="text-gray-600">With a quality community and authentic content.</p>
+                    <h4 className="font-bold text-base mb-0.5">Verified Influencers</h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">With a quality community and authentic content.</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-white text-sm">✓</span>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">Automatic Integration</h4>
-                    <p className="text-gray-600">Connection with your warehouse and systems.</p>
+                    <h4 className="font-bold text-base mb-0.5">Automatic Integration</h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">Connection with your warehouse and systems.</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-white text-sm">✓</span>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-1">Detailed Analytics</h4>
-                    <p className="text-gray-600">Complete reporting and performance tracking.</p>
+                    <h4 className="font-bold text-base mb-0.5">Detailed Analytics</h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">Complete reporting and performance tracking.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-base mb-0.5">Easy Setup</h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">Quick onboarding and straightforward integration.</p>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div id="brand-form" className="bg-gray-50 p-8 lg:p-12 rounded-3xl">
-              <h3 className="text-2xl font-bold mb-6">Start Collaborating</h3>
-              <BrandForm />
+            <div className="flex flex-col">
+              <div id="brand-form" className="bg-gray-50 p-8 lg:p-12 rounded-3xl h-full flex flex-col justify-center">
+                <h3 className="text-2xl font-bold mb-6 text-center">Start Collaborating</h3>
+                <BrandForm />
+              </div>
             </div>
           </div>
         </div>
@@ -872,6 +873,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      
+      {/* Debug component for development */}
+      <AuthDebug />
     </div>
   );
 }

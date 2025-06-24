@@ -1,10 +1,48 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+interface BrandUser {
+  brandId: string
+  email: string
+  brandName: string
+}
 
 const PartnerSidebar = () => {
   const pathname = usePathname()
+  const router = useRouter()
+  const [user, setUser] = useState<BrandUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  
+  // Načíst informace o uživateli při načtení komponenty
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Zkusíme získat informace o uživateli z API
+        const response = await fetch('/api/auth/brand/verify', {
+          method: 'GET',
+          credentials: 'include'
+        })
+        
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData.user)
+        } else {
+          // Není přihlášený, přesměruj na login
+          router.push('/brand/login')
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        router.push('/brand/login')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router])
   
   // Určit aktuální stránku podle URL
   const getCurrentPage = () => {
@@ -14,6 +52,43 @@ const PartnerSidebar = () => {
     if (pathname.startsWith('/partner-company/analytics')) return 'analytics'
     if (pathname.startsWith('/partner-company/settings')) return 'settings'
     return 'dashboard'
+  }
+
+  // Funkce pro odhlášení
+  const handleLogout = async () => {
+    try {
+      // Zavolat API pro odhlášení
+      const response = await fetch('/api/auth/brand/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        // Přesměrovat na login stránku
+        router.push('/brand/login')
+      } else {
+        console.error('Logout failed')
+        // I když API selže, přesměrujeme uživatele (cookies může smazat i frontend)
+        router.push('/brand/login')
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+      // I při chybě přesměrujeme na login
+      router.push('/brand/login')
+    }
+  }
+
+  // Pokud se ještě načítá, zobraz loading
+  if (isLoading) {
+    return (
+      <div className="w-64 bg-white h-screen shadow-lg border-r border-gray-100 fixed left-0 top-0 z-40">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    )
   }
   
   const currentPage = getCurrentPage()
@@ -75,9 +150,10 @@ const PartnerSidebar = () => {
   return (
     <div className="w-64 bg-white h-screen shadow-lg border-r border-gray-100 fixed left-0 top-0 z-40">
       <div className="p-6 border-b border-gray-100">
-        <Link href="/" className="flex items-center">
-          <h1 className="text-2xl font-bold text-blue-600 tracking-tight">PARTNER</h1>
-          <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">PORTAL</span>
+        <Link href="/" className="block">
+          <h1 className="text-lg font-bold text-blue-600 tracking-tight text-center">
+            {user?.brandName?.toUpperCase() || 'PARTNER'} PORTAL
+          </h1>
         </Link>
       </div>
 
@@ -101,18 +177,32 @@ const PartnerSidebar = () => {
         </ul>
       </nav>
 
-      {/* User Info */}
+      {/* User Info with Logout */}
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        <div className="space-y-3">
+          {/* User Info */}
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">{user?.brandName || 'Brand Admin'}</p>
+              <p className="text-xs text-gray-500">{user?.email || 'Loading...'}</p>
+            </div>
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200 group"
+          >
+            <svg className="w-4 h-4 mr-2 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">Brand Admin</p>
-            <p className="text-xs text-gray-500">partner@company.com</p>
-          </div>
+            Log Out
+          </button>
         </div>
       </div>
     </div>

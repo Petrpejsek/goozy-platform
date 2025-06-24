@@ -5,7 +5,7 @@ import ProductQuickView from '@/components/ProductQuickView'
 import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
 export default async function AdminDashboard() {
-  const [influencerApplications, brandApplications, products, approvedBrands, brandsWithTargetCountries] = await Promise.all([
+  const [influencerApplications, brandApplications, products, activeCampaigns, upcomingCampaigns, approvedInfluencers] = await Promise.all([
     prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.product.findMany({
@@ -13,34 +13,30 @@ export default async function AdminDashboard() {
       orderBy: { createdAt: 'desc' },
       take: 10,
     }),
-    prisma.brand.count(),
-    // Získám všechny značky s jejich targetCountries
-    prisma.brand.findMany({
-      select: { targetCountries: true },
+    // Počet aktivních kampaní (probíhají právě teď)
+    prisma.campaign.count({
       where: {
-        targetCountries: {
-          not: "[]" // pouze značky, které mají nastavené země
-        }
+        AND: [
+          { startDate: { lte: new Date() } },
+          { endDate: { gte: new Date() } },
+          { status: 'active' }
+        ]
       }
+    }),
+    // Počet nadcházejících kampaní (začínají v budoucnu)
+    prisma.campaign.count({
+      where: {
+        startDate: { gt: new Date() }
+      }
+    }),
+    // Skutečný počet schválených influencerů
+    prisma.influencerApplication.count({
+      where: { status: 'approved' }
     })
   ]);
   
-  const pendingInfluencers = influencerApplications.filter(app => app.status === 'PENDING').length;
-  const pendingBrands = brandApplications.filter(app => app.status === 'PENDING').length;
-  
-  // Spočítám unikátní země, kde značky povolily prodej
-  const allTargetCountries = new Set<string>();
-  brandsWithTargetCountries.forEach(brand => {
-    try {
-      const countries = JSON.parse(brand.targetCountries);
-      if (Array.isArray(countries)) {
-        countries.forEach(country => allTargetCountries.add(country));
-      }
-    } catch (e) {
-      // Ignoruji chybné JSON
-    }
-  });
-  const activeCountriesCount = allTargetCountries.size;
+  const pendingInfluencers = influencerApplications.filter(app => app.status === 'pending').length;
+  const pendingBrands = brandApplications.filter(app => app.status === 'pending').length;
 
   return (
     <div>
@@ -76,9 +72,21 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <StatCard title="Pending Influencers" value={pendingInfluencers} color="yellow" />
           <StatCard title="Pending Brands" value={pendingBrands} color="yellow" />
-          <StatCard title="Approved Influencers" value={12} color="green" />
-          <StatCard title="Active Brands" value={approvedBrands} color="green" />
-          <StatCard title="Active Countries" value={activeCountriesCount} color="blue" />
+          <StatCard title="Approved Influencers" value={approvedInfluencers} color="green" />
+          <ClickableStatCard 
+            title="Active Campaigns" 
+            value={activeCampaigns} 
+            color="green" 
+            href="/admin/campaigns"
+            description="Currently running campaigns"
+          />
+          <ClickableStatCard 
+            title="Upcoming Campaigns" 
+            value={upcomingCampaigns} 
+            color="blue" 
+            href="/admin/campaigns"
+            description="Scheduled campaigns"
+          />
         </div>
 
         {/* Applications Section */}
@@ -163,5 +171,69 @@ const StatCard = ({ title, value, color }: { title: string, value: number, color
         </div>
       </div>
     </div>
+  )
+}
+
+const ClickableStatCard = ({ 
+  title, 
+  value, 
+  color, 
+  href, 
+  description 
+}: { 
+  title: string, 
+  value: number, 
+  color: 'yellow' | 'green' | 'blue',
+  href: string,
+  description: string
+}) => {
+  const colors = {
+    yellow: 'text-yellow-600 bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
+    green: 'text-green-600 bg-green-50 border-green-200 hover:bg-green-100',
+    blue: 'text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100',
+  }
+  
+  const campaignIcons = {
+    green: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+      </svg>
+    ),
+    blue: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    yellow: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  }
+
+  return (
+    <Link href={href} className="group">
+      <div className={`bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer transition-all duration-200 hover:shadow-md transform hover:-translate-y-1 ${colors[color]}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+            <p className="text-xs text-gray-500">{description}</p>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110`}>
+            {campaignIcons[color]}
+          </div>
+        </div>
+        
+        {/* Hover arrow indicator */}
+        <div className="mt-3 flex items-center text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="mr-1">View campaigns</span>
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </Link>
   )
 } 

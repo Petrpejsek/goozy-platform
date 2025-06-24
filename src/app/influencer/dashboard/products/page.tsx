@@ -188,17 +188,55 @@ export default function InfluencerProductCatalog() {
   }, [allProducts, selectedCategory, selectedBrand])
 
   useEffect(() => {
+    // Jednorázově vyčistit localStorage od starých mock dat
+    const savedData = localStorage.getItem('selectedProducts')
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData)
+        // Pokud obsahuje mock data (typicky objekty s mock ID), vyčistit
+        if (Array.isArray(parsed) && parsed.some(p => 
+          typeof p.id === 'string' && (
+            p.id.includes('mock') || 
+            p.id.length < 5 || // Velmi krátké ID jsou pravděpodobně mock
+            !p.id.includes('cm') // Skutečné ID z databáze začínají 'cm'
+          )
+        )) {
+          localStorage.removeItem('selectedProducts')
+          console.log('🧹 Cleared old mock data from localStorage')
+        }
+      } catch (e) {
+        localStorage.removeItem('selectedProducts')
+        console.log('🧹 Cleared invalid localStorage data')
+      }
+    }
+    
     fetchInitialData()
   }, [])
+
+  // Update brands when products change
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      fetchBrands()
+    }
+  }, [allProducts])
+
+  // Load saved products after products are loaded
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      loadSavedProducts()
+    }
+  }, [allProducts])
 
   const fetchInitialData = async () => {
     setLoading(true);
     try {
+      // First fetch products and categories in parallel
       await Promise.all([
         fetchCategories(),
-        fetchBrands(),
         fetchProducts(),
       ]);
+      // Then fetch brands based on loaded products
+      fetchBrands();
     } catch (err) {
       setError('Failed to load initial data.');
     } finally {
@@ -237,18 +275,76 @@ export default function InfluencerProductCatalog() {
   }
 
   const fetchBrands = async () => {
-    // Mock data pro značky - později můžeme nahradit API dotazem
-    const mockBrands = [
-      { name: 'Nike', count: 12 },
-      { name: 'Adidas', count: 8 },
-      { name: 'Puma', count: 6 },
-      { name: 'Under Armour', count: 4 },
-      { name: 'New Balance', count: 3 },
-      { name: 'Reebok', count: 2 },
-    ]
-    
-    const totalCount = mockBrands.reduce((acc, brand) => acc + brand.count, 0)
-    setBrands([{ name: 'All', count: totalCount }, ...mockBrands])
+    try {
+      // Get real brands from the products data
+      const brandCounts: { [key: string]: number } = {}
+      allProducts.forEach(product => {
+        const brandName = product.brand.name
+        brandCounts[brandName] = (brandCounts[brandName] || 0) + 1
+      })
+      
+      const realBrands = Object.entries(brandCounts).map(([name, count]) => ({
+        name,
+        count
+      }))
+      
+      const totalCount = realBrands.reduce((acc, brand) => acc + brand.count, 0)
+      setBrands([{ name: 'All', count: totalCount }, ...realBrands])
+    } catch (err) {
+      console.error('Failed to fetch brands:', err)
+      setBrands([{ name: 'All', count: 0 }])
+    }
+  }
+
+  const loadSavedProducts = async () => {
+    try {
+      // Pro teď použijeme localStorage fallback, až bude autentizace, použijeme API
+      const savedFromStorage = localStorage.getItem('selectedProducts')
+      if (savedFromStorage) {
+        const savedProducts = JSON.parse(savedFromStorage)
+        
+        // Zkontrolovat, jestli jsou uložené produkty validní
+        if (Array.isArray(savedProducts) && savedProducts.length > 0) {
+          // Filtrovat jen produkty, které existují v aktuální databázi
+          const validProductIds = savedProducts
+            .filter(p => p && p.id && allProducts.some(product => product.id === p.id))
+            .map(p => p.id)
+          
+          if (validProductIds.length > 0) {
+            setSelectedProducts(new Set(validProductIds))
+            console.log(`Loaded ${validProductIds.length} valid previously saved products`)
+          } else {
+            // Pokud nejsou žádné validní produkty, vyčistit localStorage
+            localStorage.removeItem('selectedProducts')
+            console.log('Cleared invalid product data from localStorage')
+          }
+        } else {
+          // Nevalidní formát, vyčistit
+          localStorage.removeItem('selectedProducts')
+          console.log('Cleared invalid localStorage format')
+        }
+      }
+      
+      // TODO: Až bude autentizace implementována, použít tento API call:
+      /*
+      const response = await fetch('/api/influencer/products', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const savedProductIds = data.products.map((p: Product) => p.id)
+        setSelectedProducts(new Set(savedProductIds))
+        console.log(`Loaded ${savedProductIds.length} previously saved products from API`)
+      }
+      */
+    } catch (err) {
+      console.error('Failed to load saved products:', err)
+    }
   }
 
   // Optimized change handlers - no API call needed
@@ -268,9 +364,15 @@ export default function InfluencerProductCatalog() {
       } else {
         newSelected.add(productId)
       }
+      
+      // Automaticky uložit výběr do localStorage
+      const selectedProductsArray = allProducts.filter(p => newSelected.has(p.id))
+      localStorage.setItem('selectedProducts', JSON.stringify(selectedProductsArray))
+      console.log(`Auto-saved ${newSelected.size} selected products to localStorage`)
+      
       return newSelected
     })
-  }, [])
+  }, [allProducts])
 
   const toggleCardFlip = useCallback((productId: string) => {
     setFlippedCards(prev => {
@@ -329,9 +431,7 @@ export default function InfluencerProductCatalog() {
             <button
               onClick={() => {
                 if (selectedProducts.size > 0) {
-                  // Store selected products in localStorage for the campaign preview
-                  const selectedProductsArray = filteredProducts.filter(p => selectedProducts.has(p.id));
-                  localStorage.setItem('selectedProducts', JSON.stringify(selectedProductsArray));
+                  // Products are already saved automatically in localStorage
                   router.push('/influencer/campaign/preview');
                 }
               }}
@@ -618,9 +718,9 @@ export default function InfluencerProductCatalog() {
                               </span>
                             </div>
                             <div className="text-right">
-                              <div className="text-xs text-gray-500 mb-1">Your commission</div>
+                              <div className="text-xs text-gray-500 mb-1">Commission</div>
                               <div className="text-sm font-semibold text-green-600">
-                                €{(product.price * 0.15).toFixed(2)}
+                                €{(product.price * 0.15).toFixed(2)} (15%)
                               </div>
                             </div>
                           </div>
@@ -688,12 +788,11 @@ export default function InfluencerProductCatalog() {
                             {product.description && (
                               <div>
                                 <h5 className="font-medium text-gray-900 mb-1 text-xs">Description</h5>
-                                <p className="text-gray-600 text-xs leading-snug">
-                                  {product.description.length > 120 
-                                    ? `${product.description.substring(0, 120)}...` 
-                                    : product.description
-                                  }
-                                </p>
+                                <div className="max-h-20 overflow-y-auto">
+                                  <p className="text-gray-600 text-xs leading-snug pr-2">
+                                    {product.description}
+                                  </p>
+                                </div>
                               </div>
                             )}
                             
@@ -723,7 +822,7 @@ export default function InfluencerProductCatalog() {
                               <div className="text-right">
                                 <div className="text-xs text-gray-500">Commission</div>
                                 <div className="text-sm font-semibold text-green-600">
-                                  €{(product.price * 0.15).toFixed(2)}
+                                  €{(product.price * 0.15).toFixed(2)} (15%)
                                 </div>
                               </div>
                             </div>

@@ -1,56 +1,84 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
-// Mock data
-const mockAnalyticsData = {
-  totalRevenue: 245680,
-  totalOrders: 1286,
-  averageOrderValue: 191.15,
-  conversionRate: 4.2,
-  topProducts: [
-    { name: 'Summer Dress Collection', revenue: 45680, orders: 234, percentage: 18.6 },
-    { name: 'Urban Sneakers', revenue: 38920, orders: 189, percentage: 15.8 },
-    { name: 'Designer Handbags', revenue: 32450, orders: 156, percentage: 13.2 },
-    { name: 'Casual T-Shirts', revenue: 28340, orders: 142, percentage: 11.5 }
-  ],
+interface BrandData {
+  brandName: string
+  contactName: string
+  email: string
+}
+
+// Skutečné údaje - zatím všechny nula, protože nejsou implementovány kampaně
+const realAnalyticsData = {
+  totalRevenue: 0,
+  totalOrders: 0,
+  averageOrderValue: 0,
+  conversionRate: 0,
+  topProducts: [], // Prázdný seznam
   monthlyRevenue: [
-    { month: 'Jan', revenue: 18450 },
-    { month: 'Feb', revenue: 22100 },
-    { month: 'Mar', revenue: 19800 },
-    { month: 'Apr', revenue: 25600 },
-    { month: 'May', revenue: 28900 },
-    { month: 'Jun', revenue: 32450 }
+    { month: 'Jan', revenue: 0 },
+    { month: 'Feb', revenue: 0 },
+    { month: 'Mar', revenue: 0 },
+    { month: 'Apr', revenue: 0 },
+    { month: 'May', revenue: 0 },
+    { month: 'Jun', revenue: 0 }
   ]
 }
 
 export default function AnalyticsPage() {
+  const [brandData, setBrandData] = useState<BrandData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('6m')
-  const [selectedView, setSelectedView] = useState('overview') // 'overview', 'revenue', 'orders', 'products', 'conversion'
+  const [selectedView, setSelectedView] = useState('overview')
 
-  // Mock detailed data
-  const revenueByDays = [
-    { date: '2024-06-15', revenue: 2850, orders: 12 },
-    { date: '2024-06-16', revenue: 3200, orders: 15 },
-    { date: '2024-06-17', revenue: 2950, orders: 11 },
-    { date: '2024-06-18', revenue: 3800, orders: 18 },
-    { date: '2024-06-19', revenue: 4200, orders: 21 },
-    { date: '2024-06-20', revenue: 3650, orders: 16 },
-    { date: '2024-06-21', revenue: 4100, orders: 19 }
-  ]
+  useEffect(() => {
+    const fetchBrandData = async () => {
+      try {
+        const response = await fetch('/api/auth/brand/verify')
+        if (response.ok) {
+          const data = await response.json()
+          setBrandData(data.brand)
+        }
+      } catch (err) {
+        console.error('Error loading brand data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const orderDetails = [
-    { id: '#12856', date: '2024-06-21', customer: 'Anna Nováková', products: 2, total: 2850, status: 'Completed' },
-    { id: '#12855', date: '2024-06-21', customer: 'Petr Svoboda', products: 1, total: 1200, status: 'Completed' },
-    { id: '#12854', date: '2024-06-20', customer: 'Marie Dvořáková', products: 3, total: 3650, status: 'Processing' },
-    { id: '#12853', date: '2024-06-20', customer: 'Jan Novák', products: 1, total: 890, status: 'Completed' },
-    { id: '#12852', date: '2024-06-19', customer: 'Eva Procházková', products: 2, total: 2100, status: 'Completed' },
-    { id: '#12851', date: '2024-06-19', customer: 'Tomáš Černý', products: 4, total: 4200, status: 'Shipped' }
-  ]
+    fetchBrandData()
+  }, [])
+
+  // Skutečné údaje - zatím prázdné seznamy
+  const revenueByDays: any[] = [] // Žádné denní příjmy
+  const orderDetails: any[] = [] // Žádné objednávky
 
   const exportData = () => {
-    // Mock export functionality
-    alert('Analytics data exported successfully!')
+    alert('No data available to export yet. Data will be available once campaigns are active.')
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-64 z-30">
+          <div className="flex items-center justify-between h-full px-8">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Analytics & Reports</h2>
+              <p className="text-sm text-gray-500">Track your performance and revenue</p>
+            </div>
+          </div>
+        </header>
+        
+        <main className="pt-24 p-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading analytics...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -112,7 +140,7 @@ export default function AnalyticsPage() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate group-hover:text-green-600 transition-colors">Total Revenue</dt>
                   <dd className="text-2xl font-bold text-gray-900">
-                    Kč{mockAnalyticsData.totalRevenue.toLocaleString('cs-CZ')}
+                    Kč{realAnalyticsData.totalRevenue.toLocaleString('cs-CZ')}
                   </dd>
                 </dl>
               </div>
@@ -136,7 +164,7 @@ export default function AnalyticsPage() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate group-hover:text-blue-600 transition-colors">Total Orders</dt>
                   <dd className="text-2xl font-bold text-gray-900">
-                    {mockAnalyticsData.totalOrders.toLocaleString()}
+                    {realAnalyticsData.totalOrders.toLocaleString()}
                   </dd>
                 </dl>
               </div>
@@ -157,7 +185,7 @@ export default function AnalyticsPage() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Avg. Order Value</dt>
                   <dd className="text-2xl font-bold text-gray-900">
-                    Kč{mockAnalyticsData.averageOrderValue.toFixed(0)}
+                    Kč{realAnalyticsData.averageOrderValue.toFixed(0)}
                   </dd>
                 </dl>
               </div>
@@ -177,7 +205,7 @@ export default function AnalyticsPage() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Conversion Rate</dt>
                   <dd className="text-2xl font-bold text-gray-900">
-                    {mockAnalyticsData.conversionRate}%
+                    {realAnalyticsData.conversionRate}%
                   </dd>
                 </dl>
               </div>
@@ -204,36 +232,48 @@ export default function AnalyticsPage() {
         {selectedView === 'revenue' && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Daily Revenue Breakdown</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Order Value</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {revenueByDays.map((day, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {new Date(day.date).toLocaleDateString('cs-CZ')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
-                        Kč{day.revenue.toLocaleString('cs-CZ')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {day.orders}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        Kč{Math.round(day.revenue / day.orders).toLocaleString('cs-CZ')}
-                      </td>
+            {revenueByDays.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No revenue data yet</h3>
+                <p className="text-gray-500">Revenue breakdown will appear here once campaigns generate sales.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Order Value</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {revenueByDays.map((day: any, index: number) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {new Date(day.date).toLocaleDateString('cs-CZ')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                          Kč{day.revenue.toLocaleString('cs-CZ')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {day.orders}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          Kč{Math.round(day.revenue / day.orders).toLocaleString('cs-CZ')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -241,51 +281,63 @@ export default function AnalyticsPage() {
         {selectedView === 'orders' && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Orders</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {orderDetails.map((order, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                        {order.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(order.date).toLocaleDateString('cs-CZ')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {order.customer}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {order.products} items
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
-                        Kč{order.total.toLocaleString('cs-CZ')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                          order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
+            {orderDetails.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+                <p className="text-gray-500">Order details will appear here once customers start purchasing through campaigns.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {orderDetails.map((order: any, index: number) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                          {order.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(order.date).toLocaleDateString('cs-CZ')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.customer}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.products} items
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                          Kč{order.total.toLocaleString('cs-CZ')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            order.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                            order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -297,9 +349,9 @@ export default function AnalyticsPage() {
             <h3 className="text-lg font-bold text-gray-900 mb-4">Monthly Revenue Trend</h3>
             <div className="mt-2">
               <div className="space-y-3">
-                {mockAnalyticsData.monthlyRevenue.map((month, index) => {
-                  const maxRevenue = Math.max(...mockAnalyticsData.monthlyRevenue.map(m => m.revenue))
-                  const width = (month.revenue / maxRevenue) * 100
+                {realAnalyticsData.monthlyRevenue.map((month, index) => {
+                  const maxRevenue = Math.max(...realAnalyticsData.monthlyRevenue.map(m => m.revenue), 1) // Min 1 to avoid division by 0
+                  const width = month.revenue === 0 ? 5 : (month.revenue / maxRevenue) * 100 // Show minimal bar for 0
                   return (
                     <div key={index} className="flex items-center">
                       <div className="w-12 text-xs text-gray-500 font-medium">
@@ -308,11 +360,11 @@ export default function AnalyticsPage() {
                       <div className="flex-1 mx-3">
                         <div className="bg-gray-200 rounded-full h-6">
                           <div 
-                            className="bg-blue-600 h-6 rounded-full flex items-center justify-end pr-2" 
+                            className={`${month.revenue === 0 ? 'bg-gray-300' : 'bg-blue-600'} h-6 rounded-full flex items-center justify-end pr-2`}
                             style={{ width: `${width}%` }}
                           >
-                            <span className="text-white text-xs font-medium">
-                              Kč{(month.revenue / 1000).toFixed(0)}K
+                            <span className={`${month.revenue === 0 ? 'text-gray-500' : 'text-white'} text-xs font-medium`}>
+                              Kč{month.revenue.toLocaleString('cs-CZ')}
                             </span>
                           </div>
                         </div>
@@ -321,33 +373,50 @@ export default function AnalyticsPage() {
                   )
                 })}
               </div>
+              {realAnalyticsData.monthlyRevenue.every(m => m.revenue === 0) && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-500">No revenue data yet. Charts will show data once campaigns generate sales.</p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Top Products */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Top Performing Products</h3>
-            <div className="space-y-4">
-              {mockAnalyticsData.topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <span className="text-blue-600 font-bold text-sm">#{index + 1}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                      <p className="text-xs text-gray-500">{product.orders} orders</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-gray-900">
-                      Kč{product.revenue.toLocaleString('cs-CZ')}
-                    </p>
-                    <p className="text-xs text-gray-500">{product.percentage}%</p>
-                  </div>
+            {realAnalyticsData.topProducts.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
                 </div>
-              ))}
-            </div>
+                <h4 className="text-sm font-medium text-gray-900 mb-2">No product data yet</h4>
+                <p className="text-xs text-gray-500">Top products will appear here once sales start coming in.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {realAnalyticsData.topProducts.map((product: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <span className="text-blue-600 font-bold text-sm">#{index + 1}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                        <p className="text-xs text-gray-500">{product.orders} orders</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-gray-900">
+                        Kč{product.revenue.toLocaleString('cs-CZ')}
+                      </p>
+                      <p className="text-xs text-gray-500">{product.percentage}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         )}

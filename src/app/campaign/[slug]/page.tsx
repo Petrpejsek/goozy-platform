@@ -3,6 +3,36 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 
+// Load campaign data from database by slug
+const loadCampaignDataBySlug = async (slug: string) => {
+  try {
+    console.log('🔍 Loading campaign data for slug:', slug)
+    
+    // Try to fetch campaign from database first
+    const response = await fetch(`/api/campaign/${slug}`)
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success) {
+        console.log('✅ Campaign loaded from database:', result.campaign)
+        return result.campaign
+      }
+    }
+    
+    // Fallback to localStorage for backward compatibility
+    const savedCampaign = localStorage.getItem('activeCampaign')
+    if (savedCampaign) {
+      const campaignData = JSON.parse(savedCampaign)
+      console.log('📦 Loaded campaign from localStorage:', campaignData)
+      return campaignData
+    }
+    
+    return null
+  } catch (error) {
+    console.error('Error loading campaign data:', error)
+    return null
+  }
+}
+
 // Mock data pro live kampani (později z databáze)
 const mockCampaignData = {
   influencer: {
@@ -19,8 +49,8 @@ const mockCampaignData = {
     }
   },
   campaign: {
-    startDate: new Date(Date.now() + 2 * 60 * 1000).toISOString(), // Kampaň začíná za 2 minuty
-    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Kampaň končí za 3 dny
+    startDate: new Date(Date.now() + 2 * 60 * 1000).toISOString(), // Fallback: Kampaň začíná za 2 minuty
+    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Fallback: Kampaň končí za 3 dny
     isActive: false // Kampaň ještě nezačala
   },
   products: [
@@ -270,12 +300,12 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart }: any) => {
             
             <div>
               <h3 className="text-2xl font-bold mb-2">{product.name}</h3>
-              <p className="text-gray-600 mb-4">{product.brand}</p>
+              <p className="text-gray-600 mb-4">{typeof product.brand === 'object' ? product.brand?.name || 'Unknown Brand' : product.brand}</p>
               <p className="text-gray-700 mb-6">{product.description}</p>
               
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-2xl font-bold text-black">€{product.discountedPrice}</span>
-                <span className="text-lg text-gray-400 line-through">€{product.price}</span>
+                <span className="text-2xl font-bold text-black">€{typeof product.discountedPrice === 'number' ? product.discountedPrice.toFixed(2) : product.discountedPrice}</span>
+                <span className="text-lg text-gray-400 line-through">€{typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</span>
                 <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
                   {mockCampaignData.influencer.discountPercent}% OFF
                 </span>
@@ -349,8 +379,89 @@ export default function LiveCampaign() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [discountCodeCopied, setDiscountCodeCopied] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [campaignData, setCampaignData] = useState<any>(null)
+  const [realProducts, setRealProducts] = useState<any[]>([])
+  const [productRecommendations, setProductRecommendations] = useState<any>({})
 
-  const { influencer, campaign, products } = mockCampaignData
+  // Load real campaign data, products and recommendations on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      // Try to load campaign by slug first
+      if (params?.slug) {
+        const realCampaignData = await loadCampaignDataBySlug(params.slug as string)
+        if (realCampaignData) {
+          console.log('Loaded real campaign data:', realCampaignData)
+          setCampaignData(realCampaignData)
+        } else {
+          console.log('No campaign data found for slug, using mock data')
+        }
+      }
+
+      // Load real products from localStorage
+      try {
+        const savedProducts = localStorage.getItem('selectedProducts')
+        if (savedProducts) {
+          const parsedProducts = JSON.parse(savedProducts)
+          console.log('Loaded real products:', parsedProducts)
+          setRealProducts(parsedProducts)
+        }
+      } catch (error) {
+        console.error('Error loading products:', error)
+      }
+
+      // Load product recommendations from localStorage
+      try {
+        const savedRecommendations = localStorage.getItem('productRecommendations')
+        if (savedRecommendations) {
+          const parsedRecommendations = JSON.parse(savedRecommendations)
+          console.log('Loaded product recommendations:', parsedRecommendations)
+          setProductRecommendations(parsedRecommendations)
+        }
+      } catch (error) {
+        console.error('Error loading recommendations:', error)
+      }
+    }
+    
+    loadData()
+  }, [params?.slug])
+
+  // Use real campaign data if available, otherwise fallback to mock data
+  const { influencer, campaign: mockCampaign, products: mockProducts } = mockCampaignData
+  const campaign = campaignData ? {
+    startDate: campaignData.startDate,
+    endDate: campaignData.endDate,
+    isActive: false // Will be calculated below
+  } : mockCampaign
+
+  // Use real products with recommendations if available, otherwise fallback to mock data
+  const products = realProducts.length > 0 ? realProducts.map(product => {
+    // Safely parse sizes and colors if they are strings
+    let sizes = product.sizes
+    let colors = product.colors
+    
+    if (typeof sizes === 'string') {
+      try {
+        sizes = JSON.parse(sizes)
+      } catch {
+        sizes = sizes.split(',').map((s: string) => s.trim()).filter(Boolean)
+      }
+    }
+    
+    if (typeof colors === 'string') {
+      try {
+        colors = JSON.parse(colors)
+      } catch {
+        colors = colors.split(',').map((c: string) => c.trim()).filter(Boolean)
+      }
+    }
+    
+    return {
+      ...product,
+      sizes,
+      colors,
+      recommendation: productRecommendations[product.id] || null
+    }
+  }) : mockProducts
 
   // Update current time every second
   useEffect(() => {
@@ -692,12 +803,12 @@ export default function LiveCampaign() {
                   
                   <div className="p-6">
                     <h4 className="font-semibold text-gray-900 mb-2 text-lg">{product.name}</h4>
-                    <p className="text-sm text-gray-500 mb-4">{product.brand}</p>
+                    <p className="text-sm text-gray-500 mb-4">{typeof product.brand === 'object' ? product.brand?.name || 'Unknown Brand' : product.brand}</p>
                     
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-xl font-bold text-black">€{product.discountedPrice}</span>
-                        <span className="text-sm text-gray-400 line-through">€{product.price}</span>
+                        <span className="text-xl font-bold text-black">€{typeof product.discountedPrice === 'number' ? product.discountedPrice.toFixed(2) : product.discountedPrice}</span>
+                        <span className="text-sm text-gray-400 line-through">€{typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</span>
                       </div>
                     </div>
                     

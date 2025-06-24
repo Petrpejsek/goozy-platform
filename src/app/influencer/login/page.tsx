@@ -7,6 +7,7 @@ import Link from 'next/link'
 export default function InfluencerLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
@@ -27,7 +28,20 @@ export default function InfluencerLoginPage() {
 
       if (response.ok) {
         const data = await response.json()
-        // TODO: Handle session/token
+        console.log('✅ Login successful, saving token and user data')
+        
+        // Save authentication token and user data 
+        if (rememberMe) {
+          // Use localStorage for persistent storage
+          localStorage.setItem('influencer_token', data.token)
+          localStorage.setItem('influencer_user', JSON.stringify(data.influencer))
+        } else {
+          // Use sessionStorage for session-only storage
+          sessionStorage.setItem('influencer_token', data.token)
+          sessionStorage.setItem('influencer_user', JSON.stringify(data.influencer))
+        }
+        
+        console.log('Redirecting to dashboard...')
         router.push('/influencer/dashboard')
       } else {
         const errorData = await response.json()
@@ -103,6 +117,19 @@ export default function InfluencerLoginPage() {
           </div>
 
           <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                Stay logged in
+              </label>
+            </div>
             <div className="text-sm">
               <a href="#" className="font-medium text-black hover:underline">
                 Forgot your password?

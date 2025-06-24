@@ -182,24 +182,24 @@ export default function MultiStepInfluencerForm() {
   }
 
   return (
-    <div className="bg-white p-8 lg:p-12 rounded-3xl shadow-sm border border-gray-100">
+    <div className="bg-white p-6 lg:p-8 rounded-3xl shadow-sm border border-gray-100">
       {/* Show success message only after submission */}
       {isSubmitted ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center py-8">
+          <div className="w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-2xl font-semibold text-gray-900 mb-4">Thank You!</h3>
-          <p className="text-gray-600 text-lg leading-relaxed">
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Thank You!</h3>
+          <p className="text-gray-600 leading-relaxed">
             {message}
           </p>
         </div>
       ) : (
         <>
           {/* Progress bar */}
-          <div className="w-full mb-12">
+          <div className="w-full mb-8">
             {/* Layer for circles and lines */}
             <div className="flex items-center justify-between">
               {/* Step 1 */}
@@ -239,7 +239,7 @@ export default function MultiStepInfluencerForm() {
           </div>
 
           {message && (
-            <div className={`mb-6 p-4 rounded-lg text-sm ${
+            <div className={`mb-4 p-3 rounded-lg text-sm ${
               messageType === 'success' 
                 ? 'bg-green-50 text-green-800 border border-green-200' 
                 : 'bg-red-50 text-red-800 border border-red-200'
@@ -250,12 +250,12 @@ export default function MultiStepInfluencerForm() {
 
           {/* Step 1: Basic Info */}
       {currentStep === 1 && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Basic Info</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-center mb-4 text-gray-900">Basic Info</h3>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Full Name *
               </label>
               <input
@@ -263,12 +263,12 @@ export default function MultiStepInfluencerForm() {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="John Doe"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Email *
               </label>
               <input
@@ -276,15 +276,15 @@ export default function MultiStepInfluencerForm() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="john.doe@example.com"
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Password *
               </label>
               <input
@@ -292,12 +292,12 @@ export default function MultiStepInfluencerForm() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({...prev, password: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="At least 6 characters"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Confirm Password *
               </label>
               <input
@@ -305,13 +305,13 @@ export default function MultiStepInfluencerForm() {
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData(prev => ({...prev, confirmPassword: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="Enter your password again"
               />
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-2">
             <button
               onClick={nextStep}
               className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-colors font-semibold flex items-center gap-2"
@@ -324,64 +324,64 @@ export default function MultiStepInfluencerForm() {
 
       {/* Step 2: Social Networks */}
       {currentStep === 2 && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Social Networks</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-center mb-4 text-gray-900">Social Networks</h3>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Instagram
               </label>
               <input
                 type="text"
                 value={formData.instagram}
                 onChange={(e) => setFormData(prev => ({...prev, instagram: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="@username"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 TikTok
               </label>
               <input
                 type="text"
                 value={formData.tiktok}
                 onChange={(e) => setFormData(prev => ({...prev, tiktok: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="@username"
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 YouTube
               </label>
               <input
                 type="text"
                 value={formData.youtube}
                 onChange={(e) => setFormData(prev => ({...prev, youtube: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="Channel Name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Facebook
               </label>
               <input
                 type="text"
                 value={formData.facebook}
                 onChange={(e) => setFormData(prev => ({...prev, facebook: e.target.value}))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="Profile Name or URL"
               />
             </div>
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-2">
             <button
               onClick={prevStep}
               className="border border-gray-300 text-gray-700 px-8 py-3 rounded-full hover:bg-gray-50 transition-colors font-semibold"
@@ -400,37 +400,37 @@ export default function MultiStepInfluencerForm() {
 
       {/* Step 3: Content & Preferences */}
       {currentStep === 3 && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-center mb-6 text-gray-900">Content & Preferences</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-center mb-4 text-gray-900">Content & Preferences</h3>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-4">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               What categories does your content fit into? *
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
               {['Fashion', 'Beauty', 'Lifestyle', 'Travel', 'Food', 'Fitness'].map(cat => (
-                <label key={cat} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <label key={cat} className="flex items-center space-x-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50">
                   <input
                     type="checkbox"
                     checked={formData.categories.includes(cat)}
                     onChange={(e) => handleCategoryChange(cat, e.target.checked)}
-                    className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
+                    className="h-4 w-4 rounded text-black focus:ring-black border-gray-300"
                   />
-                  <span className="text-gray-900 font-medium">{cat}</span>
+                  <span className="text-gray-900 font-medium text-sm">{cat}</span>
                 </label>
               ))}
             </div>
             
             {/* Other category row */}
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 flex-shrink-0">
+            <div className="flex items-center space-x-3">
+              <label className="flex items-center space-x-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={formData.categories.includes('Other')}
                   onChange={(e) => handleOtherCategoryChange(e.target.checked)}
-                  className="h-5 w-5 rounded text-black focus:ring-black border-gray-300"
+                  className="h-4 w-4 rounded text-black focus:ring-black border-gray-300"
                 />
-                <span className="text-gray-900 font-medium">Other</span>
+                <span className="text-gray-900 font-medium text-sm">Other</span>
               </label>
               
               {formData.categories.includes('Other') && (
@@ -439,26 +439,26 @@ export default function MultiStepInfluencerForm() {
                   value={formData.customCategory}
                   onChange={(e) => handleCustomCategoryText(e.target.value)}
                   placeholder="Specify your category..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 />
               )}
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Tell us about yourself (Bio)
             </label>
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({...prev, bio: e.target.value}))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+              rows={3}
               placeholder="What is your content about? What makes you unique?"
             />
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-2">
             <button
               onClick={prevStep}
               className="border border-gray-300 text-gray-700 px-8 py-3 rounded-full hover:bg-gray-50 transition-colors font-semibold"
