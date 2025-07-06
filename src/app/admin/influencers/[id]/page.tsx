@@ -14,8 +14,8 @@ export default async function InfluencerDetail({ params }: PageProps) {
   const influencer = await prisma.influencers.findUnique({
     where: { id },
     include: {
-      socialNetworks: true,
-      contentCategories: true,
+      influencer_socials: true,
+      influencer_categories: true,
       orders: {
         include: {
           order_items: {
