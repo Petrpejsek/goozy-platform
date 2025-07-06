@@ -231,7 +231,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                           <div>
                             <div className="font-medium text-sm">{campaign.name}</div>
                             <div className="text-xs text-gray-500">
-                              {campaign.brand?.name} • {new Date(campaign.startDate).toLocaleDateString()}
+                              {campaign.brands?.name} • {new Date(campaign.startDate).toLocaleDateString()}
                             </div>
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
