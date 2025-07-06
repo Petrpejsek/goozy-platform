@@ -69,9 +69,9 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
 
   // Try to find existing Influencer record for this application
   let linkedInfluencer = null
-  let campaignStats = { activeCampaigns: 0, totalCampaigns: 0, campaigns: [] }
-  let revenueStats = { totalRevenue: 0, totalOrders: 0, orders: [] }
-  let commissionStats = { totalCommission: 0, paidCommission: 0, pendingCommission: 0, commissions: [] }
+  let campaignStats = { activeCampaigns: 0, totalCampaigns: 0, campaigns: [] as any[] }
+  let revenueStats = { totalRevenue: 0, totalOrders: 0, orders: [] as any[] }
+  let commissionStats = { totalCommission: 0, paidCommission: 0, pendingCommission: 0, commissions: [] as any[] }
 
   try {
     // Look for influencer by email or Instagram username
