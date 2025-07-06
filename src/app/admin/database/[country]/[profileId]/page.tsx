@@ -219,7 +219,12 @@ export default function ProfileDetailPage() {
   }
 
   const getCurrentValue = (field: keyof ProfileDetail) => {
-    return editedData[field] !== undefined ? editedData[field] : profile?.[field]
+    const value = editedData[field] !== undefined ? editedData[field] : profile?.[field]
+    // Convert boolean values to strings for form inputs
+    if (typeof value === 'boolean') {
+      return value.toString()
+    }
+    return value
   }
 
   if (loading) {
