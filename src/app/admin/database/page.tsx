@@ -183,7 +183,7 @@ const StatCard = ({
             {value.toLocaleString()}{suffix}
           </p>
         </div>
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center border ${colorClasses[color] || colorClasses.blue}`}>
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center border ${colorClasses[color as keyof typeof colorClasses] || colorClasses.blue}`}>
           <span className="text-lg">{icon}</span>
         </div>
       </div>
