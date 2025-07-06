@@ -10,12 +10,14 @@ async function main() {
     where: { email: 'test@fashionbrand.com' },
     update: {},
     create: {
+      id: 'brand-fashion-001',
       name: 'Fashion Brand',
       email: 'test@fashionbrand.com',
       description: 'Modern fashion brand with trendy clothing',
       website: 'https://fashionbrand.com',
       isApproved: true,
       isActive: true,
+      updatedAt: new Date(),
     },
   })
 
@@ -271,11 +273,14 @@ async function main() {
   })
 
   // Create products
-  for (const productData of products) {
+  for (let i = 0; i < products.length; i++) {
+    const productData = products[i]
     const product = await prisma.products.create({
       data: {
+        id: `product-${productData.externalId.toLowerCase()}`,
         ...productData,
         brandId: testBrand.id,
+        updatedAt: new Date(),
       },
     })
     console.log('✅ Product created:', product.name)
