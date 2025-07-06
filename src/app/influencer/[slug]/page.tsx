@@ -28,9 +28,9 @@ export default async function InfluencerPublicPage({ params }: InfluencerPagePro
   }
   
   // TODO: Fetch products specifically selected by this influencer
-  const products = await prisma.product.findMany({
+  const products = await prisma.products.findMany({
     where: { isAvailable: true, stockQuantity: { gt: 0 } },
-    include: { brand: { select: { name: true } } },
+    include: { brands: { select: { name: true } } },
     take: 9,
     orderBy: { createdAt: 'desc' }
   });

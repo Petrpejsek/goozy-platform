@@ -140,7 +140,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
         commissionStats.commissions = commissions.slice(0, 5) // Show last 5 commissions
 
         // Get campaigns (we need to find campaigns that include this influencer)
-        const campaigns = await prisma.campaign.findMany({
+        const campaigns = await prisma.campaigns.findMany({
           where: {
             influencerIds: {
               contains: linkedInfluencer.id
