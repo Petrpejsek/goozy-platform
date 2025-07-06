@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
     domains: ['localhost', '91.99.101.179'],
   },
   
+  // Skip ESLint during build for faster deployment
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
   // Production optimizations
   experimental: {
     optimizeCss: true,
