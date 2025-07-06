@@ -9,7 +9,7 @@ interface PageProps {
 }
 
 export default async function InfluencerDetail({ params }: PageProps) {
-  const { id } = params
+  const { id } = await params
 
   const influencer = await prisma.influencers.findUnique({
     where: { id },
