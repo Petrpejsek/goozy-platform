@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '../../../../../generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import { GoogleSearchScraper } from '../../../../../lib/scraping/google-search-scraper'
 import { InstagramScraper } from '../../../../../lib/scraping/instagram-scraper'
 
