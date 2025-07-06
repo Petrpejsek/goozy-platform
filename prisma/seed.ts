@@ -6,7 +6,7 @@ async function main() {
   console.log('🌱 Starting database seed...')
 
   // Create test brand
-  const testBrand = await prisma.brand.upsert({
+  const testBrand = await prisma.brands.upsert({
     where: { email: 'test@fashionbrand.com' },
     update: {},
     create: {
@@ -264,7 +264,7 @@ async function main() {
   ]
 
   // Delete existing products to avoid duplicates
-  await prisma.product.deleteMany({
+  await prisma.products.deleteMany({
     where: {
       brandId: testBrand.id
     }
@@ -272,7 +272,7 @@ async function main() {
 
   // Create products
   for (const productData of products) {
-    const product = await prisma.product.create({
+    const product = await prisma.products.create({
       data: {
         ...productData,
         brandId: testBrand.id,
