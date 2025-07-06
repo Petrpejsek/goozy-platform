@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import InfluencerSidebar from '../../../../components/InfluencerSidebar'
@@ -51,7 +51,13 @@ export default function InfluencerProductCatalog() {
   const [categoriesExpanded, setCategoriesExpanded] = useState(false)
   const [brandsExpanded, setBrandsExpanded] = useState(false)
   
+  // Edit campaign functionality
+  const [editMode, setEditMode] = useState(false)
+  const [editingCampaign, setEditingCampaign] = useState<any>(null)
+  const [editCampaignId, setEditCampaignId] = useState<string | null>(null)
+  
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Memoized filtered products to avoid recalculation
   const filteredProducts = useMemo(() => {
@@ -71,28 +77,43 @@ export default function InfluencerProductCatalog() {
   }, [allProducts, selectedCategory, selectedBrand])
 
   useEffect(() => {
+    console.log('🎯 [INIT] Component mounted, checking localStorage...')
+    
+    // Check for edit campaign mode
+    const editCampaignParam = searchParams.get('editCampaign')
+    if (editCampaignParam) {
+      console.log('✏️ [EDIT] Edit campaign mode detected:', editCampaignParam)
+      setEditMode(true)
+      setEditCampaignId(editCampaignParam)
+      loadCampaignData(editCampaignParam)
+    }
+    
     // Jednorázově vyčistit localStorage od starých mock dat
     const savedData = localStorage.getItem('selectedProducts')
+    console.log('🔍 [INIT] Raw localStorage data:', savedData)
+    
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData)
-        // Pokud obsahuje mock data (typicky objekty s mock ID), vyčistit
-        if (Array.isArray(parsed) && parsed.some(p => 
-          typeof p.id === 'string' && (
-            p.id.includes('mock') || 
-            p.id.length < 5 || // Velmi krátké ID jsou pravděpodobně mock
-            !p.id.includes('cm') // Skutečné ID z databáze začínají 'cm'
-          )
-        )) {
+        console.log('📋 [INIT] Parsed data:', parsed)
+        console.log('📋 [INIT] Parsed data type:', typeof parsed, 'isArray:', Array.isArray(parsed))
+        
+        // Zkontrolovat jen základní validitu formátu - nemazat na základě ID formátu
+        if (!Array.isArray(parsed)) {
           localStorage.removeItem('selectedProducts')
-          console.log('🧹 Cleared old mock data from localStorage')
+          console.log('🧹 [INIT] Cleared invalid localStorage data - not an array')
+        } else {
+          console.log('✅ [INIT] localStorage data format is valid')
         }
       } catch (e) {
         localStorage.removeItem('selectedProducts')
-        console.log('🧹 Cleared invalid localStorage data')
+        console.log('🧹 [INIT] Cleared invalid localStorage data - JSON parse error:', e)
       }
+    } else {
+      console.log('📝 [INIT] No localStorage data found')
     }
     
+    console.log('🚀 [INIT] Starting fetchInitialData...')
     fetchInitialData()
   }, [])
 
@@ -103,12 +124,67 @@ export default function InfluencerProductCatalog() {
     }
   }, [allProducts])
 
-  // Load saved products after products are loaded
+  // Load saved products AFTER products are loaded
   useEffect(() => {
+    console.log('🚀 [useEffect] Products loaded, checking for saved products...')
+    console.log('📦 [useEffect] allProducts.length:', allProducts.length)
+    console.log('🔍 [useEffect] Current selectedProducts size:', selectedProducts.size)
+    
     if (allProducts.length > 0) {
+      console.log('✅ [useEffect] Products available, calling loadSavedProducts()')
       loadSavedProducts()
+    } else {
+      console.log('⏳ [useEffect] No products yet, waiting...')
     }
   }, [allProducts])
+
+  // Load campaign data for editing
+  const loadCampaignData = async (campaignId: string) => {
+    try {
+      console.log('📋 [EDIT] Loading campaign data:', campaignId)
+      
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        console.error('❌ [EDIT] No authentication token found')
+        return
+      }
+
+      // Get campaign details
+      const campaignResponse = await fetch(`/api/influencer/campaigns/${campaignId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json()
+        console.log('✅ [EDIT] Campaign data loaded:', campaignData.campaign)
+        setEditingCampaign(campaignData.campaign)
+      }
+
+      // Get selected products for this campaign
+      const productsResponse = await fetch(`/api/influencer/campaigns/${campaignId}/products`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json()
+        console.log('✅ [EDIT] Campaign products loaded:', productsData.products)
+        
+        // Set selected products from campaign
+        if (productsData.products && productsData.products.length > 0) {
+          const productIds = productsData.products.map((p: any) => p.id)
+          setSelectedProducts(new Set(productIds))
+          console.log('📝 [EDIT] Pre-selected products:', productIds)
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ [EDIT] Error loading campaign data:', error)
+    }
+  }
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -181,31 +257,65 @@ export default function InfluencerProductCatalog() {
 
   const loadSavedProducts = async () => {
     try {
+      console.log('🔄 Loading saved products...')
+      console.log('📦 Available products:', allProducts.length)
+      
       // Pro teď použijeme localStorage fallback, až bude autentizace, použijeme API
       const savedFromStorage = localStorage.getItem('selectedProducts')
       if (savedFromStorage) {
+        console.log('💾 Found saved data in localStorage')
         const savedProducts = JSON.parse(savedFromStorage)
+        console.log('📋 Parsed saved products:', savedProducts.length)
         
         // Zkontrolovat, jestli jsou uložené produkty validní
         if (Array.isArray(savedProducts) && savedProducts.length > 0) {
           // Filtrovat jen produkty, které existují v aktuální databázi
           const validProductIds = savedProducts
-            .filter(p => p && p.id && allProducts.some(product => product.id === p.id))
+            .filter(p => {
+              if (!p || !p.id) {
+                console.log('❌ Invalid product (missing id):', p)
+                return false
+              }
+              const exists = allProducts.some(product => product.id === p.id)
+              if (!exists) {
+                console.log('⚠️ Product not found in current database:', p.id, p.name)
+              }
+              return exists
+            })
             .map(p => p.id)
+          
+          console.log('✅ Valid product IDs found:', validProductIds.length, 'out of', savedProducts.length)
           
           if (validProductIds.length > 0) {
             setSelectedProducts(new Set(validProductIds))
-            console.log(`Loaded ${validProductIds.length} valid previously saved products`)
+            console.log(`✅ Restored ${validProductIds.length} previously saved products`)
+            
+            // Pokud jen některé produkty jsou nevalidní, aktualizuj localStorage s validními
+            if (validProductIds.length !== savedProducts.length) {
+              const validProductsData = allProducts.filter(p => validProductIds.includes(p.id))
+              localStorage.setItem('selectedProducts', JSON.stringify(validProductsData))
+              console.log('🔄 Updated localStorage with only valid products')
+            }
+            
+            // Ověření že se stav skutečně nastavil
+            setTimeout(() => {
+              console.log('🔍 Final selected products count:', validProductIds.length)
+            }, 100)
           } else {
-            // Pokud nejsou žádné validní produkty, vyčistit localStorage
+            // Pouze pokud nejsou žádné validní produkty
             localStorage.removeItem('selectedProducts')
-            console.log('Cleared invalid product data from localStorage')
+            console.log('🧹 No valid products found, cleared localStorage')
           }
+        } else if (Array.isArray(savedProducts) && savedProducts.length === 0) {
+          console.log('📝 Empty array in localStorage - this is valid')
+          setSelectedProducts(new Set())
         } else {
-          // Nevalidní formát, vyčistit
+          // Nevalidní formát
           localStorage.removeItem('selectedProducts')
-          console.log('Cleared invalid localStorage format')
+          console.log('🧹 Invalid format in localStorage, cleared')
         }
+      } else {
+        console.log('📝 No saved products found in localStorage')
       }
       
       // TODO: Až bude autentizace implementována, použít tento API call:
@@ -226,7 +336,14 @@ export default function InfluencerProductCatalog() {
       }
       */
     } catch (err) {
-      console.error('Failed to load saved products:', err)
+      console.error('❌ Failed to load saved products:', err)
+      // V případě chyby vyčistit localStorage jen pokud je poškozen
+      try {
+        JSON.parse(localStorage.getItem('selectedProducts') || '[]')
+      } catch {
+        localStorage.removeItem('selectedProducts')
+        console.log('🧹 Cleared corrupted localStorage after error')
+      }
     }
   }
 
@@ -239,19 +356,56 @@ export default function InfluencerProductCatalog() {
     setSelectedBrand(brand)
   }, [])
 
-  const toggleProductSelection = useCallback((productId: string) => {
+  const toggleProductSelection = useCallback(async (productId: string) => {
+    console.log(`🎯 [TOGGLE] Starting toggle for product: ${productId}`)
+    
     setSelectedProducts(prev => {
       const newSelected = new Set(prev)
-      if (newSelected.has(productId)) {
+      const wasSelected = newSelected.has(productId)
+      
+      if (wasSelected) {
         newSelected.delete(productId)
+        console.log(`➖ [TOGGLE] Removed product ${productId} from selection`)
       } else {
         newSelected.add(productId)
+        console.log(`➕ [TOGGLE] Added product ${productId} to selection`)
       }
+      
+      console.log(`🔢 [TOGGLE] New selection size: ${newSelected.size}`)
+      console.log(`🔍 [TOGGLE] New selection IDs:`, Array.from(newSelected))
       
       // Automaticky uložit výběr do localStorage
       const selectedProductsArray = allProducts.filter(p => newSelected.has(p.id))
-      localStorage.setItem('selectedProducts', JSON.stringify(selectedProductsArray))
-      console.log(`Auto-saved ${newSelected.size} selected products to localStorage`)
+      console.log(`📦 [TOGGLE] Products to save:`, selectedProductsArray.length)
+      console.log(`🔍 [TOGGLE] Product details:`, selectedProductsArray.map(p => ({ id: p.id, name: p.name })))
+      
+      const dataToSave = JSON.stringify(selectedProductsArray)
+      console.log(`💾 [TOGGLE] Saving to localStorage:`, dataToSave.substring(0, 200) + '...')
+      
+      localStorage.setItem('selectedProducts', dataToSave)
+      
+      // Ověř že se skutečně uložilo
+      const verification = localStorage.getItem('selectedProducts')
+      if (verification === dataToSave) {
+        console.log(`✅ [TOGGLE] localStorage save verified successfully`)
+      } else {
+        console.error(`❌ [TOGGLE] localStorage save FAILED!`)
+        console.error(`Expected:`, dataToSave.substring(0, 100))
+        console.error(`Got:`, verification ? verification.substring(0, 100) : 'null')
+      }
+      
+      console.log(`💾 [TOGGLE] Auto-saved ${newSelected.size} selected products to localStorage`)
+      console.log('🔍 [TOGGLE] Saved product IDs:', Array.from(newSelected))
+      
+      // Také uložit do databáze (s error handling)
+      setTimeout(async () => {
+        try {
+          await saveProductSelectionToDatabase(Array.from(newSelected))
+        } catch (error) {
+          console.error('❌ [TOGGLE] Failed to save to database:', error)
+          // Optional: show user notification about the error
+        }
+      }, 100)
       
       return newSelected
     })
@@ -270,29 +424,105 @@ export default function InfluencerProductCatalog() {
   }, [])
 
   const calculateDiscountedPrice = useCallback((price: number) => {
-    return (price * 0.85).toFixed(2); // 15% discount
+    return (price * 0.8).toFixed(2); // 20% discount
   }, [])
+
+  const saveProductSelectionToDatabase = async (productIds: string[]) => {
+    try {
+      console.log('🔍 [SAVE-DB] Starting save with productIds:', productIds.length)
+      
+      // Get token from localStorage or sessionStorage
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        console.error('❌ [SAVE-DB] No authentication token found')
+        return
+      }
+
+      console.log('🔍 [SAVE-DB] Token found, making API call...')
+      
+      const response = await fetch('/api/influencer/products', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productIds, action: 'set' })
+      });
+      
+      console.log('🔍 [SAVE-DB] API response status:', response.status)
+      
+      const data = await response.json();
+      console.log('🔍 [SAVE-DB] API response data:', data)
+      
+      if (response.ok) {
+        console.log('✅ [SAVE-DB] Selection saved to database!', data);
+      } else {
+        console.error('❌ [SAVE-DB] Failed to save selection to database:', data.error);
+        throw new Error(data.error || 'Failed to update product selection');
+      }
+    } catch (err: any) {
+      console.error('❌ [SAVE-DB] Error saving selection to database:', err);
+      console.error('❌ [SAVE-DB] Error details:', err.message, err.stack);
+      throw new Error(err.message || 'Failed to update product selection');
+    }
+  };
 
   const saveProductSelection = async () => {
     setSaving(true);
     try {
-      const response = await fetch('/api/influencer/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productIds: Array.from(selectedProducts), action: 'set' })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        console.log('Selection saved successfully!');
-      } else {
-        throw new Error(data.error || 'Failed to save selection.');
-      }
-    } catch (err: any) {
-      console.error('Error saving selection:', err);
+      await saveProductSelectionToDatabase(Array.from(selectedProducts));
     } finally {
       setSaving(false);
     }
   };
+
+  const updateCampaignProducts = async (campaignId: string) => {
+    try {
+      setSaving(true)
+      console.log('📋 [EDIT] Updating campaign products:', campaignId)
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        console.error('❌ No authentication token found for update')
+        return
+      }
+
+      const response = await fetch(`/api/influencer/campaigns/${campaignId}/products`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ productIds: Array.from(selectedProducts) })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ Campaign products updated successfully:', data)
+        showToast('Campaign products updated successfully!', 'success')
+        router.push('/influencer/dashboard/campaigns')
+      } else {
+        const errorData = await response.json()
+        console.error('❌ Failed to update campaign products:', errorData.error)
+        showToast(`Failed to update: ${errorData.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('❌ Error updating campaign products:', error)
+      showToast('Error updating campaign products', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Helper funkce pro toast zprávy (použijeme tu samou jako v campaigns)
+  const showToast = (message: string, type: 'success' | 'error') => {
+    const toast = document.createElement('div')
+    toast.className = `fixed top-5 right-5 px-4 py-2 rounded-lg shadow-lg z-50 text-white ${
+      type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`
+    toast.textContent = message
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 3000)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -302,8 +532,24 @@ export default function InfluencerProductCatalog() {
       <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-64 z-30">
         <div className="flex items-center justify-between h-full px-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Product Catalog</h2>
-            <p className="text-sm text-gray-500">Choose products to promote</p>
+            {editMode && editingCampaign ? (
+              <>
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Campaign Products
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Editing: <span className="font-medium">{editingCampaign.name}</span>
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-semibold text-gray-900">Product Catalog</h2>
+                <p className="text-sm text-gray-500">Choose products to promote</p>
+              </>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -311,34 +557,74 @@ export default function InfluencerProductCatalog() {
               {selectedProducts.size} selected
             </span>
             
-            <button
-              onClick={() => {
-                if (selectedProducts.size > 0) {
-                  // Products are already saved automatically in localStorage
-                  router.push('/influencer/campaign/preview');
-                }
-              }}
-              disabled={selectedProducts.size === 0}
-              className={`bg-black text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedProducts.size === 0 
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:bg-gray-800'
-              }`}
-            >
-              My Campaign
-            </button>
+            {editMode ? (
+              // Edit mode buttons
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => {
+                    // Cancel edit mode
+                    router.push('/influencer/dashboard/campaigns')
+                  }}
+                  className="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                
+                <button
+                  onClick={async () => {
+                    if (editCampaignId) {
+                      await updateCampaignProducts(editCampaignId)
+                    }
+                  }}
+                  disabled={saving}
+                  className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    saving
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {saving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      Saving...
+                    </div>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
+            ) : (
+              // Normal mode button
+              <button
+                onClick={() => {
+                  if (selectedProducts.size > 0) {
+                    // Products are already saved automatically in localStorage
+                    router.push('/influencer/campaign/preview');
+                  }
+                }}
+                disabled={selectedProducts.size === 0}
+                className={`bg-black text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedProducts.size === 0 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:bg-gray-800'
+                }`}
+              >
+                My Campaign
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="ml-64 pt-16 p-8">
-        <div className="flex gap-8">
-          {/* Filters Sidebar */}
-          <aside className="w-64 flex-shrink-0 space-y-2 sticky top-24 self-start max-h-screen overflow-y-auto">
+      <main className="ml-64 pt-24 px-6 pb-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-6">
+            {/* Filters Sidebar */}
+            <aside className="w-48 flex-shrink-0 space-y-2 sticky top-32 self-start max-h-screen overflow-y-auto">
             {/* Brands Filter */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Brands</h3>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <h3 className="text-base font-semibold text-gray-900 mb-3">Brands</h3>
               
               {/* Collapsible Header for Brands */}
               <button
@@ -420,8 +706,8 @@ export default function InfluencerProductCatalog() {
             </div>
             
             {/* Categories Filter */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <h3 className="text-base font-semibold text-gray-900 mb-3">Categories</h3>
               
               {/* Collapsible Header - Optimized */}
               <button
@@ -508,7 +794,7 @@ export default function InfluencerProductCatalog() {
           {/* Products Grid */}
           <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="bg-white rounded-2xl shadow-sm animate-pulse overflow-hidden">
                     <div className="w-full h-48 bg-gray-200"></div>
@@ -534,12 +820,12 @@ export default function InfluencerProductCatalog() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProducts.map(product => (
                   <div 
                     key={product.id} 
                     className={`relative h-96 transition-all duration-200 ease-out hover:shadow-lg transform hover:-translate-y-1 ${
-                      selectedProducts.has(product.id) ? 'ring-2 ring-black' : ''
+                      selectedProducts.has(product.id) ? 'shadow-xl' : ''
                     }`}
                     style={{ perspective: '1000px' }}
                   >
@@ -552,16 +838,16 @@ export default function InfluencerProductCatalog() {
                       {/* Front Side */}
                       <div className="absolute inset-0 w-full h-full backface-hidden bg-white rounded-2xl shadow-sm overflow-hidden">
                         {/* Product Image */}
-                        <div className="w-full h-48 overflow-hidden bg-gray-100 relative">
+                        <div className="w-full h-48 overflow-hidden bg-gray-50 relative flex items-center justify-center p-2">
                           <div 
-                            className="w-full h-full cursor-pointer group"
+                            className="w-full h-full cursor-pointer group flex items-center justify-center"
                             onClick={() => toggleCardFlip(product.id)}
                           >
                             {product.images && product.images.length > 0 ? (
                               <img
                                 src={product.images[0]}
                                 alt={product.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
@@ -575,12 +861,7 @@ export default function InfluencerProductCatalog() {
                               </div>
                             )}
                             
-                            {/* Click to view details overlay - only on image hover */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 px-3 py-1 rounded-full text-sm font-medium text-gray-900">
-                                Click for details
-                              </div>
-                            </div>
+
                           </div>
                         </div>
                         
@@ -603,7 +884,7 @@ export default function InfluencerProductCatalog() {
                             <div className="text-right">
                               <div className="text-xs text-gray-500 mb-1">Commission</div>
                               <div className="text-sm font-semibold text-green-600">
-                                €{(product.price * 0.15).toFixed(2)} (15%)
+                                €{(product.price * 0.2).toFixed(2)} (20%)
                               </div>
                             </div>
                           </div>
@@ -616,7 +897,7 @@ export default function InfluencerProductCatalog() {
                             }}
                             className={`mt-auto w-full py-2 px-4 rounded-lg text-sm font-medium transition-all duration-150 ${
                               selectedProducts.has(product.id)
-                                ? 'bg-black text-white hover:bg-gray-800 transform scale-105'
+                                ? 'bg-black text-white hover:bg-gray-800'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                           >
@@ -705,7 +986,7 @@ export default function InfluencerProductCatalog() {
                               <div className="text-right">
                                 <div className="text-xs text-gray-500">Commission</div>
                                 <div className="text-sm font-semibold text-green-600">
-                                  €{(product.price * 0.15).toFixed(2)} (15%)
+                                  €{(product.price * 0.2).toFixed(2)} (20%)
                                 </div>
                               </div>
                             </div>
@@ -717,7 +998,7 @@ export default function InfluencerProductCatalog() {
                               }}
                               className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-150 ${
                                 selectedProducts.has(product.id)
-                                  ? 'bg-black text-white hover:bg-gray-800 transform scale-105'
+                                  ? 'bg-black text-white hover:bg-gray-800'
                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                               }`}
                             >
@@ -742,6 +1023,7 @@ export default function InfluencerProductCatalog() {
               </div>
             )}
           </div>
+        </div>
         </div>
       </main>
       

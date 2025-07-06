@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+import { prisma } from './prisma'
 
 /**
  * Generuje unikátní slug pro kampaň
@@ -18,7 +18,7 @@ export async function generateUniqueCampaignSlug(
       : `${baseSlug}-${generateRandomSuffix()}`
     
     // Kontrola, zda slug už neexistuje
-    const existingCampaign = await prisma.campaign.findUnique({
+    const existingCampaign = await prisma.campaigns.findUnique({
       where: { slug }
     }).catch(() => null) // Ignorujeme chyby, pokud tabulka nemá zatím slug pole
     

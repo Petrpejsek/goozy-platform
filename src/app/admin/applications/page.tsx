@@ -3,8 +3,8 @@ import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
 export default async function ApplicationsPage() {
   const [influencerApplications, brandApplications] = await Promise.all([
-    prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
+    prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
+          prisma.brand_applications.findMany({ orderBy: { createdAt: 'desc' } }),
   ]);
   
   const pendingInfluencers = influencerApplications.filter(app => app.status === 'pending').length;

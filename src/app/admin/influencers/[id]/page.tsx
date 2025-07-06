@@ -3,15 +3,15 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function InfluencerDetail({ params }: PageProps) {
   const { id } = params
 
-  const influencer = await prisma.influencer.findUnique({
+  const influencer = await prisma.influencers.findUnique({
     where: { id },
     include: {
       socialNetworks: true,

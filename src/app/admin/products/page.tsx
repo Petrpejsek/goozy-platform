@@ -52,36 +52,30 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   // Načti data
   const [products, totalCount, brands, categories, totalProducts, totalBrands, outOfStock, totalValue] = await Promise.all([
-    prisma.product.findMany({
+    prisma.products.findMany({
       where: whereClause,
       include: {
-        brand: {
+        brands: {
           select: { name: true, id: true }
-        },
-        _count: {
-          select: {
-            influencerProducts: true,
-            orderItems: true
-          }
         }
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset
     }),
-    prisma.product.count({ where: whereClause }),
-    prisma.brand.findMany({
+    prisma.products.count({ where: whereClause }),
+    prisma.brands.findMany({
       where: { isActive: true },
       select: { id: true, name: true },
       orderBy: { name: 'asc' }
     }),
-    prisma.product.findMany({
+    prisma.products.findMany({
       select: { category: true },
       distinct: ['category'],
       orderBy: { category: 'asc' }
     }).then(results => results.filter(item => item.category && item.category.trim() !== '')),
-    prisma.product.count({ where: whereClause }),
-    prisma.brand.count({
+    prisma.products.count({ where: whereClause }),
+    prisma.brands.count({
       where: {
         isActive: true,
         products: {
@@ -89,7 +83,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         }
       }
     }),
-    prisma.product.count({
+    prisma.products.count({
       where: {
         ...whereClause,
         OR: [
@@ -98,7 +92,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         ]
       }
     }),
-    prisma.product.aggregate({
+    prisma.products.aggregate({
       where: whereClause,
       _sum: { price: true }
     })

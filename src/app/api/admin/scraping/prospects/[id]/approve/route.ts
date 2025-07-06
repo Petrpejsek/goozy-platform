@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const resolvedParams = await params
@@ -33,7 +33,7 @@ export async function POST(
     }
     
     // Zkontrolovat duplicity podle emailu nebo slugu
-    const existingInfluencer = await prisma.influencer.findFirst({
+    const existingInfluencer = await prisma.influencers.findFirst({
       where: {
         OR: [
           { email: influencerData.email },
@@ -64,7 +64,7 @@ export async function POST(
     }
     
     // Vytvořit nového influencera
-    const newInfluencer = await prisma.influencer.create({
+          const newInfluencer = await prisma.influencers.create({
       data: influencerData
     })
     

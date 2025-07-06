@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma'
 // GET - Debug: Show all campaigns in database
 export async function GET(request: NextRequest) {
   try {
-    const allCampaigns = await prisma.campaign.findMany({
+    const allCampaigns = await prisma.campaigns.findMany({
       include: {
-        brand: true
+        brands: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         dbStatus: campaign.status,
         computedStatus,
         influencerIds: campaign.influencerIds,
-        brand: campaign.brand?.name,
+        brand: campaign.brands?.name,
         createdAt: campaign.createdAt.toISOString(),
         isActiveQuery,
         isUpcomingQuery,

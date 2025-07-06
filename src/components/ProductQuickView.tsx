@@ -16,7 +16,7 @@ interface Product {
   sku: string
   stockQuantity: number
   isAvailable: boolean
-  brand: {
+  brands: {
     id: string
     name: string
     logo?: string
@@ -67,7 +67,7 @@ export default function ProductQuickView({ product }: ProductQuickViewProps) {
         {/* Product Info */}
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500">{product.brand.name}</span>
+            <span className="text-xs text-gray-500">{product.brands.name}</span>
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
               product.isAvailable 
                 ? 'bg-green-100 text-green-800' 
@@ -133,7 +133,7 @@ export default function ProductQuickView({ product }: ProductQuickViewProps) {
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm text-gray-600">{product.brand.name}</span>
+                      <span className="text-sm text-gray-600">{product.brands.name}</span>
                       <span className="text-sm text-gray-400">•</span>
                       <span className="text-sm text-gray-600">{product.category}</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -220,7 +220,7 @@ export default function ProductQuickView({ product }: ProductQuickViewProps) {
             <div className="bg-gray-50 px-6 py-4 rounded-b-2xl">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  Product managed by {product.brand.name}
+                  Product managed by {product.brands.name}
                 </span>
                 <div className="flex space-x-3">
                   <Link

@@ -264,7 +264,7 @@ export default function ProductsContent({
                           
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              <div className="font-medium">{product.brand?.name || product.brand_name}</div>
+                              <div className="font-medium">{product.brands?.name || product.brand_name}</div>
                               <div className="text-gray-500">{product.category}</div>
                               {product.gender && (
                                 <div className="text-xs text-gray-400">{product.gender}</div>
@@ -299,8 +299,8 @@ export default function ProductsContent({
                           
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-xs text-gray-500">
-                              <div>👥 {product._count.influencerProducts} influencers</div>
-                              <div>🛒 {product._count.orderItems} orders</div>
+                              <div>👥 -- influencers</div>
+                              <div>🛒 -- orders</div>
                             </div>
                           </td>
                           

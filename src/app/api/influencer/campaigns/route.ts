@@ -1,60 +1,141 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateUniqueCampaignSlug } from '@/lib/campaign-utils'
+import jwt from 'jsonwebtoken'
 
 // POST - Create new campaign
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
     
-    // For now, we'll use a mock influencer ID since we don't have auth yet
-    // In production, this would come from the authenticated user session
-    const mockInfluencerId = 'mock-influencer-1'
-    const mockInfluencerName = 'aneta' // V produkci z databáze nebo auth session
+    // Get authentication from Authorization header first, then cookies as fallback
+    let token: string | undefined
+    
+    // Try Authorization header first
+    const authHeader = request.headers.get('Authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1]
+    } else {
+      // Fallback to cookies
+      token = request.cookies.get('influencer-auth')?.value
+    }
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    let influencerId: string
+    let influencerData: any
+
+    try {
+      // Try to decode JWT token first
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret') as any
+      influencerId = decoded.userId || decoded.influencerId || decoded.id
+      
+      // Get full influencer data from database
+      influencerData = await prisma.influencers.findUnique({
+        where: { id: influencerId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          slug: true
+        }
+      })
+      
+      console.log('✅ [CAMPAIGNS-POST] Token authentication successful for:', influencerData?.email)
+    } catch (jwtError) {
+      // Fallback: try to find influencer by email (base64 encoded in cookie)
+      try {
+        const email = Buffer.from(token, 'base64').toString('utf-8')
+        influencerData = await prisma.influencers.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            slug: true
+          }
+        })
+        influencerId = influencerData?.id
+        console.log('✅ [CAMPAIGNS-POST] Fallback authentication successful for:', email)
+      } catch (fallbackError) {
+        console.error('❌ Authentication failed:', fallbackError)
+        return NextResponse.json(
+          { success: false, error: 'Invalid authentication' },
+          { status: 401 }
+        )
+      }
+    }
+
+    if (!influencerData) {
+      return NextResponse.json(
+        { success: false, error: 'Influencer not found' },
+        { status: 404 }
+      )
+    }
+
+    console.log(`🔍 Creating campaign for influencer: ${influencerData.name} (${influencerData.email})`)
     
     // Get or create a mock brand for the campaign
-    let mockBrand = await prisma.brand.findFirst({
+    let mockBrand = await prisma.brands.findFirst({
       where: { email: 'demo@goozy.com' }
     })
     
     if (!mockBrand) {
-      mockBrand = await prisma.brand.create({
+      mockBrand = await prisma.brands.create({
         data: {
+          id: `brand-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           name: 'Goozy Demo Brand',
           email: 'demo@goozy.com',
           isApproved: true,
           isActive: true,
-          targetCountries: '["CZ"]'
+          targetCountries: '["CZ"]',
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
     }
 
-    // Generate unique campaign slug
-    const campaignSlug = await generateUniqueCampaignSlug(
-      mockInfluencerName,
-      mockBrand.name
-    )
-
-    console.log(`🔗 Generated unique campaign slug: ${campaignSlug}`)
+    // Use pre-generated slug from frontend or generate new one
+    let campaignSlug = data.slug
+    
+    if (!campaignSlug) {
+      // Fallback: generate unique campaign slug using REAL influencer name
+      campaignSlug = await generateUniqueCampaignSlug(
+        influencerData.name,
+        mockBrand.name
+      )
+      console.log(`🔗 Generated fallback campaign slug: ${campaignSlug}`)
+    } else {
+      console.log(`🔗 Using pre-generated campaign slug: ${campaignSlug}`)
+    }
 
     // Create campaign in database
-    const campaign = await prisma.campaign.create({
+    const campaign = await prisma.campaigns.create({
       data: {
+        id: `campaign-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
         slug: campaignSlug,
         brandId: mockBrand.id,
-        name: data.name || `Campaign ${new Date().toISOString().slice(0, 10)}`,
-        description: data.description || 'Influencer campaign created via platform',
+        name: data.name || `${influencerData.name}'s Campaign ${new Date().toISOString().slice(0, 10)}`,
+        description: data.description || `Influencer campaign created by ${influencerData.name}`,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
         targetCountries: JSON.stringify(['CZ']),
-        influencerIds: mockInfluencerId,
+        influencerIds: influencerId,
         status: 'active',
         currency: 'EUR',
         expectedReach: data.expectedReach || 10000,
-        budgetAllocated: data.budgetAllocated || 1000
+        budgetAllocated: data.budgetAllocated || 1000,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
-        brand: true
+        brands: true
       }
     })
 
@@ -77,7 +158,12 @@ export async function POST(request: NextRequest) {
         startDate: campaign.startDate.toISOString(),
         endDate: campaign.endDate.toISOString(),
         status: campaign.status,
-        brand: campaign.brand
+        brand: campaign.brands,
+        influencer: {
+          id: influencerData.id,
+          name: influencerData.name,
+          slug: influencerData.slug
+        }
       }
     })
 
@@ -93,17 +179,65 @@ export async function POST(request: NextRequest) {
 // GET - Fetch influencer campaigns
 export async function GET(request: NextRequest) {
   try {
-    // For now, we'll use a mock influencer ID
-    const mockInfluencerId = 'mock-influencer-1'
+    // Get authentication from Authorization header first, then cookies as fallback
+    let token: string | undefined
     
-    console.log('🔍 Searching for campaigns with influencerIds:', mockInfluencerId)
+    // Try Authorization header first
+    const authHeader = request.headers.get('Authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1]
+    } else {
+      // Fallback to cookies
+      token = request.cookies.get('influencer-auth')?.value
+    }
     
-    const campaigns = await prisma.campaign.findMany({
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    let influencerId: string
+
+    try {
+      // Try to decode JWT token first
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret') as any
+      influencerId = decoded.userId || decoded.influencerId || decoded.id
+      console.log('✅ [CAMPAIGNS-GET] Token authentication successful for:', decoded.email)
+    } catch (jwtError) {
+      // Fallback: try to find influencer by email (base64 encoded in cookie)
+      try {
+        const email = Buffer.from(token, 'base64').toString('utf-8')
+        const influencerData = await prisma.influencers.findUnique({
+          where: { email },
+          select: { id: true }
+        })
+        influencerId = influencerData?.id
+        console.log('✅ [CAMPAIGNS-GET] Fallback authentication successful for:', email)
+      } catch (fallbackError) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid authentication' },
+          { status: 401 }
+        )
+      }
+    }
+
+    if (!influencerId) {
+      return NextResponse.json(
+        { success: false, error: 'Influencer not found' },
+        { status: 404 }
+      )
+    }
+    
+    console.log('🔍 Searching for campaigns with influencerIds:', influencerId)
+    
+    const campaigns = await prisma.campaigns.findMany({
       where: {
-        influencerIds: mockInfluencerId
+        influencerIds: influencerId
       },
       include: {
-        brand: true
+        brands: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -112,22 +246,57 @@ export async function GET(request: NextRequest) {
 
     console.log(`📊 Found ${campaigns.length} campaigns for influencer`)
 
+    // Get campaign statistics
+    const campaignsWithStats = await Promise.all(
+      campaigns.map(async (campaign) => {
+        // Get orders for this campaign (mock data for now)
+        const orders = await prisma.orders.findMany({
+          where: {
+            influencerId: influencerId,
+            status: 'completed'
+          }
+        })
+
+        // Get influencer products count
+        const productCount = await prisma.influencer_products.count({
+          where: {
+            influencerId: influencerId,
+            isActive: true
+          }
+        })
+
+        // Calculate stats
+        const totalOrders = orders.length
+        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+        const conversionRate = campaign.expectedReach > 0 ? (totalOrders / campaign.expectedReach) * 100 : 0
+
+        return {
+          id: campaign.id,
+          slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`,
+          name: campaign.name,
+          description: campaign.description,
+          startDate: campaign.startDate.toISOString(),
+          endDate: campaign.endDate.toISOString(),
+          status: campaign.status,
+          brand: campaign.brands,
+          expectedReach: campaign.expectedReach,
+          budgetAllocated: campaign.budgetAllocated,
+          currency: campaign.currency,
+          createdAt: campaign.createdAt.toISOString(),
+          stats: {
+            totalSales: totalOrders,
+            totalRevenue: totalRevenue,
+            totalOrders: totalOrders,
+            productCount: productCount,
+            conversionRate: conversionRate
+          }
+        }
+      })
+    )
+
     return NextResponse.json({
       success: true,
-      campaigns: campaigns.map(campaign => ({
-        id: campaign.id,
-        slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`, // Fallback pro starší kampaně
-        name: campaign.name,
-        description: campaign.description,
-        startDate: campaign.startDate.toISOString(),
-        endDate: campaign.endDate.toISOString(),
-        status: campaign.status,
-        brand: campaign.brand,
-        expectedReach: campaign.expectedReach,
-        budgetAllocated: campaign.budgetAllocated,
-        currency: campaign.currency,
-        createdAt: campaign.createdAt.toISOString()
-      }))
+      campaigns: campaignsWithStats
     })
 
   } catch (error) {

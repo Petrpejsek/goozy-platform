@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     // Získat všechny profily seskupené podle země
-    const profilesByCountry = await prisma.influencerDatabase.groupBy({
+    const profilesByCountry = await prisma.influencer_database.groupBy({
       by: ['country'],
       _count: {
         id: true
@@ -38,7 +38,7 @@ export async function GET() {
           parenting: Math.round(totalProfiles * 0.04),
           photography: Math.round(totalProfiles * 0.03)
         }
-        const activeProfiles = await prisma.influencerDatabase.count({
+        const activeProfiles = await prisma.influencer_database.count({
           where: {
             country: country,
             isActive: true
@@ -46,7 +46,7 @@ export async function GET() {
         })
 
         // Poslední update
-        const lastProfile = await prisma.influencerDatabase.findFirst({
+        const lastProfile = await prisma.influencer_database.findFirst({
           where: {
             country: country
           },
@@ -77,7 +77,7 @@ export async function GET() {
     const totalProfiles = countries.reduce((sum, c) => sum + c.totalProfiles, 0)
     const totalCountries = countries.length
     const totalCategories = 8 // pevný počet simulovaných kategorií
-    const totalActiveProfiles = await prisma.influencerDatabase.count({
+    const totalActiveProfiles = await prisma.influencer_database.count({
       where: { isActive: true }
     })
     const activeRate = totalProfiles > 0 ? (totalActiveProfiles / totalProfiles) * 100 : 0

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     console.log('🔍 [DEBUG-PASSWORD] Checking password for:', email)
     
     // Find influencer
-    const influencer = await prisma.influencer.findFirst({
+    const influencer = await prisma.influencers.findFirst({
       where: { email: email }
     })
     
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     })
     
     // Find original application
-    const application = await prisma.influencerApplication.findFirst({
+          const application = await prisma.influencer_applications.findFirst({
       where: { email: email }
     })
     

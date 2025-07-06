@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Najdi brand aplikaci v databázi
-    const brandApplication = await prisma.brandApplication.findFirst({
+    const brandApplication = await prisma.brand_applications.findFirst({
       where: { 
         email: email.toLowerCase().trim()
       }

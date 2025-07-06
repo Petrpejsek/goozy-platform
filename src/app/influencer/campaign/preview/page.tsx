@@ -4,21 +4,14 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-// Mock data pro influencera
-const mockInfluencer = {
-  name: "Aneta",
-  avatar: "https://picsum.photos/150/150?random=1",
-  bio: "Hi girls! I've selected amazing pieces for you with an exclusive discount! Use my code for 20% off ✨ I'm passionate about fashion, lifestyle, and helping you find the perfect pieces that make you feel confident and beautiful. From casual everyday looks to special occasion outfits, I love sharing my favorite finds with you. Let's create amazing looks together! 💕",
-  followers: "125K",
-  socialLinks: {
-    instagram: "https://instagram.com/aneta",
-    tiktok: "https://tiktok.com/@aneta", 
-    youtube: "https://youtube.com/@aneta",
-    facebook: "https://facebook.com/aneta",
-    x: "https://x.com/aneta"
-  },
-  discountCode: "ANETA20",
-  discountPercent: 20
+// Interface for influencer data
+interface InfluencerData {
+  name: string;
+  avatar: string | null;
+  bio: string | null;
+  socialLinks: Record<string, string>;
+  discountCode: string;
+  discountPercent: number;
 }
 
 // Dostupné sociální sítě
@@ -32,126 +25,9 @@ const availableSocialPlatforms = [
   { key: 'pinterest', name: 'Pinterest', color: 'bg-red-500', icon: 'M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001.001 12.017z' }
 ]
 
-// Mock vybrané produkty s placeholder obrázky
-const mockSelectedProducts = [
-  {
-    id: "1",
-    name: "Cotton T-Shirt",
-    price: 24.99,
-    discountedPrice: 19.99,
-    images: ["https://picsum.photos/400/400?random=2", "https://picsum.photos/400/400?random=3"],
-    brand: "Fashion Brand",
-    category: "T-Shirts"
-  },
-  {
-    id: "2", 
-    name: "Luxury Leather Handbag",
-    price: 129.99,
-    discountedPrice: 103.99,
-    images: ["https://picsum.photos/400/400?random=4", "https://picsum.photos/400/400?random=5"],
-    brand: "Fashion Brand",
-    category: "Accessories"
-  },
-  {
-    id: "3",
-    name: "Comfortable Sneakers", 
-    price: 79.99,
-    discountedPrice: 63.99,
-    images: ["https://picsum.photos/400/400?random=6", "https://picsum.photos/400/400?random=7"],
-    brand: "Fashion Brand",
-    category: "Shoes"
-  },
-  {
-    id: "4",
-    name: "Stylish Denim Jacket",
-    price: 65.50,
-    discountedPrice: 52.40,
-    images: ["https://picsum.photos/400/400?random=8", "https://picsum.photos/400/400?random=9"],
-    brand: "Fashion Brand", 
-    category: "Jackets"
-  },
-  {
-    id: "5",
-    name: "Cozy Winter Sweater",
-    price: 69.99,
-    discountedPrice: 55.99,
-    images: ["https://picsum.photos/400/400?random=10", "https://picsum.photos/400/400?random=11"],
-    brand: "Warm & Soft",
-    category: "Sweaters"
-  },
-  {
-    id: "6",
-    name: "Classic Blue Jeans",
-    price: 89.99,
-    discountedPrice: 71.99,
-    images: ["https://picsum.photos/400/400?random=12", "https://picsum.photos/400/400?random=13"],
-    brand: "Denim World",
-    category: "Jeans"
-  },
-  {
-    id: "7",
-    name: "Silk Scarf",
-    price: 45.99,
-    discountedPrice: 36.99,
-    images: ["https://picsum.photos/400/400?random=14", "https://picsum.photos/400/400?random=15"],
-    brand: "Elegant Touch",
-    category: "Accessories"
-  },
-  {
-    id: "8",
-    name: "Leather Boots",
-    price: 159.99,
-    discountedPrice: 127.99,
-    images: ["https://picsum.photos/400/400?random=16", "https://picsum.photos/400/400?random=17"],
-    brand: "Premium Footwear",
-    category: "Shoes"
-  },
-  {
-    id: "9",
-    name: "Evening Gown",
-    price: 249.99,
-    discountedPrice: 199.99,
-    images: ["https://picsum.photos/400/400?random=18", "https://picsum.photos/400/400?random=19"],
-    brand: "Glamour Plus",
-    category: "Dresses"
-  },
-  {
-    id: "10",
-    name: "Sports Bra",
-    price: 39.99,
-    discountedPrice: 31.99,
-    images: ["https://picsum.photos/400/400?random=20", "https://picsum.photos/400/400?random=21"],
-    brand: "Active Wear",
-    category: "Sportswear"
-  },
-  {
-    id: "11",
-    name: "Wool Coat",
-    price: 299.99,
-    discountedPrice: 239.99,
-    images: ["https://picsum.photos/400/400?random=22", "https://picsum.photos/400/400?random=23"],
-    brand: "Winter Collection",
-    category: "Coats"
-  },
-  {
-    id: "12",
-    name: "Gold Necklace",
-    price: 179.99,
-    discountedPrice: 143.99,
-    images: ["https://picsum.photos/400/400?random=24", "https://picsum.photos/400/400?random=25"],
-    brand: "Jewelry Box",
-    category: "Jewelry"
-  },
-  {
-    id: "13",
-    name: "Running Shoes",
-    price: 119.99,
-    discountedPrice: 95.99,
-    images: ["https://picsum.photos/400/400?random=26", "https://picsum.photos/400/400?random=27"],
-    brand: "Speed Runner",
-    category: "Shoes"
-  }
-]
+// Default values
+const DEFAULT_DISCOUNT_PERCENT = 20
+const DEFAULT_DISCOUNT_CODE = "SAVE20"
 
 // Product Gallery Modal
 const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: boolean, onClose: () => void }) => {
@@ -165,7 +41,7 @@ const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: bo
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+        className="bg-white max-w-4xl w-full max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-6 border-b">
@@ -184,7 +60,7 @@ const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: bo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Image Gallery */}
             <div>
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
+              <div className="aspect-square bg-gray-100 overflow-hidden mb-4">
                 <img
                   src={product.images[currentImageIndex]}
                   alt={product.name}
@@ -202,7 +78,7 @@ const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: bo
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                      className={`w-16 h-16 overflow-hidden border-2 ${
                         currentImageIndex === index ? 'border-black' : 'border-gray-200'
                       }`}
                     >
@@ -230,7 +106,7 @@ const ProductGallery = ({ product, isOpen, onClose }: { product: any, isOpen: bo
                 <span className="text-3xl font-bold text-black">€{product.discountedPrice.toFixed(2)}</span>
                 <span className="text-xl text-gray-400 line-through">€{product.price.toFixed(2)}</span>
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
-                  {mockInfluencer.discountPercent}% OFF
+                  {DEFAULT_DISCOUNT_PERCENT}% OFF
                 </span>
               </div>
               
@@ -251,12 +127,16 @@ export default function CampaignPreview() {
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [dragOverItem, setDragOverItem] = useState<number | null>(null);
   
+  // Influencer data states
+  const [influencerData, setInfluencerData] = useState<InfluencerData | null>(null);
+  const [loading, setLoading] = useState(true);
+  
   // Profile editing states
   const [editingProfile, setEditingProfile] = useState(false);
-  const [avatar, setAvatar] = useState(mockInfluencer.avatar);
-  const [bio, setBio] = useState(mockInfluencer.bio);
-  const [discountCode, setDiscountCode] = useState(mockInfluencer.discountCode);
-  const [socialLinks, setSocialLinks] = useState(mockInfluencer.socialLinks);
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [bio, setBio] = useState<string>('');
+  const [discountCode, setDiscountCode] = useState<string>(DEFAULT_DISCOUNT_CODE);
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
   
   // Recommendation editing states
   const [editingRecommendation, setEditingRecommendation] = useState<string | null>(null);
@@ -265,31 +145,106 @@ export default function CampaignPreview() {
 
   const router = useRouter();
 
+  // Helper function to open social links
+  const openSocialLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  // Load influencer data from API
+  const loadInfluencerData = async () => {
+    try {
+      console.log('🔄 [PREVIEW] Loading influencer data from API...')
+      
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        console.error('❌ [PREVIEW] No authentication token found')
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch('/api/influencer/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ [PREVIEW] Loaded influencer data:', data.influencer)
+        
+        const influencer = data.influencer
+        
+        // Load social links if available
+        let socialLinksMap: Record<string, string> = {}
+        if (influencer.socialNetworks && influencer.socialNetworks.length > 0) {
+          influencer.socialNetworks.forEach((social: any) => {
+            socialLinksMap[social.platform] = social.url
+          })
+          setSocialLinks(socialLinksMap)
+        }
+        
+        // Set influencer data with social links
+        setInfluencerData({
+          name: influencer.name || '',
+          avatar: influencer.avatar || null,
+          bio: influencer.bio || '',
+          socialLinks: socialLinksMap,
+          discountCode: DEFAULT_DISCOUNT_CODE,
+          discountPercent: DEFAULT_DISCOUNT_PERCENT
+        })
+        
+        // Initialize editing states with real data
+        setAvatar(influencer.avatar || null)
+        setBio(influencer.bio || '')
+        setDiscountCode(DEFAULT_DISCOUNT_CODE)
+        
+      } else {
+        console.error('❌ [PREVIEW] Failed to load influencer data:', response.status)
+      }
+    } catch (error) {
+      console.error('❌ [PREVIEW] Error loading influencer data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Load products and recommendations from localStorage on component mount
   useEffect(() => {
+    console.log('🔄 Preview page: Loading data...')
+    
+    // Load influencer data from API
+    loadInfluencerData()
+    
+    // Load products from localStorage
     const savedProducts = localStorage.getItem('selectedProducts');
     if (savedProducts) {
       try {
+        console.log('💾 Preview page: Found saved products in localStorage')
         const parsedProducts = JSON.parse(savedProducts);
+        console.log('📋 Preview page: Parsed products:', parsedProducts.length)
+        console.log('🔍 Preview page: Product details:', parsedProducts.map(p => ({ id: p.id, name: p.name })))
+        
         // Transform products to match expected format
         const transformedProducts = parsedProducts.map((product: any) => ({
           id: product.id,
           name: product.name,
           price: product.price,
-          discountedPrice: product.price * 0.8, // 20% discount
+          discountedPrice: product.price * (1 - DEFAULT_DISCOUNT_PERCENT / 100), // Apply discount
           images: product.images || [],
           brand: product.brand?.name || 'Unknown Brand',
           category: product.category
         }));
+        
         setProducts(transformedProducts);
+        console.log('✅ Preview page: Successfully loaded and transformed products:', transformedProducts.length)
       } catch (error) {
-        console.error('Error parsing saved products:', error);
-        // Fallback to mock data if parsing fails
-        setProducts(mockSelectedProducts);
+        console.error('❌ Preview page: Error parsing saved products:', error);
+        setProducts([]);
+        console.log('🔄 Preview page: Set empty products array')
       }
     } else {
-      // Use mock data if no saved products
-      setProducts(mockSelectedProducts);
+      console.log('📝 Preview page: No saved products found')
+      setProducts([]);
     }
 
     // Load saved recommendations
@@ -298,10 +253,12 @@ export default function CampaignPreview() {
       try {
         const parsedRecommendations = JSON.parse(savedRecommendations);
         setProductRecommendations(parsedRecommendations);
-        console.log('Loaded recommendations from localStorage:', parsedRecommendations);
+        console.log('✅ Preview page: Loaded recommendations from localStorage:', Object.keys(parsedRecommendations).length);
       } catch (error) {
-        console.error('Error parsing saved recommendations:', error);
+        console.error('❌ Preview page: Error parsing saved recommendations:', error);
       }
+    } else {
+      console.log('📝 Preview page: No saved recommendations found')
     }
   }, []);
 
@@ -357,11 +314,57 @@ export default function CampaignPreview() {
     setDragOverItem(null);
   }, []);
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (discountCode.length > 15) {
       return;
     }
-    setEditingProfile(false);
+    
+    try {
+      console.log('🔄 [PREVIEW] Saving profile updates...')
+      
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        console.error('❌ [PREVIEW] No authentication token found')
+        return
+      }
+
+      const response = await fetch('/api/influencer/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bio: bio,
+          avatar: avatar,
+          socialNetworks: Object.entries(socialLinks).map(([platform, url]) => ({
+            platform,
+            url,
+            username: '' // Default value
+          }))
+        })
+      })
+
+      if (response.ok) {
+        console.log('✅ [PREVIEW] Profile updated successfully')
+        
+        // Update local influencer data
+        if (influencerData) {
+          setInfluencerData({
+            ...influencerData,
+            bio: bio,
+            avatar: avatar,
+            socialLinks: socialLinks
+          })
+        }
+        
+        setEditingProfile(false);
+      } else {
+        console.error('❌ [PREVIEW] Failed to update profile:', response.status)
+      }
+    } catch (error) {
+      console.error('❌ [PREVIEW] Error updating profile:', error)
+    }
   };
 
   const handleFileUpload = (file: File) => {
@@ -424,11 +427,6 @@ export default function CampaignPreview() {
     });
   };
 
-  const openSocialLink = (url: string) => {
-    window.open(url, '_blank');
-  };
-
-  // Recommendation handling functions
   const handleEditRecommendation = (productId: string) => {
     const currentRecommendation = productRecommendations[productId] || '';
     setRecommendationText(currentRecommendation);
@@ -439,8 +437,21 @@ export default function CampaignPreview() {
     if (!editingRecommendation) return;
 
     try {
-      // Pro demo účely - simulace API volání
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulace network delay
+      // Call backend API to save recommendation
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+
+      const res = await fetch('/api/influencer/recommendation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ productId: editingRecommendation, recommendation: recommendationText })
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to save recommendation')
+      }
       
       // Uložit do local state
       const updatedRecommendations = {
@@ -486,6 +497,18 @@ export default function CampaignPreview() {
     setEditingRecommendation(null);
     setRecommendationText('');
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your campaign preview...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -559,8 +582,8 @@ export default function CampaignPreview() {
                 {/* Avatar */}
                 <div className="w-24 h-24 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
                   <img
-                    src={avatar}
-                    alt={mockInfluencer.name}
+                    src={influencerData?.avatar || 'https://picsum.photos/150/150?random=100'}
+                    alt={influencerData?.name || 'Influencer'}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -572,15 +595,12 @@ export default function CampaignPreview() {
                 {/* Content */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-4">
-                    <h2 className="text-2xl font-bold text-gray-900">{mockInfluencer.name}</h2>
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
-                      {mockInfluencer.followers} followers
-                    </span>
+                    <h2 className="text-2xl font-bold text-gray-900">{influencerData?.name || 'Loading...'}</h2>
                   </div>
                   
                   {/* Bio - Now with more space */}
                   <div className="mb-6">
-                    <p className="text-gray-700 leading-relaxed text-base">{bio}</p>
+                    <p className="text-gray-700 leading-relaxed text-base">{influencerData?.bio || 'No bio available'}</p>
                   </div>
                 </div>
               </div>
@@ -603,7 +623,7 @@ export default function CampaignPreview() {
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Social Media</h4>
                 <div className="flex items-center gap-3 flex-wrap">
-                  {Object.entries(socialLinks).map(([platform, url]) => {
+                  {Object.entries(influencerData?.socialLinks || {}).map(([platform, url]) => {
                     const platformData = availableSocialPlatforms.find(p => p.key === platform);
                     if (!platformData) return null;
                     
@@ -633,9 +653,9 @@ export default function CampaignPreview() {
                   <p className="text-xs text-gray-600 mb-2 text-center">Exclusive Discount</p>
                   <div className="text-center">
                     <code className="bg-white px-2 py-1 rounded border text-sm font-mono font-bold text-purple-600 block mb-1">
-                      {discountCode}
+                      {influencerData?.discountCode || DEFAULT_DISCOUNT_CODE}
                     </code>
-                    <span className="text-xs text-gray-500">({mockInfluencer.discountPercent}% OFF)</span>
+                    <span className="text-xs text-gray-500">({DEFAULT_DISCOUNT_PERCENT}% OFF)</span>
                   </div>
                 </div>
               </div>
@@ -650,6 +670,26 @@ export default function CampaignPreview() {
             <p className="text-sm text-gray-500">Drag & drop to reorder products</p>
           </div>
           
+          {products.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No products selected</h3>
+              <p className="text-gray-500 mb-6">You need to select products before previewing your campaign.</p>
+              <Link
+                href="/influencer/dashboard/products"
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Select Products
+              </Link>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product, index) => (
               <div
@@ -660,7 +700,7 @@ export default function CampaignPreview() {
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all duration-200 cursor-move group relative ${
+                className={`bg-white shadow-sm border overflow-hidden transition-all duration-200 cursor-move group relative ${
                   draggedItem === index 
                     ? 'scale-105 border-blue-400 shadow-lg' 
                     : dragOverItem === index 
@@ -724,7 +764,7 @@ export default function CampaignPreview() {
                             Edit
                           </button>
                         </div>
-                        <p className="text-xs text-blue-800 italic break-words">"{productRecommendations[product.id]}"</p>
+                        <p className="text-xs text-blue-800 italic break-words">"{productRecommendations[product.id].length > 100 ? productRecommendations[product.id].substring(0, 100) + '...' : productRecommendations[product.id]}"</p>
                       </div>
                     ) : (
                       <button
@@ -746,6 +786,7 @@ export default function CampaignPreview() {
               </div>
             ))}
           </div>
+          )}
         </div>
       </main>
 
@@ -785,7 +826,7 @@ export default function CampaignPreview() {
                 <div className="flex items-center gap-6">
                   <div className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden">
                     <img
-                      src={avatar}
+                      src={avatar || 'https://picsum.photos/150/150?random=100'}
                       alt="Current avatar"
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -849,7 +890,7 @@ export default function CampaignPreview() {
                     maxLength={15}
                     placeholder="DISCOUNT20"
                   />
-                  <span className="text-sm text-gray-500">({mockInfluencer.discountPercent}% OFF)</span>
+                  <span className="text-sm text-gray-500">({DEFAULT_DISCOUNT_PERCENT}% OFF)</span>
                 </div>
               </div>
 
@@ -952,10 +993,13 @@ export default function CampaignPreview() {
             <div className="flex gap-3 mt-8 pt-6 border-t">
               <button
                 onClick={() => {
-                  setBio(mockInfluencer.bio);
-                  setDiscountCode(mockInfluencer.discountCode);
-                  setAvatar(mockInfluencer.avatar);
-                  setSocialLinks(mockInfluencer.socialLinks);
+                  // Reset to original loaded data, not mock data
+                  if (influencerData) {
+                    setBio(influencerData.bio || '');
+                    setAvatar(influencerData.avatar || null);
+                    setSocialLinks(influencerData.socialLinks || {});
+                  }
+                  setDiscountCode(DEFAULT_DISCOUNT_CODE);
                   setEditingProfile(false);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"

@@ -48,8 +48,7 @@ const InfluencerSidebar = ({ currentPage = 'dashboard' }: InfluencerSidebarProps
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       ), 
-      href: '#', 
-      disabled: true 
+      href: '/influencer/dashboard/earnings'
     },
     { 
       id: 'analytics', 
@@ -59,8 +58,7 @@ const InfluencerSidebar = ({ currentPage = 'dashboard' }: InfluencerSidebarProps
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       ), 
-      href: '#', 
-      disabled: true 
+      href: '/influencer/dashboard/analytics'
     },
     { 
       id: 'profile', 
@@ -87,25 +85,17 @@ const InfluencerSidebar = ({ currentPage = 'dashboard' }: InfluencerSidebarProps
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.id}>
-              {item.disabled ? (
-                <div className="flex items-center px-4 py-3 text-gray-400 rounded-xl cursor-not-allowed">
-                  <span className="mr-3">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
-                  <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">Soon</span>
-                </div>
-              ) : (
-                <Link
-                  href={item.href}
-                  className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
-                    currentPage === item.id
-                      ? 'bg-black text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-black'
-                  }`}
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              )}
+              <Link
+                href={item.href}
+                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+                  currentPage === item.id
+                    ? 'bg-black text-white shadow-lg'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-black'
+                }`}
+              >
+                <span className="mr-3">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </Link>
             </li>
           ))}
         </ul>

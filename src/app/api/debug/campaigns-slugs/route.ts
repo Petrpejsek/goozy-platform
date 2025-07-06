@@ -7,9 +7,9 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Debug: Analyzing campaign slugs...')
     
     // Get all campaigns
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       include: {
-        brand: true
+        brands: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       hasSlug: !!campaign.slug,
       name: campaign.name,
       status: campaign.status,
-      brand: campaign.brand.name,
+      brand: campaign.brands.name,
       influencerIds: campaign.influencerIds,
       createdAt: campaign.createdAt.toISOString(),
       // Generate what the new slug would be

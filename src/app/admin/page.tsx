@@ -6,15 +6,15 @@ import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
 export default async function AdminDashboard() {
   const [influencerApplications, brandApplications, products, activeCampaigns, upcomingCampaigns, approvedInfluencers] = await Promise.all([
-    prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.product.findMany({
-      include: { brand: { select: { name: true } } },
+    prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
+          prisma.brand_applications.findMany({ orderBy: { createdAt: 'desc' } }),
+    prisma.products.findMany({
+      include: { brands: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 10,
     }),
     // Počet aktivních kampaní (probíhají právě teď)
-    prisma.campaign.count({
+    prisma.campaigns.count({
       where: {
         AND: [
           { startDate: { lte: new Date() } },
@@ -24,13 +24,13 @@ export default async function AdminDashboard() {
       }
     }),
     // Počet nadcházejících kampaní (začínají v budoucnu)
-    prisma.campaign.count({
+    prisma.campaigns.count({
       where: {
         startDate: { gt: new Date() }
       }
     }),
     // Skutečný počet schválených influencerů
-    prisma.influencerApplication.count({
+    prisma.influencer_applications.count({
       where: { status: 'approved' }
     })
   ]);

@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export default async function PartnersPage() {
   // Získání schválených brandů (partners)
-  const partners = await prisma.brand.findMany({
+  const partners = await prisma.brands.findMany({
     where: { 
       isActive: true,
       isApproved: true 
@@ -32,9 +32,9 @@ export default async function PartnersPage() {
     Promise.resolve(0),
     
     // Celkový počet produktů
-    prisma.product.count({
+    prisma.products.count({
       where: {
-        brand: {
+        brands: {
           isActive: true,
           isApproved: true
         }

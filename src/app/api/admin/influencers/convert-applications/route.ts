@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     console.log('🔄 [CONVERT-APPLICATIONS] Převádím schválené aplikace na influencery...')
     
     // Najdi všechny schválené aplikace, které ještě nebyly převedeny
-    const approvedApplications = await prisma.influencerApplication.findMany({
+    const approvedApplications = await prisma.influencer_applications.findMany({
       where: {
         status: 'approved'
       },
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     for (const application of approvedApplications) {
       try {
         // Zkontroluj, jestli už influencer s tímto emailem neexistuje
-        const existingInfluencer = await prisma.influencer.findUnique({
+        const existingInfluencer = await prisma.influencers.findUnique({
           where: { email: application.email }
         })
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           + '-' + Math.random().toString(36).substring(2, 7)
 
         // Vytvoř nový influencer záznam
-        const newInfluencer = await prisma.influencer.create({
+        const newInfluencer = await prisma.influencers.create({
           data: {
             name: application.name,
             email: application.email,
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Změň status aplikace na 'converted'
-        await prisma.influencerApplication.update({
+        await prisma.influencer_applications.update({
           where: { id: application.id },
           data: { status: 'converted' }
         })

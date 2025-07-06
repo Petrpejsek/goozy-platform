@@ -23,7 +23,7 @@ const countryData: Record<string, { name: string; flag: string }> = {
 
 export default async function InfluencersPage() {
   // Načtu všechny influencery s jejich sociálními sítěmi a statistikami
-  const influencers = await prisma.influencer.findMany({
+  const influencers = await prisma.influencers.findMany({
     include: {
       socialNetworks: true,
       contentCategories: true,

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const validatedData = loginSchema.parse(body)
     
     // FIXED: Najdeme influencera v hlavní tabulce influencers místo aplikací
-    const influencer = await prisma.influencer.findFirst({
+    const influencer = await prisma.influencers.findFirst({
       where: { 
         email: validatedData.email, 
         isApproved: true,
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       console.log('❌ [INFLUENCER-LOGIN] No approved influencer found for:', validatedData.email)
       
       // Check if there is a pending or rejected application
-      const application = await prisma.influencerApplication.findFirst({
+      const application = await prisma.influencer_applications.findFirst({
         where: { email: validatedData.email },
         orderBy: { createdAt: 'desc' }
       })

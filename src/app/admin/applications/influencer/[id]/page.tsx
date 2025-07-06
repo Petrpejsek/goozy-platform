@@ -4,15 +4,15 @@ import Link from 'next/link'
 import InfluencerApplicationActions from './InfluencerApplicationActions'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function InfluencerApplicationDetail({ params }: PageProps) {
   const { id } = await params
   
-  const application = await prisma.influencerApplication.findUnique({
+  const application = await prisma.influencer_applications.findUnique({
     where: { id },
     select: {
       id: true,
@@ -83,7 +83,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       // Remove @ symbol if present
       const instagramUsername = application.instagram.replace('@', '')
       searchCriteria.push({ 
-        socialNetworks: {
+        influencer_socials: {
           some: {
             platform: 'instagram',
             username: instagramUsername
@@ -93,16 +93,16 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
     }
 
     if (searchCriteria.length > 0) {
-      linkedInfluencer = await prisma.influencer.findFirst({
+      linkedInfluencer = await prisma.influencers.findFirst({
         where: {
           OR: searchCriteria
         },
         include: {
           orders: {
             include: {
-              items: {
+              order_items: {
                 include: {
-                  product: true
+                  products: true
                 }
               }
             },
@@ -115,7 +115,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
               createdAt: 'desc'
             }
           },
-          socialNetworks: true
+          influencer_socials: true
         }
       })
 
@@ -147,7 +147,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
             }
           },
           include: {
-            brand: true
+            brands: true
           },
           orderBy: {
             createdAt: 'desc'
@@ -169,7 +169,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       if (duplicate.type === 'database' && duplicate.followers > 0) {
         // Try to get detailed data from InfluencerDatabase
         try {
-          const dbProfile = await prisma.influencerDatabase.findUnique({
+          const dbProfile = await prisma.influencer_database.findUnique({
             where: { id: duplicate.id },
             select: {
               totalFollowers: true,
@@ -203,7 +203,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       const instagramUsername = application.instagram.replace(/[@\/]/g, '').toLowerCase()
       
       // Check if this profile exists in our database
-      const existingProfile = await prisma.influencerDatabase.findFirst({
+      const existingProfile = await prisma.influencer_database.findFirst({
         where: {
           instagramUsername: instagramUsername
         },

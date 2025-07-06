@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const validatedData = brandApplicationSchema.parse(body)
     
     // Check if email already exists in database
-    const existingApplication = await prisma.brandApplication.findFirst({
+    const existingApplication = await prisma.brand_applications.findFirst({
       where: { email: validatedData.email }
     })
     
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds)
     
     // Save application to database
-    const application = await prisma.brandApplication.create({
+    const application = await prisma.brand_applications.create({
       data: {
         contactName: validatedData.contactName,
         brandName: validatedData.brandName,

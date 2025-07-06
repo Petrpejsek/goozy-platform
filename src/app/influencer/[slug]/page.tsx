@@ -10,11 +10,11 @@ const createSlug = (name: string): string => {
 };
 
 interface InfluencerPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function InfluencerPublicPage({ params }: InfluencerPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // Find the approved influencer by their generated slug
   const applications = await prisma.influencer_applications.findMany({ 

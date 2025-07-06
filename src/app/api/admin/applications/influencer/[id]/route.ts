@@ -9,7 +9,7 @@ const updateApplicationSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -20,7 +20,7 @@ export async function PATCH(
     const applicationId = resolvedParams.id
     
     // Find the application
-    const application = await prisma.influencerApplication.findUnique({ 
+    const application = await prisma.influencer_applications.findUnique({ 
       where: { id: applicationId } 
     })
     
@@ -133,13 +133,152 @@ export async function PATCH(
       message = `Application status changed to ${action} successfully`
     }
     
-    const updatedApplication = await prisma.influencerApplication.update({
+    const updatedApplication = await prisma.influencer_applications.update({
       where: { id: applicationId },
       data: updateData
     })
     
-    // TODO: If approved, we can send email to influencer
-    // TODO: We can also create a record in the Influencer table
+    // If application is approved, create influencer account
+    if ((action === 'approve' || action === 'approved') && updateData.status === 'approved') {
+      try {
+        // Check if influencer already exists
+        const existingInfluencer = await prisma.influencers.findUnique({
+          where: { email: application.email }
+        })
+        
+        if (!existingInfluencer) {
+          // Generate unique slug from name
+          const baseSlug = application.name.toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+          
+          let slug = baseSlug
+          let counter = 1
+          
+          // Check for slug uniqueness
+          while (await prisma.influencers.findUnique({ where: { slug } })) {
+            slug = `${baseSlug}-${counter}`
+            counter++
+          }
+          
+          // Create influencer account
+          const newInfluencer = await prisma.influencers.create({
+            data: {
+              id: crypto.randomUUID(),
+              email: application.email,
+              password: application.password, // Password is already hashed from application
+              name: application.name,
+              slug: slug,
+              bio: application.bio || '',
+              isApproved: true,
+              isActive: true,
+              commissionRate: 10.0, // Default commission rate
+              originType: 'application',
+              originApplicationId: application.id,
+              onboardingStatus: 'pending',
+              verificationStatus: 'pending',
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }
+          })
+          
+          // Create social network records if provided
+          const socialNetworks = []
+          if (application.instagram) {
+            socialNetworks.push({
+              id: crypto.randomUUID(),
+              influencerId: newInfluencer.id,
+              platform: 'instagram',
+              username: application.instagram,
+              url: `https://instagram.com/${application.instagram}`,
+              followerCount: 0,
+              isVerified: false,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })
+          }
+          if (application.tiktok) {
+            socialNetworks.push({
+              id: crypto.randomUUID(),
+              influencerId: newInfluencer.id,
+              platform: 'tiktok',
+              username: application.tiktok,
+              url: `https://tiktok.com/@${application.tiktok}`,
+              followerCount: 0,
+              isVerified: false,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })
+          }
+          if (application.youtube) {
+            socialNetworks.push({
+              id: crypto.randomUUID(),
+              influencerId: newInfluencer.id,
+              platform: 'youtube',
+              username: application.youtube,
+              url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/@${application.youtube}`,
+              followerCount: 0,
+              isVerified: false,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })
+          }
+          if (application.facebook) {
+            socialNetworks.push({
+              id: crypto.randomUUID(),
+              influencerId: newInfluencer.id,
+              platform: 'facebook',
+              username: application.facebook,
+              url: application.facebook.includes('facebook.com') ? application.facebook : `https://facebook.com/${application.facebook}`,
+              followerCount: 0,
+              isVerified: false,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })
+          }
+          
+          // Create all social networks at once
+          if (socialNetworks.length > 0) {
+            await prisma.influencer_socials.createMany({
+              data: socialNetworks
+            })
+          }
+          
+          // Create categories if provided
+          if (application.categories) {
+            try {
+              const categories = JSON.parse(application.categories)
+              const categoryRecords = categories.map((category: string) => ({
+                id: crypto.randomUUID(),
+                influencerId: newInfluencer.id,
+                category: category.toLowerCase(),
+                createdAt: new Date()
+              }))
+              
+              if (categoryRecords.length > 0) {
+                await prisma.influencer_categories.createMany({
+                  data: categoryRecords
+                })
+              }
+            } catch (error) {
+              console.error('Error parsing categories:', error)
+            }
+          }
+          
+          console.log(`✅ Created influencer account for ${application.email} with ID: ${newInfluencer.id}`)
+        } else {
+          console.log(`ℹ️ Influencer account already exists for ${application.email}`)
+        }
+      } catch (error) {
+        console.error('Error creating influencer account:', error)
+        // Don't fail the approval process if account creation fails
+      }
+    }
     
     return NextResponse.json({
       message,
@@ -165,7 +304,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Resolve params first
@@ -173,7 +312,7 @@ export async function DELETE(
     const applicationId = resolvedParams.id
     
     // Check if the application exists
-    const application = await prisma.influencerApplication.findUnique({
+    const application = await prisma.influencer_applications.findUnique({
       where: { id: applicationId }
     })
     
@@ -185,7 +324,7 @@ export async function DELETE(
     }
     
     // Delete the application
-    await prisma.influencerApplication.delete({
+    await prisma.influencer_applications.delete({
       where: { id: applicationId }
     })
     

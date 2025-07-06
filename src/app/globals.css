@@ -58,12 +58,11 @@ button:not(:disabled):hover,
   transition: all 0.2s ease;
 }
 
-/* Focus states for better accessibility */
+/* Focus states removed - no outlines */
 button:focus,
 a:focus,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+  outline: none;
 }

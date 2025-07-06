@@ -27,10 +27,11 @@ interface Campaign {
 
 
 export default function MyCampaigns() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const router = useRouter()
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false) // Pro stop/delete akce
 
   useEffect(() => {
     loadCampaigns()
@@ -38,8 +39,34 @@ export default function MyCampaigns() {
 
   const loadCampaigns = async () => {
     try {
-      setIsLoading(true)
-      const response = await fetch('/api/influencer/campaigns')
+      setLoading(true)
+      
+      // Get token from localStorage or sessionStorage
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        console.log('❌ No authentication token found')
+        router.push('/influencer/login')
+        return
+      }
+
+      const response = await fetch('/api/influencer/campaigns', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.status === 401) {
+        console.log('❌ Authentication failed, redirecting to login')
+        localStorage.removeItem('influencer_token')
+        localStorage.removeItem('influencer_user')
+        sessionStorage.removeItem('influencer_token')
+        sessionStorage.removeItem('influencer_user')
+        router.push('/influencer/login')
+        return
+      }
+      
       const result = await response.json()
 
       if (result.success) {
@@ -51,7 +78,7 @@ export default function MyCampaigns() {
     } catch (error) {
       console.error('❌ Error loading campaigns:', error)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
@@ -88,11 +115,104 @@ export default function MyCampaigns() {
     })
   }
 
+  // Funkce pro zastavení kampaně
+  const handleStopCampaign = async (campaignId: string) => {
+    try {
+      setIsProcessing(true)
+      
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        alert('Authentication required')
+        return
+      }
+
+      const response = await fetch(`/api/influencer/campaigns/${campaignId}/stop`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Aktualizuj local state
+        setCampaigns(prev => prev.map(c => 
+          c.id === campaignId 
+            ? { ...c, status: 'inactive', endDate: new Date().toISOString() }
+            : c
+        ))
+        setSelectedCampaign(null)
+        
+        // Zobraz success zprávu
+        showToast('Campaign stopped successfully', 'success')
+      } else {
+        throw new Error(result.error || 'Failed to stop campaign')
+      }
+    } catch (error) {
+      console.error('❌ Error stopping campaign:', error)
+      showToast('Failed to stop campaign', 'error')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Funkce pro smazání kampaně
+  const handleDeleteCampaign = async (campaignId: string) => {
+    try {
+      setIsProcessing(true)
+      
+      const token = localStorage.getItem('influencer_token') || sessionStorage.getItem('influencer_token')
+      if (!token) {
+        alert('Authentication required')
+        return
+      }
+
+      const response = await fetch(`/api/influencer/campaigns/${campaignId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Odeber kampaň z local state
+        setCampaigns(prev => prev.filter(c => c.id !== campaignId))
+        setSelectedCampaign(null)
+        
+        // Zobraz success zprávu
+        showToast('Campaign deleted successfully', 'success')
+      } else {
+        throw new Error(result.error || 'Failed to delete campaign')
+      }
+    } catch (error) {
+      console.error('❌ Error deleting campaign:', error)
+      showToast('Failed to delete campaign', 'error')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Helper funkce pro toast zprávy
+  const showToast = (message: string, type: 'success' | 'error') => {
+    const toast = document.createElement('div')
+    toast.className = `fixed top-5 right-5 px-4 py-2 rounded-lg shadow-lg z-50 text-white ${
+      type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`
+    toast.textContent = message
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 3000)
+  }
+
   const activeCampaigns = campaigns.filter(c => getCampaignStatus(c) === 'active')
   const scheduledCampaigns = campaigns.filter(c => getCampaignStatus(c) === 'scheduled')
   const completedCampaigns = campaigns.filter(c => getCampaignStatus(c) === 'completed')
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -364,6 +484,28 @@ export default function MyCampaigns() {
               )}
               
               <div>
+                <label className="block text-sm font-medium text-gray-700">Campaign URL</label>
+                <div className="mt-1 flex items-center space-x-2">
+                  <p className="text-sm text-gray-900 font-mono bg-gray-50 px-3 py-2 rounded-md border flex-1">
+                    {window.location.origin}/campaign/{selectedCampaign.slug || `fallback-${selectedCampaign.id.slice(-8)}`}
+                  </p>
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/campaign/${selectedCampaign.slug || `fallback-${selectedCampaign.id.slice(-8)}`}`
+                      navigator.clipboard.writeText(url)
+                      // Můžete přidat toast notifikaci zde
+                    }}
+                    className="text-gray-500 hover:text-gray-700 p-2 rounded-md hover:bg-gray-100"
+                    title="Kopírovat URL"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div>
                 <label className="block text-sm font-medium text-gray-700">Status</label>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(getCampaignStatus(selectedCampaign))}`}>
                   {getCampaignStatus(selectedCampaign).charAt(0).toUpperCase() + getCampaignStatus(selectedCampaign).slice(1)}
@@ -371,24 +513,99 @@ export default function MyCampaigns() {
               </div>
             </div>
             
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                onClick={() => setSelectedCampaign(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Close
-              </button>
-              {getCampaignStatus(selectedCampaign) === 'active' && (
+            <div className="mt-6 flex justify-between">
+              {/* Akce vlevo - Edit/Delete/Stop */}
+              <div className="flex space-x-3">
+                {/* Edit Products - jen pro budoucí a aktivní kampaně */}
+                {(getCampaignStatus(selectedCampaign) === 'upcoming' || getCampaignStatus(selectedCampaign) === 'active') && (
+                  <button
+                    onClick={() => {
+                      // Navigace na edit produkty stránku
+                      router.push('/influencer/dashboard/products?editCampaign=' + selectedCampaign.id)
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit Products
+                  </button>
+                )}
+                
+                {/* Stop Campaign - jen pro aktivní kampaně */}
+                {getCampaignStatus(selectedCampaign) === 'active' && (
+                  <button
+                    onClick={async () => {
+                      if (confirm('Are you sure you want to stop this campaign? This action cannot be undone.')) {
+                        await handleStopCampaign(selectedCampaign.id)
+                      }
+                    }}
+                    disabled={isProcessing}
+                    className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
+                      isProcessing 
+                        ? 'text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed'
+                        : 'text-orange-700 bg-orange-50 border border-orange-200 hover:bg-orange-100'
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                      </svg>
+                    )}
+                    {isProcessing ? 'Stopping...' : 'Stop Campaign'}
+                  </button>
+                )}
+                
+                {/* Delete Campaign - jen pro neaktivní kampaně */}
+                {getCampaignStatus(selectedCampaign) !== 'active' && (
+                  <button
+                    onClick={async () => {
+                      if (confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
+                        await handleDeleteCampaign(selectedCampaign.id)
+                      }
+                    }}
+                    disabled={isProcessing}
+                    className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 ${
+                      isProcessing 
+                        ? 'text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed'
+                        : 'text-red-700 bg-red-50 border border-red-200 hover:bg-red-100'
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    )}
+                    {isProcessing ? 'Deleting...' : 'Delete Campaign'}
+                  </button>
+                )}
+              </div>
+              
+              {/* Akce vpravo - Close/View Live */}
+              <div className="flex space-x-3">
                 <button
-                  onClick={() => {
-                    const campaignSlug = selectedCampaign.slug || `fallback-${selectedCampaign.id.slice(-8)}`
-                    router.push(`/campaign/${campaignSlug}`)
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
+                  onClick={() => setSelectedCampaign(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 >
-                  View Live Campaign
+                  Close
                 </button>
-              )}
+                {getCampaignStatus(selectedCampaign) === 'active' && (
+                  <button
+                    onClick={() => {
+                      const campaignSlug = selectedCampaign.slug || `fallback-${selectedCampaign.id.slice(-8)}`
+                      router.push(`/campaign/${campaignSlug}`)
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
+                  >
+                    View Live Campaign
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma'
 // GET - Fetch all campaigns for admin overview
 export async function GET(request: NextRequest) {
   try {
-    const campaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaigns.findMany({
       include: {
-        brand: true
+        brands: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         startDate: campaign.startDate.toISOString(),
         endDate: campaign.endDate.toISOString(),
         status: campaign.status,
-        brand: campaign.brand,
+        brand: campaign.brands,
         expectedReach: campaign.expectedReach,
         budgetAllocated: campaign.budgetAllocated,
         currency: campaign.currency,
@@ -68,10 +68,10 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const campaign = await prisma.campaign.update({
+    const campaign = await prisma.campaigns.update({
       where: { id: campaignId },
       data: { status },
-      include: { brand: true }
+      include: { brands: true }
     })
 
     console.log(`✅ Admin: Updated campaign ${campaignId} status to ${status}`)
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest) {
         id: campaign.id,
         name: campaign.name,
         status: campaign.status,
-        brand: campaign.brand
+        brand: campaign.brands
       }
     })
 

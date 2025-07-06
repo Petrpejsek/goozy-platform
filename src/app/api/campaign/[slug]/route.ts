@@ -22,10 +22,10 @@ export async function GET(
     }
     
     // Find campaign by slug
-    const campaign = await prisma.campaign.findUnique({
+    const campaign = await prisma.campaigns.findUnique({
       where: { slug },
       include: {
-        brand: true
+        brands: true
       }
     })
     
@@ -36,8 +36,113 @@ export async function GET(
         { status: 404 }
       )
     }
+
+    // Get influencer data from influencerIds
+    let influencer = null
+    if (campaign.influencerIds && campaign.influencerIds.length > 0) {
+      // Extract first influencer ID (campaigns usually have one influencer)
+      const influencerId = Array.isArray(campaign.influencerIds) 
+        ? campaign.influencerIds[0] 
+        : campaign.influencerIds
+      
+      console.log('🔍 Looking for influencer with ID:', influencerId)
+      
+      const influencerData = await prisma.influencers.findUnique({
+        where: { id: influencerId }
+      })
+      
+      if (influencerData) {
+        influencer = {
+          id: influencerData.id,
+          name: influencerData.name,
+          email: influencerData.email,
+          avatar: influencerData.avatar || '/avatars/prague_fashionista_1750324937394.jpg',
+          bio: influencerData.bio, // Bez mock fallback - použij jen skutečná data
+          followers: influencerData.followers || '125K',
+          instagram: influencerData.instagram,
+          tiktok: influencerData.tiktok,
+          youtube: influencerData.youtube,
+          slug: influencerData.slug
+        }
+        console.log('✅ Found influencer:', influencerData.name)
+      } else {
+        console.log('❌ Influencer not found for ID:', influencerId)
+      }
+    }
     
+    // Get products that the influencer has actually selected
+    let products = []
+    let productRecommendations = {} // Mapa productId -> recommendation
+    
+    if (influencer) {
+      // First try to get influencer's selected products
+      const influencerProducts = await prisma.influencer_products.findMany({
+        where: {
+          influencerId: influencer.id,
+          isActive: true
+        },
+        include: {
+          products: true
+        }
+      })
+      
+      if (influencerProducts.length > 0) {
+        console.log('✅ Found influencer selected products:', influencerProducts.length)
+        
+        // Extract products and build recommendations map
+        products = influencerProducts
+          .map(ip => ip.products)
+          .filter(p => p !== null && p.isAvailable === true)
+          
+        // Build recommendations map
+        influencerProducts.forEach(ip => {
+          if (ip.products && ip.recommendation) {
+            productRecommendations[ip.products.id] = ip.recommendation
+          }
+        })
+        
+        console.log('📝 Found recommendations for products:', Object.keys(productRecommendations).length)
+      } else {
+        console.log('⚠️ No selected products found, falling back to brand products')
+        // Fallback to brand products if influencer hasn't selected any
+        products = await prisma.products.findMany({
+          where: {
+            brandId: campaign.brandId,
+            isAvailable: true
+          },
+          take: 10
+        })
+      }
+    } else {
+      // No influencer, get brand products
+      products = await prisma.products.findMany({
+        where: {
+          brandId: campaign.brandId,
+          isAvailable: true
+        },
+        take: 10
+      })
+    }
+    
+    // Helper function to parse sizes/colors safely
+    const parseArrayField = (field: string | null) => {
+      if (!field) return []
+      
+      try {
+        // If it's already an array, return it
+        if (Array.isArray(field)) return field
+        
+        // Try to parse as JSON first
+        return JSON.parse(field)
+      } catch {
+        // If JSON parsing fails, treat as comma-separated string
+        return field.split(',').map(item => item.trim()).filter(item => item.length > 0)
+      }
+    }
+
     console.log('✅ Campaign found:', campaign.id)
+    console.log('✅ Found products:', products.length)
+    console.log('✅ Influencer data:', influencer ? influencer.name : 'None')
     
     return NextResponse.json({
       success: true,
@@ -50,14 +155,28 @@ export async function GET(
         endDate: campaign.endDate.toISOString(),
         status: campaign.status,
         isActive: campaign.isActive,
-        brand: campaign.brand,
+        brand: campaign.brands,
         expectedReach: campaign.expectedReach,
         budgetAllocated: campaign.budgetAllocated,
         currency: campaign.currency,
         influencerIds: campaign.influencerIds,
         targetCountries: campaign.targetCountries,
         createdAt: campaign.createdAt.toISOString(),
-        updatedAt: campaign.updatedAt.toISOString()
+        updatedAt: campaign.updatedAt.toISOString(),
+        influencer: influencer,
+        products: products.map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          discountedPrice: product.price * 0.8, // 20% discount
+          images: parseArrayField(product.images),
+          brand: product.brand_name || campaign.brands.name,
+          category: product.category,
+          sizes: parseArrayField(product.sizes),
+          colors: parseArrayField(product.colors),
+          recommendation: productRecommendations[product.id] || null // Přidáno recommendation
+        }))
       }
     })
     

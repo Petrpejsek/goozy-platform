@@ -44,7 +44,7 @@ async function findPossibleDuplicates(applicationData: any) {
   console.log('🔍 Search conditions:', JSON.stringify(searchConditions, null, 2))
   if (searchConditions.length > 0) {
     console.log('🗄️  Searching in InfluencerDatabase...')
-    const databaseMatches = await prisma.influencerDatabase.findMany({
+    const databaseMatches = await prisma.influencer_database.findMany({
       where: { OR: searchConditions },
       select: {
         id: true,
@@ -71,7 +71,7 @@ async function findPossibleDuplicates(applicationData: any) {
   
   // Search in InfluencerProspect (Layer 2)
   if (searchConditions.length > 0) {
-    const prospectMatches = await prisma.influencerProspect.findMany({
+    const prospectMatches = await prisma.influencer_prospects.findMany({
       where: { OR: searchConditions },
       select: {
         id: true,
@@ -99,7 +99,7 @@ async function findPossibleDuplicates(applicationData: any) {
   
   // Search in existing InfluencerApplication (Layer 3)
   if (searchConditions.length > 0) {
-    const applicationMatches = await prisma.influencerApplication.findMany({
+    const applicationMatches = await prisma.influencer_applications.findMany({
       where: { 
         OR: [
           { email: applicationData.email },
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Validation passed:', JSON.stringify(validatedData, null, 2))
     
     // Check if email already exists in database
-    const existingApplication = await prisma.influencerApplication.findFirst({
+    const existingApplication = await prisma.influencer_applications.findFirst({
       where: { email: validatedData.email }
     })
     
@@ -179,20 +179,23 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(validatedData.password, 12)
     
     // Save application to database
-    const application = await prisma.influencerApplication.create({
+    const application = await prisma.influencer_applications.create({
       data: {
+        id: crypto.randomUUID(),
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
-        instagram: validatedData.instagram,
-        tiktok: validatedData.tiktok,
-        youtube: validatedData.youtube,
-        facebook: validatedData.facebook,
+        instagram: validatedData.instagram || '',
+        tiktok: validatedData.tiktok || '',
+        youtube: validatedData.youtube || '',
+        facebook: validatedData.facebook || '',
         categories: JSON.stringify(validatedData.categories),
-        bio: validatedData.bio,
+        bio: validatedData.bio || '',
         collaborationTypes: validatedData.collaborationTypes ? 
           JSON.stringify(validatedData.collaborationTypes) : null,
-        status: 'pending'
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
     
@@ -205,7 +208,7 @@ export async function POST(request: NextRequest) {
         console.log(`⚠️  Found ${duplicates.length} possible duplicates:`, duplicates)
         
         // Update application with duplicate detection results
-        await prisma.influencerApplication.update({
+        await prisma.influencer_applications.update({
           where: { id: application.id },
           data: {
             possibleDuplicateIds: JSON.stringify(duplicates.map(d => d.id)),

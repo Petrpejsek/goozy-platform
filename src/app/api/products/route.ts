@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Load products with brand information
-    const products = await prisma.product.findMany({
+    const products = await prisma.products.findMany({
       where,
       include: {
-        brand: {
+        brands: {
           select: {
             id: true,
             name: true,
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Count total products
-    const totalCount = await prisma.product.count({ where })
+    const totalCount = await prisma.products.count({ where })
 
     // Transform data for frontend
     const transformedProducts = products.map(product => ({
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       colors: product.colors ? (product.colors.startsWith('[') ? JSON.parse(product.colors) : product.colors.split(',').map(s => s.trim())) : [],
       sku: product.sku,
       stockQuantity: product.stockQuantity,
-      brand: product.brand,
+      brand: product.brands,
       createdAt: product.createdAt
     }))
 

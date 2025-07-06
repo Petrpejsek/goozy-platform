@@ -75,12 +75,14 @@ export default function AuthHeader() {
 
         if (response.ok) {
           const data = await response.json()
-          setUser({
-            id: data.id,
-            name: data.name,
-            email: data.email,
-            avatar: data.avatar
-          })
+          const influencer = data.influencer || data
+          const newUser = {
+            id: influencer.id || 'unknown-id',
+            name: influencer.name || 'Unknown User',
+            email: influencer.email || 'No email',
+            avatar: influencer.avatar
+          }
+          setUser(newUser)
           setUserType('influencer')
           setIsLoading(false)
           return
@@ -102,9 +104,9 @@ export default function AuthHeader() {
       if (brandResponse.ok) {
         const data = await brandResponse.json()
         setUser({
-          id: data.user.brandId,
-          name: data.user.brandName,
-          email: data.user.email
+          id: data.user.brandId || 'unknown-brand-id',
+          name: data.user.brandName || 'Unknown Brand',
+          email: data.user.email || 'No email'
         })
         setUserType('brand')
         setIsLoading(false)
@@ -232,13 +234,13 @@ export default function AuthHeader() {
               <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
             ) : (
               <span className="text-white font-semibold text-sm">
-                {user.name.charAt(0).toUpperCase()}
+                {user.name ? user.name.charAt(0).toUpperCase() : '?'}
               </span>
             )}
           </div>
           <div className="hidden md:block text-left">
-            <p className="text-sm font-medium text-gray-900">{user.name}</p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-sm font-medium text-gray-900">{user.name || 'Unknown User'}</p>
+            <p className="text-xs text-gray-500">{user.email || 'No email'}</p>
           </div>
           <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -249,8 +251,8 @@ export default function AuthHeader() {
           <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 z-50">
             <div className="py-2">
               <div className="px-4 py-2 border-b border-gray-100">
-                <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                <p className="text-xs text-gray-500">{user.email}</p>
+                <p className="text-sm font-medium text-gray-900">{user.name || 'Unknown User'}</p>
+                <p className="text-xs text-gray-500">{user.email || 'No email'}</p>
                 <p className="text-xs text-blue-600 font-medium mt-1">
                   {userType === 'influencer' ? '✨ Influencer' : '🏢 Brand Partner'}
                 </p>

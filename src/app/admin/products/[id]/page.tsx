@@ -3,13 +3,14 @@ import Link from 'next/link'
 import ProductQuickView from '@/components/ProductQuickView'
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function AdminProductDetail({ params }: PageProps) {
   try {
+    const { id } = await params
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         brand: true,
       },

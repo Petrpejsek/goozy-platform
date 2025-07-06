@@ -9,7 +9,7 @@ const updateApplicationSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -20,7 +20,7 @@ export async function PATCH(
     const applicationId = resolvedParams.id
     
     // Find the application
-    const application = await prisma.brandApplication.findUnique({ 
+    const application = await prisma.brand_applications.findUnique({ 
       where: { id: applicationId } 
     })
     
@@ -50,7 +50,7 @@ export async function PATCH(
       message = `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully`
     }
     
-    const updatedApplication = await prisma.brandApplication.update({
+    const updatedApplication = await prisma.brand_applications.update({
       where: { id: applicationId },
       data: updateData
     })
@@ -82,7 +82,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Resolve params first
@@ -90,7 +90,7 @@ export async function DELETE(
     const applicationId = resolvedParams.id
     
     // Check if the application exists
-    const application = await prisma.brandApplication.findUnique({
+    const application = await prisma.brand_applications.findUnique({
       where: { id: applicationId }
     })
     
@@ -102,7 +102,7 @@ export async function DELETE(
     }
     
     // Delete the application
-    await prisma.brandApplication.delete({
+    await prisma.brand_applications.delete({
       where: { id: applicationId }
     })
     

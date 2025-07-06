@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 [DEBUG-INFLUENCERS] Načítám všechny influencery...')
     
-    const influencers = await prisma.influencer.findMany({
+    const influencers = await prisma.influencers.findMany({
       include: {
         socialNetworks: true,
         contentCategories: true,
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Ověřím také aplikace
-    const applications = await prisma.influencerApplication.findMany({
+          const applications = await prisma.influencer_applications.findMany({
       orderBy: {
         createdAt: 'desc'
       }

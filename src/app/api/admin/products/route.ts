@@ -28,12 +28,15 @@ export async function POST(request: NextRequest) {
     let finalBrandId = brandId
     if (newBrandName && newBrandName.trim()) {
       // Create new brand
-      const newBrand = await prisma.brand.create({
+      const newBrand = await prisma.brands.create({
         data: {
+          id: `brand_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
           name: newBrandName.trim(),
           email: `admin-created-${Date.now()}@goozy.platform`,
           isApproved: true,
-          isActive: true
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
       finalBrandId = newBrand.id
@@ -71,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate external ID for admin-created products
-    const adminProductsCount = await prisma.product.count({
+    const adminProductsCount = await prisma.products.count({
       where: {
         externalId: {
           startsWith: 'ADMIN_'
@@ -81,8 +84,9 @@ export async function POST(request: NextRequest) {
     const externalId = `ADMIN_${String(adminProductsCount + 1).padStart(3, '0')}`
 
     // Create product
-    const product = await prisma.product.create({
+    const product = await prisma.products.create({
       data: {
+        id: `product_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
         brandId: finalBrandId,
         externalId,
         name,
@@ -100,10 +104,12 @@ export async function POST(request: NextRequest) {
         dimensions: dimensions || undefined,
         gender: gender || undefined,
         material: material || undefined,
-        weight
+        weight,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
-        brand: {
+        brands: {
           select: {
             id: true,
             name: true
