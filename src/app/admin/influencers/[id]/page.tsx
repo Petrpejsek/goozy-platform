@@ -18,9 +18,9 @@ export default async function InfluencerDetail({ params }: PageProps) {
       contentCategories: true,
       orders: {
         include: {
-          items: {
+          order_items: {
             include: {
-              product: true
+              products: true
             }
           }
         },
@@ -33,13 +33,13 @@ export default async function InfluencerDetail({ params }: PageProps) {
           createdAt: 'desc'
         }
       },
-      selectedProducts: {
+      influencer_products: {
         include: {
-          product: true
+          products: true
         }
       },
-      profile: true,
-      discountCodes: true
+      influencer_profiles: true,
+      discount_codes: true
     }
   })
 
@@ -58,14 +58,14 @@ export default async function InfluencerDetail({ params }: PageProps) {
     .reduce((sum, comm) => sum + comm.amount, 0)
 
   // Get campaigns that include this influencer
-  const campaigns = await prisma.campaign.findMany({
+  const campaigns = await prisma.campaigns.findMany({
     where: {
       influencerIds: {
         contains: influencer.id
       }
     },
     include: {
-      brand: true
+      brands: true
     },
     orderBy: {
       createdAt: 'desc'
@@ -194,7 +194,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                 </div>
                 
                 <div className="bg-orange-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{influencer.selectedProducts.length}</div>
+                  <div className="text-2xl font-bold text-orange-600">{influencer.influencer_products.length}</div>
                   <div className="text-sm text-gray-600">Selected Products</div>
                 </div>
               </div>
