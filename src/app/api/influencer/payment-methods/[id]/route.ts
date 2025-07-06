@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 // PUT endpoint for updating payment methods
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Await params before using its properties
@@ -94,7 +94,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Await params before using its properties
