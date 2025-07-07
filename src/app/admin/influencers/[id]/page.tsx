@@ -327,7 +327,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Discount Codes:</span>
-                  <span className="font-medium text-gray-900">{influencer.discountCodes.length}</span>
+                  <span className="font-medium text-gray-900">{influencer.discount_codes.length}</span>
                 </div>
               </div>
             </div>
