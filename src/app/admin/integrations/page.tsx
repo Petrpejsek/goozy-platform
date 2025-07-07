@@ -54,14 +54,14 @@ export default async function AdminIntegrationsPage({
     }),
     
     // Poslední logy synchronizace
-    prisma.inventoryLog.findMany({
+    prisma.inventory_logs.findMany({
       take: 5,
       orderBy: { startedAt: 'desc' },
       include: {
-        supplier: {
+        suppliers: {
           select: { name: true }
         },
-        connection: {
+        supplier_api_connections: {
           select: { connectionName: true }
         }
       }
@@ -82,13 +82,13 @@ export default async function AdminIntegrationsPage({
     ]
   }
 
-  const suppliers = await prisma.supplier.findMany({
+  const suppliers = await prisma.suppliers.findMany({
     where: whereClause,
-    include: {
-      brand: {
-        select: { name: true }
-      },
-      apiConnections: {
+          include: {
+        brands: {
+          select: { name: true }
+        },
+        supplier_api_connections: {
         select: {
           id: true,
           connectionName: true,
@@ -97,13 +97,13 @@ export default async function AdminIntegrationsPage({
           lastTestAt: true
         }
       },
-      _count: {
-        select: {
-          inventoryLogs: true,
-          orderSubmissions: true,
-          apiNotifications: true
+              _count: {
+          select: {
+            inventory_logs: true,
+            order_submissions: true,
+            api_notifications: true
+          }
         }
-      }
     },
     orderBy: { createdAt: 'desc' }
   })
