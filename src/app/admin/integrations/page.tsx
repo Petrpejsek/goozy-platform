@@ -299,7 +299,7 @@ export default async function AdminIntegrationsPage({
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="space-y-1">
-                      {supplier.apiConnections.map((conn) => (
+                      {supplier.supplier_api_connections.map((conn) => (
                         <div key={conn.id} className="flex items-center space-x-2">
                           <span className="text-sm text-gray-900">
                             {conn.connectionName}
