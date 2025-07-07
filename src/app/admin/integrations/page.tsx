@@ -46,10 +46,10 @@ export default async function AdminIntegrationsPage({
     }),
     
     // Celkový počet notifikací
-    prisma.apiNotification.count(),
+    prisma.api_notifications.count(),
     
     // Nepřečtené notifikace
-    prisma.apiNotification.count({
+    prisma.api_notifications.count({
       where: { isRead: false }
     }),
     
