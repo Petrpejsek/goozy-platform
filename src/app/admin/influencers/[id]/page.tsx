@@ -289,7 +289,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Content Categories</h2>
                 <div className="flex flex-wrap gap-2">
-                  {influencer.contentCategories.map((category) => (
+                  {influencer.influencer_categories.map((category) => (
                     <span 
                       key={category.id}
                       className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
