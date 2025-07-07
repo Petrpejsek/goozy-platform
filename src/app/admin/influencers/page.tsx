@@ -265,16 +265,16 @@ export default async function InfluencersPage() {
                         </td>
                         
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {influencer.contentCategories.length > 0 && (
+                          {influencer.influencer_categories.length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                              {influencer.contentCategories.slice(0, 2).map((category) => (
+                              {influencer.influencer_categories.slice(0, 2).map((category) => (
                                 <span key={category.id} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                                   {category.category}
                                 </span>
                               ))}
-                              {influencer.contentCategories.length > 2 && (
+                              {influencer.influencer_categories.length > 2 && (
                                 <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                                  +{influencer.contentCategories.length - 2}
+                                  +{influencer.influencer_categories.length - 2}
                                 </span>
                               )}
                             </div>
