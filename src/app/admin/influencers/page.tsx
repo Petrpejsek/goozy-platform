@@ -39,7 +39,7 @@ export default async function InfluencersPage() {
           status: true
         }
       },
-      profile: true,
+      influencer_profiles: true,
       _count: {
         select: {
           orders: true,
