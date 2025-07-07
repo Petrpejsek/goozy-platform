@@ -374,7 +374,7 @@ export default async function AdminIntegrationsPage({
                   </span>
                   <div>
                     <div className="text-sm font-medium text-gray-900">
-                      {log.supplier.name} - {log.connection.connectionName}
+                      {log.suppliers.name} - {log.supplier_api_connections.connectionName}
                     </div>
                     <div className="text-sm text-gray-500">
                       {log.syncType} sync • {log.productsChecked} products checked • {log.productsUpdated} updated
