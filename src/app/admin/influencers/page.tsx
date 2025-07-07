@@ -217,9 +217,9 @@ export default async function InfluencersPage() {
                         </td>
                         
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {influencer.socialNetworks.length > 0 && (
+                          {influencer.influencer_socials.length > 0 && (
                             <div className="space-y-1">
-                              {influencer.socialNetworks.map((social) => (
+                              {influencer.influencer_socials.map((social) => (
                                 <div key={social.id} className="flex items-center text-sm">
                                   <span className="capitalize font-medium text-gray-700 w-16">
                                     {social.platform}:
