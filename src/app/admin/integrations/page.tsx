@@ -330,9 +330,9 @@ export default async function AdminIntegrationsPage({
                   
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="space-y-1">
-                      <div>📊 {supplier._count.inventoryLogs} syncs</div>
-                      <div>📦 {supplier._count.orderSubmissions} orders</div>
-                      <div>🔔 {supplier._count.apiNotifications} alerts</div>
+                      <div>📊 {supplier._count.inventory_logs} syncs</div>
+                      <div>📦 {supplier._count.order_submissions} orders</div>
+                      <div>🔔 {supplier._count.api_notifications} alerts</div>
                     </div>
                   </td>
                   
