@@ -25,7 +25,7 @@ export default async function AdminIntegrationsPage({
     recentLogs
   ] = await Promise.all([
     // Celkový počet dodavatelů
-    prisma.supplier.count(),
+    prisma.suppliers.count(),
     
     // Aktivní připojení
     prisma.supplierApiConnection.count({
