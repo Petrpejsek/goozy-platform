@@ -44,7 +44,7 @@ export default async function InfluencersPage() {
         select: {
           orders: true,
           commissions: true,
-          selectedProducts: true
+          influencer_products: true
         }
       }
     },
