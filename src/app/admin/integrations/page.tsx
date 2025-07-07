@@ -28,7 +28,7 @@ export default async function AdminIntegrationsPage({
     prisma.suppliers.count(),
     
     // Aktivní připojení
-    prisma.supplierApiConnection.count({
+    prisma.supplier_api_connections.count({
       where: { 
         isActive: true,
         lastTestStatus: 'success'
@@ -36,7 +36,7 @@ export default async function AdminIntegrationsPage({
     }),
     
     // Neúspěšná připojení
-    prisma.supplierApiConnection.count({
+    prisma.supplier_api_connections.count({
       where: { 
         OR: [
           { lastTestStatus: 'failed' },
