@@ -25,8 +25,8 @@ export default async function InfluencersPage() {
   // Načtu všechny influencery s jejich sociálními sítěmi a statistikami
   const influencers = await prisma.influencers.findMany({
     include: {
-      socialNetworks: true,
-      contentCategories: true,
+      influencer_socials: true,
+      influencer_categories: true,
       orders: {
         select: {
           totalAmount: true,
