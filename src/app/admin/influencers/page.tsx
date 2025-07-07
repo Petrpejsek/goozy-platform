@@ -259,7 +259,7 @@ export default async function InfluencersPage() {
                               €{totalCommissions.toFixed(2)} commission
                             </div>
                             <div className="text-xs text-gray-400">
-                              {influencer._count.orders} orders • {influencer._count.selectedProducts} products
+                              {influencer._count.orders} orders • {influencer._count.influencer_products} products
                             </div>
                           </div>
                         </td>
