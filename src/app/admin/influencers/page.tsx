@@ -54,7 +54,7 @@ export default async function InfluencersPage() {
   })
 
   // Získám statistiky podle zemí z kampaní
-  const campaigns = await prisma.campaign.findMany({
+  const campaigns = await prisma.campaigns.findMany({
     select: {
       targetCountries: true,
       influencerIds: true,
