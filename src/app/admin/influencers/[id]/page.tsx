@@ -255,7 +255,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Social Media Profiles</h2>
                 <div className="space-y-3">
-                  {influencer.socialNetworks.map((social) => (
+                  {influencer.influencer_socials.map((social) => (
                     <div key={social.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                         <span className="text-white text-xs font-bold uppercase">
