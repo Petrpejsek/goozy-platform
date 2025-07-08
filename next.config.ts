@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',
   
+  // Disable static generation during build
+  trailingSlash: false,
+  skipTrailingSlashRedirect: true,
+  
   // Optimize images
   images: {
     unoptimized: true,
