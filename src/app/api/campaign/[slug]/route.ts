@@ -58,10 +58,10 @@ export async function GET(
           email: influencerData.email,
           avatar: influencerData.avatar || '/avatars/prague_fashionista_1750324937394.jpg',
           bio: influencerData.bio, // Bez mock fallback - použij jen skutečná data
-          followers: influencerData.followers || '125K',
-          instagram: influencerData.instagram,
-          tiktok: influencerData.tiktok,
-          youtube: influencerData.youtube,
+          followers: '125K',
+          instagram: null,
+          tiktok: null,
+          youtube: null,
           slug: influencerData.slug
         }
         console.log('✅ Found influencer:', influencerData.name)
@@ -97,7 +97,7 @@ export async function GET(
         // Build recommendations map
         influencerProducts.forEach(ip => {
           if (ip.products && ip.recommendation) {
-            productRecommendations[ip.products.id] = ip.recommendation
+            (productRecommendations as any)[ip.products.id] = ip.recommendation
           }
         })
         
@@ -175,7 +175,7 @@ export async function GET(
           category: product.category,
           sizes: parseArrayField(product.sizes),
           colors: parseArrayField(product.colors),
-          recommendation: productRecommendations[product.id] || null // Přidáno recommendation
+          recommendation: (productRecommendations as any)[product.id] || null // Přidáno recommendation
         }))
       }
     })

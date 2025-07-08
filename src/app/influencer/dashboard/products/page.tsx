@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -37,7 +37,7 @@ interface Brand {
   count: number
 }
 
-export default function InfluencerProductCatalog() {
+function InfluencerProductCatalogContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [brands, setBrands] = useState<Brand[]>([])
@@ -1059,4 +1059,19 @@ export default function InfluencerProductCatalog() {
       `}</style>
     </div>
   )
-} 
+}
+
+export default function InfluencerProductCatalog() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    }>
+      <InfluencerProductCatalogContent />
+    </Suspense>
+  )
+}

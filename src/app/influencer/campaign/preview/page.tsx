@@ -222,7 +222,7 @@ export default function CampaignPreview() {
         console.log('💾 Preview page: Found saved products in localStorage')
         const parsedProducts = JSON.parse(savedProducts);
         console.log('📋 Preview page: Parsed products:', parsedProducts.length)
-        console.log('🔍 Preview page: Product details:', parsedProducts.map(p => ({ id: p.id, name: p.name })))
+        console.log('🔍 Preview page: Product details:', parsedProducts.map((p: any) => ({ id: p.id, name: p.name })))
         
         // Transform products to match expected format
         const transformedProducts = parsedProducts.map((product: any) => ({

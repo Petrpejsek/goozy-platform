@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, influencer.password)
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, influencer.password || "")
     if (!isCurrentPasswordValid) {
       return NextResponse.json({ message: 'Current password is incorrect' }, { status: 400 })
     }

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     // Získání schválených brandů (partners)
-    const partners = await prisma.brand.findMany({
+    const partners = await prisma.brands.findMany({
       where: { 
         isActive: true,
         isApproved: true 

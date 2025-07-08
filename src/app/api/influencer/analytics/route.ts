@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     
     for (const order of allOrders) {
       const orderTotal = parseFloat(order.totalAmount.toString())
-      const commission = order.commissions?.[0]?.amount || 0
+      const commission = (order.commissions as any)?.[0]?.amount || 0
       const returnAmount = order.status === 'returned' ? orderTotal : 0
 
       totalRevenue += orderTotal
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 
       const campaignRevenue = campaignOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
       const campaignCommission = campaignOrders.reduce((sum, order) => {
-        const commission = order.commissions?.[0]?.amount || 0
+        const commission = (order.commissions as any)?.[0]?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
       const campaignReturns = campaignOrders.filter(order => order.status === 'returned').reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
 
       const productRevenue = productOrders.reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
       const productCommission = productOrders.reduce((sum, item) => {
-        const commission = item.orders.commissions?.[0]?.amount || 0
+        const commission = (item.orders.commissions as any)?.[0]?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
       const productReturns = productOrders.filter(item => item.orders.status === 'returned').reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)

@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
         id: '1',
         type: 'paypal',
         name: 'PayPal',
-        details: testMode ? 'test@example.com' : (influencer?.email || 'Not configured'),
+        details: testMode ? 'test@example.com' : (influencerId || 'Not configured'),
         isDefault: true
       },
       {

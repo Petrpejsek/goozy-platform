@@ -9,7 +9,7 @@ export default async function AdminDashboard() {
     prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
           prisma.brand_applications.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.products.findMany({
-      include: { brands: { select: { name: true } } },
+      include: { brands: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 10,
     }),
@@ -124,7 +124,13 @@ export default async function AdminDashboard() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
               {products.map((product) => (
-                <ProductQuickView key={product.id} product={product} />
+                <ProductQuickView 
+                  key={product.id} 
+                  product={{
+                    ...product,
+                    description: product.description || undefined
+                  }} 
+                />
               ))}
             </div>
           )}

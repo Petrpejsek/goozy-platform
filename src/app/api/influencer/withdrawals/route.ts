@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     // For now, return empty withdrawal history since table doesn't exist yet
     // In future, this will query: prisma.withdrawals.findMany({ where: { influencerId } })
-    const withdrawalHistory = []
+    const withdrawalHistory: any[] = []
 
     return NextResponse.json({ withdrawals: withdrawalHistory })
 

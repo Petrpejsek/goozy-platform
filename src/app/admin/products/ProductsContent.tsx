@@ -14,7 +14,7 @@ interface ProductsContentProps {
   totalProducts: number
   totalBrands: number
   outOfStock: number
-  totalValue: { _sum: { price: number } }
+  totalValue: { _sum: { price: number | null } }
 }
 
 export default function ProductsContent({

@@ -65,9 +65,10 @@ export default function ProductDetail() {
   useEffect(() => {
     const load = async () => {
       const campaign = await loadCampaignDataBySlug(campaignSlug)
+      let prod = null
       if (campaign) {
         setInfluencer(campaign.influencer)
-        const prod = campaign.products?.find((p: any) => String(p.id) === String(productId))
+        prod = campaign.products?.find((p: any) => String(p.id) === String(productId))
         if (prod) {
           setProduct(prod)
           if (prod.sizes && prod.sizes.length > 0) setSelectedSize(prod.sizes[0])

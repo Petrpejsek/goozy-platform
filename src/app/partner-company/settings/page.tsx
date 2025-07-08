@@ -13,7 +13,7 @@ export default function SettingsPage() {
     description: ''
   })
 
-  const [targetCountries, setTargetCountries] = useState([])
+  const [targetCountries, setTargetCountries] = useState<string[]>([])
   const [apiSettings, setApiSettings] = useState({
     apiKey: '',
     webhookUrl: '',

@@ -77,7 +77,7 @@ export default async function InfluencerPublicPage({ params }: InfluencerPagePro
                 <span className="font-bold text-yellow-900 text-lg">Your 15% Discount Code:</span>
                 <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg">
                     <code className="text-xl font-mono font-bold text-black">{discountCode}</code>
-                    <CopyButton textToCopy={discountCode} />
+                    <CopyButton text={discountCode} />
                 </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default async function InfluencerPublicPage({ params }: InfluencerPagePro
                     <div className="absolute top-0 right-0 m-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">15% OFF</div>
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
-                    <p className="text-sm text-gray-500 mb-1">{product.brand.name}</p>
+                    <p className="text-sm text-gray-500 mb-1">{product.brands.name}</p>
                     <h3 className="text-xl font-bold text-black mb-3 flex-grow">
                       {product.name}
                     </h3>

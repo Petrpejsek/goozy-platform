@@ -48,10 +48,10 @@ export async function GET(request: NextRequest) {
           where: { email },
           select: { id: true, name: true }
         })
-        influencerId = influencerData?.id
-        if (!influencerId) {
+        if (!influencerData?.id) {
           throw new Error('Influencer not found by email')
         }
+        influencerId = influencerData.id
         console.log('✅ [PRODUCTS-GET] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
@@ -148,10 +148,10 @@ export async function POST(request: NextRequest) {
           where: { email },
           select: { id: true, name: true }
         })
-        influencerId = influencerData?.id
-        if (!influencerId) {
+        if (!influencerData?.id) {
           throw new Error('Influencer not found by email')
         }
+        influencerId = influencerData.id
         console.log('✅ [PRODUCTS-POST] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
@@ -341,10 +341,10 @@ export async function DELETE(request: NextRequest) {
           where: { email },
           select: { id: true, name: true }
         })
-        influencerId = influencerData?.id
-        if (!influencerId) {
+        if (!influencerData?.id) {
           throw new Error('Influencer not found by email')
         }
+        influencerId = influencerData.id
         console.log('✅ [PRODUCTS-DELETE] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })

@@ -87,7 +87,7 @@ create_backup() {
 install_dependencies() {
     log "📦 Installing dependencies..."
     
-    npm ci --only=production
+    npm ci
     
     success "Dependencies installed"
 }
@@ -133,8 +133,8 @@ run_tests() {
         SERVER_PID=$!
         sleep 10
         
-        # Test debug endpoint
-        if curl -s http://localhost:3000/api/debug/campaigns-slugs | grep -q "success"; then
+        # Test products endpoint
+        if curl -s http://localhost:3000/api/products/categories | grep -q "categories"; then
             success "API tests passed"
         else
             error "API tests failed"

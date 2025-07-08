@@ -27,7 +27,7 @@ interface WithdrawalData {
 
 interface PaymentMethod {
   id: string
-  type: 'bank' | 'paypal' | 'stripe' | 'wise'
+  type: 'bank' | 'paypal' | 'stripe' | 'wise' | 'revolut'
   name: string
   details: string
   isDefault: boolean
@@ -213,7 +213,7 @@ export default function EarningsPage() {
       
     } catch (error) {
       console.error('Error submitting withdrawal:', error)
-      alert(error.message || 'Failed to submit withdrawal request. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to submit withdrawal request. Please try again.')
     } finally {
       setIsSubmittingWithdrawal(false)
     }

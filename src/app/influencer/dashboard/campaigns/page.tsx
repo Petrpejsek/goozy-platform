@@ -517,7 +517,7 @@ export default function MyCampaigns() {
               {/* Akce vlevo - Edit/Delete/Stop */}
               <div className="flex space-x-3">
                 {/* Edit Products - jen pro budoucí a aktivní kampaně */}
-                {(getCampaignStatus(selectedCampaign) === 'upcoming' || getCampaignStatus(selectedCampaign) === 'active') && (
+                {(getCampaignStatus(selectedCampaign) === 'scheduled' || getCampaignStatus(selectedCampaign) === 'active') && (
                   <button
                     onClick={() => {
                       // Navigace na edit produkty stránku

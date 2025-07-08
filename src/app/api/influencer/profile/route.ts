@@ -75,6 +75,7 @@ export async function PUT(request: NextRequest) {
           age: profile.age || null,
           gender: profile.gender || null,
           location: profile.location || null,
+          updatedAt: new Date(),
         }
       })
       console.log('✅ [PROFILE-UPDATE] Profile data updated')

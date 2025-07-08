@@ -13,7 +13,7 @@ export default function LaunchCampaign() {
   const [campaignSlug, setCampaignSlug] = useState('')
   const [isLaunching, setIsLaunching] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [influencerData, setInfluencerData] = useState(null)
+  const [influencerData, setInfluencerData] = useState<any>(null)
 
   // Load influencer data on mount
   useEffect(() => {

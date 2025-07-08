@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
         // Vytvoř nový influencer záznam
         const newInfluencer = await prisma.influencers.create({
           data: {
+            id: Date.now().toString() + Math.random().toString(),
             name: application.name,
             email: application.email,
             password: application.password, // CRITICAL: Přenos hesla z aplikace!
@@ -61,13 +62,15 @@ export async function POST(request: NextRequest) {
             commissionRate: 0.1, // 10% základní komise
             avatar: null,
             bio: application.bio || null,
+            updatedAt: new Date()
           }
         })
 
         // Vytvoř sociální sítě pro influencera  
         if (application.instagram) {
-          await prisma.influencerSocial.create({
+          await prisma.influencer_socials.create({
             data: {
+              id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
               platform: 'instagram',
               username: application.instagram.replace('@', ''),
@@ -78,8 +81,9 @@ export async function POST(request: NextRequest) {
         }
 
         if (application.tiktok) {
-          await prisma.influencerSocial.create({
+          await prisma.influencer_socials.create({
             data: {
+              id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
               platform: 'tiktok',
               username: application.tiktok.replace('@', ''),
@@ -90,8 +94,9 @@ export async function POST(request: NextRequest) {
         }
 
         if (application.youtube) {
-          await prisma.influencerSocial.create({
+          await prisma.influencer_socials.create({
             data: {
+              id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
               platform: 'youtube',
               username: application.youtube,
@@ -102,8 +107,9 @@ export async function POST(request: NextRequest) {
         }
 
         if (application.facebook) {
-          await prisma.influencerSocial.create({
+          await prisma.influencer_socials.create({
             data: {
+              id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
               platform: 'facebook',
               username: application.facebook,
@@ -118,8 +124,9 @@ export async function POST(request: NextRequest) {
           try {
             const categories = JSON.parse(application.categories)
             for (const category of categories) {
-              await prisma.influencerCategory.create({
+              await prisma.influencer_categories.create({
                 data: {
+                  id: Date.now().toString() + Math.random().toString(),
                   influencerId: newInfluencer.id,
                   category: category,
                 }
@@ -128,8 +135,9 @@ export async function POST(request: NextRequest) {
           } catch (parseError) {
             console.log(`⚠️  Chyba při parsování kategorií pro ${application.email}:`, parseError)
             // Pokud parsing selže, přidáme alespoň jednu kategorii
-            await prisma.influencerCategory.create({
+            await prisma.influencer_categories.create({
               data: {
+                id: Date.now().toString() + Math.random().toString(),
                 influencerId: newInfluencer.id,
                 category: 'lifestyle',
               }

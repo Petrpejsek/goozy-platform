@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { randomUUID } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Najdi nebo vytvoř záznam InfluencerProduct
-    const influencerProduct = await prisma.influencerProduct.upsert({
+    const influencerProduct = await prisma.influencer_products.upsert({
       where: {
         influencerId_productId: {
           influencerId,
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
         recommendation: recommendation || null
       },
       create: {
+        id: randomUUID(),
         influencerId,
         productId,
         recommendation: recommendation || null,
@@ -67,7 +69,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const influencerProduct = await prisma.influencerProduct.findUnique({
+    const influencerProduct = await prisma.influencer_products.findUnique({
       where: {
         influencerId_productId: {
           influencerId,

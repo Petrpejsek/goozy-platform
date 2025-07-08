@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
             slug: true
           }
         })
-        influencerId = influencerData?.id
+        influencerId = influencerData?.id as string
         console.log('✅ [CAMPAIGNS-POST] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         console.error('❌ Authentication failed:', fallbackError)
@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
           where: { email },
           select: { id: true }
         })
-        influencerId = influencerData?.id
+        influencerId = influencerData?.id as string
         console.log('✅ [CAMPAIGNS-GET] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         return NextResponse.json(
@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
         // Calculate stats
         const totalOrders = orders.length
         const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
-        const conversionRate = campaign.expectedReach > 0 ? (totalOrders / campaign.expectedReach) * 100 : 0
+        const conversionRate = (campaign.expectedReach || 0) > 0 ? (totalOrders / (campaign.expectedReach || 1)) * 100 : 0
 
         return {
           id: campaign.id,

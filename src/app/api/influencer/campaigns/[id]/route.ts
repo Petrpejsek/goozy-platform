@@ -32,7 +32,7 @@ export async function GET(
       console.log('🔍 [DEBUG-JWT] Available keys in decoded:', Object.keys(decoded))
       
       // Support multiple possible field names for backward compatibility
-      influencerId = decoded.id || decoded.influencerId || decoded.userId
+      influencerId = (decoded.id || decoded.influencerId || decoded.userId) as string
       console.log('🔍 [DEBUG-JWT] Extracted influencerId:', influencerId)
       
       if (!influencerId || decoded.type !== 'influencer') {

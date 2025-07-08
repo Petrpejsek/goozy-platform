@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
     // Save application to database
     const application = await prisma.brand_applications.create({
       data: {
+        id: Date.now().toString() + Math.random().toString(),
         contactName: validatedData.contactName,
         brandName: validatedData.brandName,
         email: validatedData.email,
@@ -51,7 +52,8 @@ export async function POST(request: NextRequest) {
         website: validatedData.website,
         phone: validatedData.phone,
         description: validatedData.description,
-        status: 'pending'
+        status: 'pending',
+        updatedAt: new Date(),
       }
     })
     
