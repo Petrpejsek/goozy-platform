@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 // Mapování kódů zemí na názvy a vlajky
 const countryData: Record<string, { name: string; flag: string }> = {
   'CZ': { name: 'Czech Republic', flag: '🇨🇿' },

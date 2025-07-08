@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ApplicationsPage() {
   const [influencerApplications, brandApplications] = await Promise.all([
     prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
