@@ -4,6 +4,8 @@ import { InfluencerApplicationCard, BrandApplicationCard } from '@/components/Ad
 import ProductQuickView from '@/components/ProductQuickView'
 import TabbedApplicationSection from '@/components/TabbedApplicationSection'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
   const [influencerApplications, brandApplications, products, activeCampaigns, upcomingCampaigns, approvedInfluencers] = await Promise.all([
     prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
