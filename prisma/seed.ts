@@ -1,9 +1,33 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Starting database seed...')
+
+  // Create test brand application with password
+  const hashedPassword = await bcrypt.hash('password123', 10)
+  
+  const testBrandApplication = await prisma.brand_applications.upsert({
+    where: { id: 'brand-app-001' },
+    update: {},
+    create: {
+      id: 'brand-app-001',
+      brandName: 'Fashion Brand',
+      email: 'test@fashionbrand.com',
+      phone: '+1-555-123-4567',
+      description: 'Modern fashion brand with trendy clothing',
+      website: 'https://fashionbrand.com',
+      contactName: 'John Doe',
+      password: hashedPassword,
+      status: 'approved',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  })
+
+  console.log('✅ Brand application created:', testBrandApplication.brandName)
 
   // Create test brand
   const testBrand = await prisma.brands.upsert({

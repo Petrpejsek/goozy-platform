@@ -67,6 +67,7 @@ model brands {
   campaigns         campaigns[]
   products          products[]
   suppliers         suppliers[]
+  discount_rules    discount_rules[]
 }
 
 model campaigns {
@@ -441,12 +442,54 @@ model products {
   gender               String?
   material             String?
   weight               Float?
+  // Nová pole
+  product_brand        String?               // Značka produktu (ne vlastník)
+  vat_rate             Float                 @default(21.0) // DPH sazba v procentech
   influencer_products  influencer_products[]
   order_items          order_items[]
   product_mappings     product_mappings[]
   brands               brands                @relation(fields: [brandId], references: [id])
+  discount_rule_products discount_rule_products[]
 
   @@unique([brandId, externalId])
+}
+
+// Nový model pro pravidla slev a provizí
+model discount_rules {
+  id                    String                  @id
+  brandId               String
+  name                  String                  // Název pravidla pro identifikaci
+  description           String?
+  // Typ pravidla
+  rule_type             String                  // "all", "category", "brand", "specific_products"
+  // Filtry
+  target_categories     String?                 // JSON array kategorií
+  target_brands         String?                 // JSON array značek produktů
+  // Hodnoty
+  customer_discount     Float                   // Sleva pro zákazníka v %
+  influencer_commission Float                   // Provize pro influencera v %
+  // Stav
+  is_active             Boolean                 @default(true)
+  priority              Int                     @default(0) // Pro řešení překrývajících se pravidel
+  created_at            DateTime                @default(now())
+  updated_at            DateTime                @updatedAt
+  
+  // Relace
+  brands                brands                  @relation(fields: [brandId], references: [id])
+  discount_rule_products discount_rule_products[]
+}
+
+// Spojovací tabulka pro konkrétní produkty v pravidlech
+model discount_rule_products {
+  id              String         @id
+  discount_rule_id String
+  product_id      String
+  created_at      DateTime       @default(now())
+  
+  discount_rules  discount_rules @relation(fields: [discount_rule_id], references: [id], onDelete: Cascade)
+  products        products       @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  
+  @@unique([discount_rule_id, product_id])
 }
 
 model scraping_attempts {

@@ -53,8 +53,96 @@ export default function AnalyticsPage() {
   const revenueByDays: any[] = [] // Žádné denní příjmy
   const orderDetails: any[] = [] // Žádné objednávky
 
-  const exportData = () => {
-    alert('No data available to export yet. Data will be available once campaigns are active.')
+  const exportAnalyticsToCSV = () => {
+    try {
+      // Příprava dat pro export
+      const csvData = []
+      
+      // Header
+      csvData.push(['Analytics Report', `Generated on ${new Date().toLocaleDateString('cs-CZ')}`])
+      csvData.push(['Time Range', timeRange])
+      csvData.push(['Brand', brandData?.brandName || 'N/A'])
+      csvData.push([]) // Prázdný řádek
+      
+      // Summary metrics
+      csvData.push(['SUMMARY METRICS'])
+      csvData.push(['Metric', 'Value'])
+      csvData.push(['Total Revenue', `Kč${realAnalyticsData.totalRevenue.toLocaleString('cs-CZ')}`])
+      csvData.push(['Total Orders', realAnalyticsData.totalOrders.toString()])
+      csvData.push(['Average Order Value', `Kč${realAnalyticsData.averageOrderValue.toFixed(2)}`])
+      csvData.push(['Conversion Rate', `${realAnalyticsData.conversionRate}%`])
+      csvData.push([]) // Prázdný řádek
+      
+      // Monthly revenue breakdown
+      csvData.push(['MONTHLY REVENUE BREAKDOWN'])
+      csvData.push(['Month', 'Revenue (CZK)'])
+      realAnalyticsData.monthlyRevenue.forEach(month => {
+        csvData.push([month.month, month.revenue.toString()])
+      })
+      
+      // Pokud existují denní data, přidat je
+      if (revenueByDays.length > 0) {
+        csvData.push([]) // Prázdný řádek
+        csvData.push(['DAILY REVENUE BREAKDOWN'])
+        csvData.push(['Date', 'Revenue (CZK)', 'Orders', 'Avg Order Value (CZK)'])
+        revenueByDays.forEach(day => {
+          const avgOrderValue = day.orders > 0 ? (day.revenue / day.orders).toFixed(2) : '0'
+          csvData.push([
+            new Date(day.date).toLocaleDateString('cs-CZ'),
+            day.revenue.toString(),
+            day.orders.toString(),
+            avgOrderValue
+          ])
+        })
+      }
+      
+      // Pokud existují objednávky, přidat je
+      if (orderDetails.length > 0) {
+        csvData.push([]) // Prázdný řádek
+        csvData.push(['ORDER DETAILS'])
+        csvData.push(['Order ID', 'Date', 'Customer', 'Products', 'Total (CZK)', 'Status'])
+        orderDetails.forEach(order => {
+          csvData.push([
+            order.id,
+            new Date(order.date).toLocaleDateString('cs-CZ'),
+            order.customer,
+            `${order.products} items`,
+            order.total.toString(),
+            order.status
+          ])
+        })
+      }
+      
+      // Konverze na CSV string
+      const csvContent = csvData.map(row => 
+        row.map(field => {
+          // Escape quotes and wrap in quotes if contains comma or quote
+          const fieldStr = field.toString()
+          if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+            return '"' + fieldStr.replace(/"/g, '""') + '"'
+          }
+          return fieldStr
+        }).join(',')
+      ).join('\n')
+      
+      // Vytvořit a stáhnout soubor
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      
+      const fileName = `analytics_${timeRange}_${new Date().toISOString().split('T')[0]}.csv`
+      
+      link.setAttribute('href', url)
+      link.setAttribute('download', fileName)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+    } catch (error) {
+      console.error('Error exporting CSV:', error)
+      alert('Chyba při exportu CSV souboru. Zkuste to znovu.')
+    }
   }
 
   if (loading) {
@@ -111,10 +199,13 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <button
-              onClick={exportData}
-              className="inline-flex items-center justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={exportAnalyticsToCSV}
+              className="inline-flex items-center justify-center rounded-lg border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
             >
-              Export Data
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export CSV
             </button>
           </div>
         </div>
@@ -421,29 +512,7 @@ export default function AnalyticsPage() {
         </div>
         )}
 
-        {/* Export Section */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Data Export</h3>
-              <p className="text-sm text-gray-600 mt-1">Download your analytics data for external analysis</p>
-            </div>
-            <div className="flex space-x-3">
-              <button 
-                onClick={exportData}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Export CSV
-              </button>
-              <button 
-                onClick={exportData}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
-              >
-                Export PDF Report
-              </button>
-            </div>
-          </div>
-        </div>
+
       </main>
     </div>
   )
