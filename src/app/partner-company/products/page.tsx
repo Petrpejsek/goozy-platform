@@ -15,9 +15,9 @@ export default function ProductManagementPage() {
   const [selectedCategory, setSelectedCategory] = useState('All Categories')
   
   // Mock data - v produkci by se načítala z API
-  const [products, setProducts] = useState([
+  const [products, setProducts] = useState<Product[]>([
     {
-      id: 1,
+      id: '1',
       name: 'Premium Wireless Headphones',
       price: 2500,
       image: '/products/headphones.jpg',
@@ -27,7 +27,7 @@ export default function ProductManagementPage() {
       status: 'active'
     },
     {
-      id: 2,
+      id: '2',
       name: 'Stylish Backpack',
       price: 1200,
       image: '/products/backpack.jpg',
@@ -37,7 +37,7 @@ export default function ProductManagementPage() {
       status: 'active'
     },
     {
-      id: 3,
+      id: '3',
       name: 'Gaming Mechanical Keyboard',
       price: 3200,
       image: '/products/keyboard.jpg',
@@ -47,7 +47,7 @@ export default function ProductManagementPage() {
       status: 'active'
     },
     {
-      id: 4,
+      id: '4',
       name: 'Organic Face Cream',
       price: 890,
       image: '/products/cream.jpg',
@@ -57,7 +57,7 @@ export default function ProductManagementPage() {
       status: 'inactive'
     },
     {
-      id: 5,
+      id: '5',
       name: 'Smart Fitness Watch',
       price: 4500,
       image: '/products/watch.jpg',
@@ -67,7 +67,7 @@ export default function ProductManagementPage() {
       status: 'active'
     },
     {
-      id: 6,
+      id: '6',
       name: 'Yoga Mat Premium',
       price: 750,
       image: '/products/yoga.jpg',
@@ -77,7 +77,7 @@ export default function ProductManagementPage() {
       status: 'active'
     },
     {
-      id: 7,
+      id: '7',
       name: 'Coffee Beans Arabica',
       price: 420,
       image: '/products/coffee.jpg',
@@ -87,7 +87,7 @@ export default function ProductManagementPage() {
       status: 'active'
     },
     {
-      id: 8,
+      id: '8',
       name: 'LED Desk Lamp',
       price: 1650,
       image: '/products/lamp.jpg',
@@ -108,7 +108,7 @@ export default function ProductManagementPage() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.id.toString().includes(searchTerm)
+                         String(product.id).includes(searchTerm)
     
     const matchesCategory = selectedCategory === 'All Categories' || 
                            product.category === selectedCategory
@@ -602,8 +602,8 @@ export default function ProductManagementPage() {
       case 'products':
         return (
           <ProductsTab
-            products={products as unknown as Product[]}
-            filteredProducts={filteredProducts as unknown as Product[]}
+            products={products}
+            filteredProducts={filteredProducts}
             searchTerm={searchTerm}
             selectedCategory={selectedCategory}
             setSearchTerm={setSearchTerm}
@@ -617,7 +617,21 @@ export default function ProductManagementPage() {
         )
       case 'campaigns': return <CampaignSettingsTab />
       case 'api': return <div className="text-center py-12 text-gray-500">API Integration coming soon</div>
-      default: return <ProductsTab />
+      default: return (
+        <ProductsTab
+          products={products}
+          filteredProducts={filteredProducts}
+          searchTerm={searchTerm}
+          selectedCategory={selectedCategory}
+          setSearchTerm={setSearchTerm}
+          setSelectedCategory={setSelectedCategory}
+          setShowAddProduct={setShowAddProduct}
+          setShowEditProduct={setShowEditProduct}
+          setEditingProduct={setEditingProduct}
+          setAddProductTab={setAddProductTab}
+          setProducts={setProducts}
+        />
+      )
     }
   }
 
