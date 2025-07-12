@@ -30,7 +30,7 @@ export async function PATCH(
     } = body
 
     // Ověř, že dodavatel existuje
-    const existingSupplier = await prisma.suppliers.findUnique({
+    const existingSupplier = await prisma.supplier.findUnique({
       where: { id: id }
     })
 
@@ -64,7 +64,7 @@ export async function PATCH(
     }
 
     // Aktualizace dodavatele
-    const updatedSupplier = await prisma.suppliers.update({
+    const updatedSupplier = await prisma.supplier.update({
       where: { id: id },
       data: {
         // Shipping API settings

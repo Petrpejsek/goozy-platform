@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supplier = await prisma.suppliers.findUnique({
+    const supplier = await prisma.supplier.findUnique({
       where: { id },
       include: {
         brands: {

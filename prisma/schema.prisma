@@ -253,3 +253,61 @@ model TaxRate {
   
   @@map("tax_rates")
 }
+
+// Supplier and Brand models
+model Brand {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  website     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  suppliers   Supplier[]
+  
+  @@map("brands")
+}
+
+model Supplier {
+  id          String   @id @default(cuid())
+  brandId     String
+  name        String
+  email       String
+  phone       String?
+  website     String?
+  description String?
+  isActive    Boolean  @default(true)
+  
+  // Shipping API Settings
+  shipping_api_endpoint String?
+  shipping_api_key     String?
+  has_shipping_api     Boolean @default(false)
+  
+  // Manual Shipping Settings
+  shipping_flat_rate      Float?
+  shipping_free_threshold Float?
+  shipping_regions        Json?
+  shipping_rules          Json?
+  
+  // Return Policy
+  return_policy_days       Int?
+  return_policy_conditions String?
+  return_policy_cost       String?
+  return_address           String?
+  return_instructions      String?
+  
+  // Other settings
+  currency      String  @default("EUR")
+  vat_included  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  brands Brand @relation(fields: [brandId], references: [id])
+  
+  @@map("suppliers")
+}

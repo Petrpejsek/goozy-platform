@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
-    const suppliers = await prisma.suppliers.findMany({
+    const suppliers = await prisma.supplier.findMany({
       include: {
         brands: {
           select: {

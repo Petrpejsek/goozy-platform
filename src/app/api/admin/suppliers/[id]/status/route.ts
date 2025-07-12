@@ -20,7 +20,7 @@ export async function PATCH(
     }
 
     // Ověř, že dodavatel existuje
-    const existingSupplier = await prisma.suppliers.findUnique({
+    const existingSupplier = await prisma.supplier.findUnique({
       where: { id: id }
     })
 
@@ -32,7 +32,7 @@ export async function PATCH(
     }
 
     // Aktualizace stavu
-    const updatedSupplier = await prisma.suppliers.update({
+    const updatedSupplier = await prisma.supplier.update({
       where: { id: id },
       data: {
         isActive: isActive,
