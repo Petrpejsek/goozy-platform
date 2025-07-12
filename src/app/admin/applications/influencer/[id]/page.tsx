@@ -12,7 +12,7 @@ interface PageProps {
 export default async function InfluencerApplicationDetail({ params }: PageProps) {
   const { id } = await params
   
-  const application = await prisma.influencer_applications.findUnique({
+  const application = await prisma.influencerApplication.findUnique({
     where: { id },
     select: {
       id: true,

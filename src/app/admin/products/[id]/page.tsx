@@ -9,7 +9,7 @@ interface PageProps {
 export default async function AdminProductDetail({ params }: PageProps) {
   try {
     const { id } = await params
-    const product = await prisma.products.findUnique({
+    const product = await prisma.product.findUnique({
       where: { id },
       include: {
         brands: true,

@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
   const [influencerApplications, brandApplications, products, activeCampaigns, upcomingCampaigns, approvedInfluencers] = await Promise.all([
-    prisma.influencer_applications.findMany({ orderBy: { createdAt: 'desc' } }),
-          prisma.brand_applications.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.products.findMany({
+          prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
+          prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
+          prisma.product.findMany({
       include: { brands: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 10,
@@ -32,7 +32,7 @@ export default async function AdminDashboard() {
       }
     }),
     // Skutečný počet schválených influencerů
-    prisma.influencer_applications.count({
+          prisma.influencerApplication.count({
       where: { status: 'approved' }
     })
   ]);

@@ -17,7 +17,7 @@ export default async function InfluencerPublicPage({ params }: InfluencerPagePro
   const { slug } = await params;
 
   // Find the approved influencer by their generated slug
-  const applications = await prisma.influencer_applications.findMany({ 
+  const applications = await prisma.influencerApplication.findMany({ 
     where: { status: 'APPROVED' } 
   });
   
@@ -28,7 +28,7 @@ export default async function InfluencerPublicPage({ params }: InfluencerPagePro
   }
   
   // TODO: Fetch products specifically selected by this influencer
-  const products = await prisma.products.findMany({
+  const products = await prisma.product.findMany({
     where: { isAvailable: true, stockQuantity: { gt: 0 } },
     include: { brands: { select: { name: true } } },
     take: 9,

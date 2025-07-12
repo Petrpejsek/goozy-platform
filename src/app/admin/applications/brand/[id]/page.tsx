@@ -11,7 +11,7 @@ interface PageProps {
 
 export default async function BrandApplicationDetail({ params }: PageProps) {
   const { id } = await params
-  const application = await prisma.brand_applications.findUnique({
+  const application = await prisma.brandApplication.findUnique({
     where: { id: id }
   })
 

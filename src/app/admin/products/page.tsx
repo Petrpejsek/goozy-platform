@@ -74,8 +74,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset
-    }),
-    prisma.products.count({ where: whereClause }),
+          }),
+      prisma.product.count({ where: whereClause }),
     prisma.brands.findMany({
       where: { isActive: true },
       select: { id: true, name: true },
@@ -104,7 +104,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         ]
       }
     }),
-    prisma.products.aggregate({
+    prisma.product.aggregate({
       where: whereClause,
       _sum: { price: true }
     })

@@ -32,7 +32,7 @@ export default async function PartnersPage() {
     Promise.resolve(0),
     
     // Celkový počet produktů
-    prisma.products.count({
+          prisma.product.count({
       where: {
         brands: {
           isActive: true,
