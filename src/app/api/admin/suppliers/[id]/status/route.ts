@@ -5,9 +5,10 @@ const prisma = new PrismaClient()
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { isActive } = body
 
@@ -20,7 +21,7 @@ export async function PATCH(
 
     // Ověř, že dodavatel existuje
     const existingSupplier = await prisma.suppliers.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingSupplier) {
@@ -32,7 +33,7 @@ export async function PATCH(
 
     // Aktualizace stavu
     const updatedSupplier = await prisma.suppliers.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         isActive: isActive,
         updatedAt: new Date()
