@@ -12,7 +12,7 @@ export default async function PartnerDetailPage({ params }: Props) {
   const { id } = await params
 
   // Získání dat partnera
-  const partner = await prisma.brands.findUnique({
+  const partner = await prisma.brand.findUnique({
     where: { id },
     include: {
       _count: {

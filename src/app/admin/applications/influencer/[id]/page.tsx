@@ -83,7 +83,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       // Remove @ symbol if present
       const instagramUsername = application.instagram.replace('@', '')
       searchCriteria.push({ 
-        influencer_socials: {
+        influencerSocials: {
           some: {
             platform: 'instagram',
             username: instagramUsername
@@ -93,7 +93,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
     }
 
     if (searchCriteria.length > 0) {
-      linkedInfluencer = await prisma.influencers.findFirst({
+      linkedInfluencer = await prisma.influencer.findFirst({
         where: {
           OR: searchCriteria
         },
@@ -115,7 +115,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
               createdAt: 'desc'
             }
           },
-          influencer_socials: true
+          influencerSocials: true
         }
       })
 

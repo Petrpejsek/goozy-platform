@@ -76,7 +76,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       skip: offset
           }),
       prisma.product.count({ where: whereClause }),
-    prisma.brands.findMany({
+          prisma.brand.findMany({
       where: { isActive: true },
       select: { id: true, name: true },
       orderBy: { name: 'asc' }
@@ -85,9 +85,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       select: { category: true },
       distinct: ['category'],
       orderBy: { category: 'asc' }
-    }).then(results => results.filter(item => item.category && item.category.trim() !== '')),
-    prisma.products.count({ where: whereClause }),
-    prisma.brands.count({
+          }).then(results => results.filter(item => item.category && item.category.trim() !== '')),
+      prisma.product.count({ where: whereClause }),
+          prisma.brand.count({
       where: {
         isActive: true,
         products: {

@@ -109,7 +109,7 @@ export default async function AdminIntegrationsPage({
   })
 
   // Značky pro filtr
-      const brands = await prisma.brands.findMany({
+      const brands = await prisma.brand.findMany({
     where: { isActive: true },
     select: { id: true, name: true },
     orderBy: { name: 'asc' }

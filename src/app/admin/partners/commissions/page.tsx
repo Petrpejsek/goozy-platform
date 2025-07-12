@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export default async function CommissionsPage() {
   // Získání všech partnerů pro nastavení provizí
-  const partners = await prisma.brands.findMany({
+  const partners = await prisma.brand.findMany({
     where: { 
       isActive: true,
       isApproved: true 
