@@ -56,7 +56,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       where: whereClause,
       include: {
         brands: {
-          select: { name: true, id: true }
+          select: { 
+            name: true, 
+            id: true,
+            _count: {
+              select: {
+                campaigns: {
+                  where: {
+                    isActive: true
+                  }
+                }
+              }
+            }
+          }
         }
       },
       orderBy: { createdAt: 'desc' },

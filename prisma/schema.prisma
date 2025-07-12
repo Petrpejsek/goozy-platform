@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,621 +10,246 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model api_notifications {
-  id         String     @id
-  type       String
-  category   String
-  title      String
-  message    String
-  supplierId String?
-  brandId    String?
-  isRead     Boolean    @default(false)
-  severity   String     @default("medium")
-  metadata   String?
-  createdAt  DateTime   @default(now())
-  readAt     DateTime?
-  brands     brands?    @relation(fields: [brandId], references: [id])
-  suppliers  suppliers? @relation(fields: [supplierId], references: [id])
-}
-
-model brand_api_configs {
-  id          String  @id
-  brandId     String  @unique
-  apiEndpoint String
-  apiKey      String
-  webhookUrl  String?
-  brands      brands  @relation(fields: [brandId], references: [id], onDelete: Cascade)
-}
-
-model brand_applications {
-  id          String   @id
-  brandName   String
-  email       String
-  phone       String?
-  description String?
-  status      String   @default("pending")
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-  contactName String?
-  website     String?
-  password    String?
-}
-
-model brands {
-  id                String              @id
-  name              String
-  email             String              @unique
-  password          String?
-  phone             String?
-  description       String?
-  website           String?
-  logo              String?
-  isApproved        Boolean             @default(false)
-  isActive          Boolean             @default(true)
-  targetCountries   String              @default("[]")
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime
-  api_notifications api_notifications[]
-  brand_api_configs brand_api_configs?
-  campaigns         campaigns[]
-  products          products[]
-  suppliers         suppliers[]
-  discount_rules    discount_rules[]
-}
-
-model campaigns {
-  id               String   @id
-  brandId          String
-  name             String
-  description      String?
-  startDate        DateTime
-  endDate          DateTime
-  targetCountries  String
-  targetGender     String?
-  targetCategories String?
-  influencerIds    String
-  expectedReach    Int?
-  budgetAllocated  Float?
-  currency         String   @default("EUR")
-  status           String   @default("draft")
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime
-  slug             String   @unique
-  brands           brands   @relation(fields: [brandId], references: [id])
-}
-
-model commission_rates {
-  id        String   @id
-  type      String
-  entityId  String?
-  rate      Float
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-
-  @@unique([type, entityId])
-}
-
-model commissions {
-  id           String      @id
-  orderId      String      @unique
-  influencerId String
-  amount       Float
-  currency     String      @default("EUR")
-  rate         Float
-  status       String      @default("pending")
-  payoutDate   DateTime?
-  paidAt       DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime
-  influencers  influencers @relation(fields: [influencerId], references: [id])
-  orders       orders      @relation(fields: [orderId], references: [id])
-}
-
-model discount_codes {
-  id            String      @id
-  code          String      @unique
-  influencerId  String
-  discountType  String
-  discountValue Float
-  currency      String?
-  isActive      Boolean     @default(true)
-  usageLimit    Int?
-  usageCount    Int         @default(0)
-  expiresAt     DateTime?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime
-  influencers   influencers @relation(fields: [influencerId], references: [id])
-  orders        orders[]
-}
-
-model influencer_applications {
-  id                   String   @id
-  name                 String
-  email                String
-  password             String
-  instagram            String?
-  tiktok               String?
-  youtube              String?
-  facebook             String?
-  categories           String
-  bio                  String?
-  collaborationTypes   String?
-  status               String   @default("pending")
-  notes                String?
-  possibleDuplicateIds String?
-  mergeStatus          String   @default("none")
-  mergeData            String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime
-}
-
-model influencer_categories {
-  id           String      @id
-  influencerId String
-  category     String
-  influencers  influencers @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-}
-
-model influencer_customization {
-  id             String      @id
-  influencerId   String      @unique
-  theme          String      @default("modern")
-  background     String      @default("white")
-  heroLayout     String      @default("horizontal")
-  customColors   Json?
-  customFonts    Json?
-  customSettings Json?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime
-  influencers    influencers @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-}
-
-model influencer_database {
-  id                     String              @id
-  name                   String
-  username               String
-  email                  String?
-  bio                    String?
-  avatar                 String?
-  country                String?
-  location               String?
-  instagramUsername      String?             @unique
-  instagramUrl           String?
-  instagramData          String?
-  tiktokUsername         String?
-  tiktokUrl              String?
-  tiktokData             String?
-  youtubeChannel         String?
-  youtubeUrl             String?
-  youtubeData            String?
-  totalFollowers         Int                 @default(0)
-  engagementRate         Float?
-  avgLikes               Int?
-  avgComments            Int?
-  sourceHashtags         String?
-  sourceCountry          String?
-  foundBy                String?
-  isValidated            Boolean             @default(false)
-  hasEmail               Boolean             @default(false)
-  isActive               Boolean             @default(true)
-  lastScrapedAt          DateTime?
-  notes                  String?
-  promotionStatus        String              @default("none")
-  promotedToProspectIds  String?
-  promotedToInfluencerId String?
-  createdAt              DateTime            @default(now())
-  updatedAt              DateTime
-  scraping_attempts      scraping_attempts[]
-}
-
-model influencer_products {
-  id             String      @id
-  influencerId   String
-  productId      String
-  isActive       Boolean     @default(true)
-  addedAt        DateTime    @default(now())
-  recommendation String?
-  influencers    influencers @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  products       products    @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([influencerId, productId])
-}
-
-model influencer_profiles {
-  id                String      @id
-  influencerId      String      @unique
-  age               Int?
-  gender            String?
-  location          String?
-  audienceAgeGroups String?
-  audienceGenders   String?
-  audienceCountries String?
-  avgReach          Int?
-  avgComments       Int?
-  avgStoryViews     Int?
-  clickThroughRate  Float?
-  contentCategories String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime
-  influencers       influencers @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-}
-
-model influencer_prospects {
-  id                     String        @id
-  scrapingRunId          String
-  name                   String
-  email                  String?
-  bio                    String?
-  avatar                 String?
-  country                String?
-  instagramUsername      String?
-  instagramUrl           String?
-  tiktokUsername         String?
-  tiktokUrl              String?
-  youtubeChannel         String?
-  youtubeUrl             String?
-  instagramData          String?
-  tiktokData             String?
-  youtubeData            String?
-  totalFollowers         Int           @default(0)
-  engagementRate         Float?
-  avgLikes               Int?
-  avgComments            Int?
-  status                 String        @default("pending")
-  duplicateOf            String?
-  duplicateReason        String?
-  notes                  String?
-  originDatabaseId       String?
-  promotionStatus        String        @default("none")
-  promotedToInfluencerId String?
-  promotedAt             DateTime?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime
-  scraping_runs          scraping_runs @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
-}
-
-model influencer_socials {
-  id           String      @id
-  influencerId String
-  platform     String
-  username     String
-  followers    Int
-  url          String?
-  influencers  influencers @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-}
-
-model influencers {
-  id                       String                    @id
-  email                    String                    @unique
-  password                 String?
-  name                     String
-  slug                     String                    @unique
-  avatar                   String?
-  bio                      String?
-  phone                    String?
-  isApproved               Boolean                   @default(false)
-  isActive                 Boolean                   @default(true)
-  commissionRate           Float                     @default(0.1)
-  originType               String?
-  originProspectId         String?
-  originApplicationId      String?
-  onboardingStatus         String                    @default("pending")
-  verificationStatus       String                    @default("unverified")
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime
-  commissions              commissions[]
-  discount_codes           discount_codes[]
-  influencer_categories    influencer_categories[]
-  influencer_customization influencer_customization?
-  influencer_products      influencer_products[]
-  influencer_profiles      influencer_profiles?
-  influencer_socials       influencer_socials[]
-  orders                   orders[]
-  payment_methods          payment_methods[]
-  withdrawals              withdrawals[]
-}
-
-model inventory_logs {
-  id                       String                   @id
-  supplierId               String
-  connectionId             String
-  syncType                 String
-  status                   String
-  productsChecked          Int                      @default(0)
-  productsUpdated          Int                      @default(0)
-  errors                   String?
-  responseTime             Int?
-  startedAt                DateTime                 @default(now())
-  completedAt              DateTime?
-  supplier_api_connections supplier_api_connections @relation(fields: [connectionId], references: [id])
-  suppliers                suppliers                @relation(fields: [supplierId], references: [id])
-}
-
-model order_items {
-  id        String   @id
-  orderId   String
-  productId String
-  quantity  Int
-  size      String?
-  color     String?
-  price     Float
-  currency  String   @default("EUR")
-  orders    orders   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  products  products @relation(fields: [productId], references: [id])
-}
-
-model order_submissions {
-  id                       String                   @id
-  orderId                  String
-  supplierId               String
-  connectionId             String
-  submissionMethod         String
-  status                   String
-  attempts                 Int                      @default(1)
-  maxAttempts              Int                      @default(3)
-  lastAttemptAt            DateTime                 @default(now())
-  nextRetryAt              DateTime?
-  responseData             String?
-  errorMessage             String?
-  submittedData            String
-  supplier_api_connections supplier_api_connections @relation(fields: [connectionId], references: [id])
-  orders                   orders                   @relation(fields: [orderId], references: [id])
-  suppliers                suppliers                @relation(fields: [supplierId], references: [id])
-}
-
-model orders {
-  id                String              @id
-  orderNumber       String              @unique
-  influencerId      String?
-  discountCodeId    String?
-  customerEmail     String
-  customerName      String
-  customerPhone     String?
-  shippingAddress   Json
-  billingAddress    Json?
-  subtotal          Float
-  discountAmount    Float               @default(0)
-  shippingCost      Float               @default(0)
-  totalAmount       Float
-  currency          String              @default("EUR")
-  status            String              @default("pending")
-  paymentStatus     String              @default("pending")
-  paymentIntentId   String?
-  trackingNumber    String?
-  shippedAt         DateTime?
-  deliveredAt       DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime
-  commissions       commissions?
-  order_items       order_items[]
-  order_submissions order_submissions[]
-  discount_codes    discount_codes?     @relation(fields: [discountCodeId], references: [id])
-  influencers       influencers?        @relation(fields: [influencerId], references: [id])
-}
-
-model product_mappings {
-  id                String    @id
-  productId         String
-  supplierId        String
-  supplierProductId String
-  supplierSku       String?
-  variantMapping    String?
-  isActive          Boolean   @default(true)
-  lastSyncAt        DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime
-  products          products  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  suppliers         suppliers @relation(fields: [supplierId], references: [id])
-
-  @@unique([productId, supplierId])
-}
-
-model products {
-  id                   String                @id
-  brandId              String
-  externalId           String
-  name                 String
-  description          String?
-  price                Float
-  currency             String                @default("EUR")
-  images               String
-  category             String
-  sizes                String
-  colors               String
-  sku                  String
-  stockQuantity        Int                   @default(0)
-  isAvailable          Boolean               @default(true)
-  availabilityOverride Boolean?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime
-  brand_name           String?
-  dimensions           String?
-  gender               String?
-  material             String?
-  weight               Float?
-  // Nová pole
-  product_brand        String?               // Značka produktu (ne vlastník)
-  vat_rate             Float                 @default(21.0) // DPH sazba v procentech
-  influencer_products  influencer_products[]
-  order_items          order_items[]
-  product_mappings     product_mappings[]
-  brands               brands                @relation(fields: [brandId], references: [id])
-  discount_rule_products discount_rule_products[]
-
-  @@unique([brandId, externalId])
-}
-
-// Nový model pro pravidla slev a provizí
-model discount_rules {
-  id                    String                  @id
-  brandId               String
-  name                  String                  // Název pravidla pro identifikaci
-  description           String?
-  // Typ pravidla
-  rule_type             String                  // "all", "category", "brand", "specific_products"
-  // Filtry
-  target_categories     String?                 // JSON array kategorií
-  target_brands         String?                 // JSON array značek produktů
-  // Hodnoty
-  customer_discount     Float                   // Sleva pro zákazníka v %
-  influencer_commission Float                   // Provize pro influencera v %
-  // Stav
-  is_active             Boolean                 @default(true)
-  priority              Int                     @default(0) // Pro řešení překrývajících se pravidel
-  created_at            DateTime                @default(now())
-  updated_at            DateTime                @updatedAt
-  
-  // Relace
-  brands                brands                  @relation(fields: [brandId], references: [id])
-  discount_rule_products discount_rule_products[]
-}
-
-// Spojovací tabulka pro konkrétní produkty v pravidlech
-model discount_rule_products {
-  id              String         @id
-  discount_rule_id String
-  product_id      String
-  created_at      DateTime       @default(now())
-  
-  discount_rules  discount_rules @relation(fields: [discount_rule_id], references: [id], onDelete: Cascade)
-  products        products       @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  
-  @@unique([discount_rule_id, product_id])
-}
-
-model scraping_attempts {
-  id                  String               @id
-  scrapingRunId       String
-  targetProfileId     String?
-  platform            String
-  username            String
-  profileUrl          String?
-  country             String?
-  status              String
-  errorMessage        String?
-  scrapedData         String?
-  prospectId          String?
-  attemptedAt         DateTime             @default(now())
-  duration            Int?
-  scraping_runs       scraping_runs        @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
-  influencer_database influencer_database? @relation(fields: [targetProfileId], references: [id])
-}
-
-model scraping_configs {
-  id              String          @id
-  name            String
-  countries       String
-  minFollowers    Int             @default(3000)
-  maxFollowers    Int             @default(500000)
-  platforms       String
-  targetCount     Int             @default(100)
-  isActive        Boolean         @default(false)
-  lastRunAt       DateTime?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime
-  excludeKeywords String?
-  hashtags        String?
-  keywords        String?
-  scraping_runs   scraping_runs[]
-}
-
-model scraping_runs {
-  id                   String                 @id
-  configId             String
-  type                 String                 @default("google_search")
-  sourceFilter         String?
-  status               String                 @default("running")
-  totalFound           Int                    @default(0)
-  totalProcessed       Int                    @default(0)
-  errors               String?
-  startedAt            DateTime               @default(now())
-  completedAt          DateTime?
-  influencer_prospects influencer_prospects[]
-  scraping_attempts    scraping_attempts[]
-  scraping_configs     scraping_configs       @relation(fields: [configId], references: [id], onDelete: Cascade)
-}
-
-model super_admins {
-  id        String   @id
+// Existing models (keep if they exist)
+model User {
+  id        String   @id @default(cuid())
   email     String   @unique
-  password  String
-  name      String
+  name      String?
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  orders    Order[]
+  
+  @@map("users")
 }
 
-model supplier_api_connections {
-  id                String              @id
-  supplierId        String
-  connectionName    String
-  apiEndpoint       String
-  apiKey            String
-  apiSecret         String?
-  webhookUrl        String?
-  authType          String              @default("api_key")
-  isActive          Boolean             @default(true)
-  lastTestAt        DateTime?
-  lastTestStatus    String?
-  lastTestError     String?
-  capabilities      String
-  configuration     String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime
-  inventory_logs    inventory_logs[]
-  order_submissions order_submissions[]
-  suppliers         suppliers           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+model Campaign {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  status      String   @default("active") // active, inactive, draft
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Campaign specific fields
+  startDate   DateTime?
+  endDate     DateTime?
+  targetGoal  Int?
+  metadata    Json?
+  
+  // Relations
+  orders      Order[]
+  products    Product[]
+  
+  @@map("campaigns")
 }
 
-model suppliers {
-  id                       String                     @id
-  brandId                  String
-  name                     String
-  email                    String
-  phone                    String?
-  website                  String?
-  description              String?
-  isActive                 Boolean                    @default(true)
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime
-  api_notifications        api_notifications[]
-  inventory_logs           inventory_logs[]
-  order_submissions        order_submissions[]
-  product_mappings         product_mappings[]
-  supplier_api_connections supplier_api_connections[]
-  brands                   brands                     @relation(fields: [brandId], references: [id])
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  currency    String   @default("EUR")
+  supplier    String
+  image       String?
+  status      String   @default("active") // active, inactive, out_of_stock
+  stockCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  campaignId  String?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+  orderItems  OrderItem[]
+  
+  @@map("products")
 }
 
-model payment_methods {
-  id           String      @id
-  influencerId String
-  type         String      // paypal, bank, wise, stripe
-  name         String
-  details      String      // encrypted payment details
-  isDefault    Boolean     @default(false)
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime
-  influencers  influencers @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  withdrawals  withdrawals[]
+// New e-commerce models
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  status          String   @default("pending") // pending, processing, shipped, delivered, cancelled
+  
+  // Payment information
+  paymentIntentId String?
+  paymentStatus   String   @default("pending") // pending, paid, failed, refunded
+  
+  // Amounts (in cents to avoid floating point issues)
+  subtotal        Int      // Amount in cents
+  shippingCost    Int      // Amount in cents  
+  taxAmount       Int      // Amount in cents
+  totalAmount     Int      // Amount in cents
+  currency        String   @default("EUR")
+  
+  // Addresses (stored as JSON for flexibility)
+  billingAddress  Json
+  shippingAddress Json
+  
+  // Shipping
+  shippingMethod  String
+  trackingNumber  String?
+  estimatedDelivery DateTime?
+  
+  // Campaign relation
+  campaignSlug    String?
+  campaign        Campaign? @relation(fields: [campaignSlug], references: [slug])
+  appliedCampaigns String[] // Array of campaign slugs
+  
+  // User relation (optional for guest checkout)
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  customerEmail   String    // Always store email for order tracking
+  
+  // Metadata
+  metadata        Json?     // Store additional order data
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  items           OrderItem[]
+  payments        Payment[]
+  shipments       Shipment[]
+  
+  @@map("orders")
 }
 
-model withdrawals {
-  id              String          @id
-  influencerId    String
-  paymentMethodId String
-  amount          Float
-  currency        String          @default("USD")
-  status          String          @default("pending") // pending, processing, completed, failed
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Product information (snapshot at time of order)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  
+  // Product details (stored for historical accuracy)
+  name        String
+  description String?
+  price       Int      // Price in cents at time of order
+  quantity    Int
+  supplier    String
+  image       String?
+  
+  // Supplier specific data
+  supplierOrderId String?  // ID from supplier system
+  supplierStatus  String?  // Status from supplier
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("order_items")
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Payment details
+  paymentIntentId String   @unique
+  amount          Int      // Amount in cents
+  currency        String   @default("EUR")
+  status          String   // pending, succeeded, failed, cancelled
+  paymentMethod   String?  // card, apple_pay, google_pay, etc.
+  
+  // Stripe specific
+  stripeClientSecret String?
+  stripePaymentMethodId String?
+  
+  // Transaction details
   transactionId   String?
-  processedAt     DateTime?
-  completedAt     DateTime?
-  failedAt        DateTime?
-  errorMessage    String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime
-  influencers     influencers     @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  payment_methods payment_methods @relation(fields: [paymentMethodId], references: [id])
+  gatewayResponse Json?    // Full response from payment gateway
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  paidAt          DateTime?
+  
+  @@map("payments")
+}
+
+model Shipment {
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Shipping details
+  supplier        String
+  trackingNumber  String?
+  carrier         String?
+  status          String   @default("pending") // pending, shipped, in_transit, delivered, returned
+  
+  // Shipping address (can be different per supplier)
+  shippingAddress Json
+  
+  // Cost breakdown
+  shippingCost    Int      // Cost in cents
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  
+  // Relations
+  items           ShipmentItem[]
+  
+  @@map("shipments")
+}
+
+model ShipmentItem {
+  id          String   @id @default(cuid())
+  shipmentId  String
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  
+  // Product reference
+  orderItemId String   // Reference to the original order item
+  productId   String
+  name        String
+  quantity    Int
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("shipment_items")
+}
+
+// Analytics and tracking
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  type      String   // order_created, payment_completed, shipped, delivered, etc.
+  data      Json?    // Event specific data
+  createdAt DateTime @default(now())
+  
+  @@map("order_events")
+}
+
+// Configuration tables
+model ShippingRate {
+  id          String   @id @default(cuid())
+  supplier    String
+  country     String
+  rate        Int      // Rate in cents
+  isEU        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([supplier, country])
+  @@map("shipping_rates")
+}
+
+model TaxRate {
+  id        String   @id @default(cuid())
+  country   String   @unique
+  rate      Float    // VAT rate as decimal (0.21 for 21%)
+  isEU      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("tax_rates")
 }

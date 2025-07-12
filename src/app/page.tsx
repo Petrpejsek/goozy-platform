@@ -2,14 +2,40 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import MultiStepInfluencerForm from "@/components/MultiStepInfluencerForm";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from 'next/navigation';
+import MultiStepCreatorForm from "@/components/MultiStepCreatorForm";
 import BrandForm from "@/components/BrandForm";
 import AuthHeader from "@/components/AuthHeader";
 import AuthDebug from "@/components/AuthDebug";
 
+interface User {
+  id: string
+  name: string
+  email: string
+  avatar?: string
+}
+
+// Helper function for fetch with timeout
+const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 10000) => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    throw error
+  }
+}
+
 // Login Modal Component
-const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () => void; type: 'influencer' | 'brand' }) => {
+const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () => void; type: 'creator' | 'brand' }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +49,7 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
     setIsSubmitting(true);
 
     try {
-      const endpoint = type === 'influencer' ? '/api/auth/influencer/login' : '/api/auth/brand/login';
+      const endpoint = type === 'creator' ? '/api/auth/creator/login' : '/api/auth/brand/login';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -36,8 +62,8 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
         const data = await response.json();
         onClose();
         // Redirect to appropriate dashboard
-    if (type === 'influencer') {
-          window.location.href = '/influencer/dashboard';
+    if (type === 'creator') {
+          window.location.href = '/creator/dashboard';
         } else {
           window.location.href = '/partner-company';
         }
@@ -53,7 +79,8 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+         onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-3xl p-8 max-w-md w-full relative">
         <button
           onClick={onClose}
@@ -66,10 +93,10 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
         
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-black mb-2">
-            {type === 'influencer' ? 'Influencer Login' : 'Brand Login'}
+            {type === 'creator' ? 'Creator Login' : 'Brand Login'}
           </h2>
           <p className="text-gray-600">
-            {type === 'influencer' 
+            {type === 'creator' 
               ? 'Access your dashboard and manage your products' 
               : 'Manage your brand partnerships and campaigns'
             }
@@ -126,8 +153,8 @@ const LoginModal = ({ isOpen, onClose, type }: { isOpen: boolean; onClose: () =>
             <button
               onClick={() => {
                 onClose();
-                if (type === 'influencer') {
-                  document.getElementById('influencer-form')?.scrollIntoView({ behavior: 'smooth' });
+                if (type === 'creator') {
+                  document.getElementById('creator-form')?.scrollIntoView({ behavior: 'smooth' });
                 } else {
                   document.getElementById('brand-form')?.scrollIntoView({ behavior: 'smooth' });
                 }
@@ -166,7 +193,7 @@ const DropdownItem = ({ href, children, requiresAuth, authType }: {
   href: string; 
   children: React.ReactNode; 
   requiresAuth?: boolean;
-  authType?: 'influencer' | 'brand';
+  authType?: 'creator' | 'brand';
 }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -197,22 +224,21 @@ const DropdownItem = ({ href, children, requiresAuth, authType }: {
   );
 };
 
-// Brand Login Button Component
 const BrandLoginButton = () => {
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <>
-      <button 
-        onClick={() => setShowLoginModal(true)}
-        className="text-black px-6 py-2 rounded-full border border-gray-300 hover:border-black transition-colors font-medium"
+      <button
+        onClick={() => setShowModal(true)}
+        className="w-full bg-white text-black border-2 border-black px-6 py-3 rounded-full font-medium hover:bg-black hover:text-white transition-all duration-300 text-center"
       >
         Brand Login
       </button>
-      {showLoginModal && (
+      {showModal && (
         <LoginModal 
-          isOpen={showLoginModal} 
-          onClose={() => setShowLoginModal(false)} 
+          isOpen={showModal} 
+          onClose={() => setShowModal(false)} 
           type="brand"
         />
       )}
@@ -220,23 +246,22 @@ const BrandLoginButton = () => {
   );
 };
 
-// Influencer Login Button Component
-const InfluencerLoginButton = () => {
-  const [showLoginModal, setShowLoginModal] = useState(false);
+const CreatorLoginButton = () => {
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <>
-      <button 
-        onClick={() => setShowLoginModal(true)}
-        className="text-black px-6 py-2 rounded-full border border-gray-300 hover:border-black transition-colors font-medium"
+      <button
+        onClick={() => setShowModal(true)}
+        className="w-full bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors text-center"
       >
-        Influencer Login
+        Creator Login
       </button>
-      {showLoginModal && (
+      {showModal && (
         <LoginModal 
-          isOpen={showLoginModal} 
-          onClose={() => setShowLoginModal(false)} 
-          type="influencer"
+          isOpen={showModal} 
+          onClose={() => setShowModal(false)} 
+          type="creator"
         />
       )}
     </>
@@ -244,13 +269,347 @@ const InfluencerLoginButton = () => {
 };
 
 export default function Home() {
+  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [userType, setUserType] = useState<'creator' | 'brand' | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const router = useRouter();
+
+  const toggleFAQ = (index: number) => {
+    setOpenFAQ(openFAQ === index ? null : index);
+  };
+
+  // Identická auth logika jako v AuthHeader
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      if (typeof window === 'undefined') {
+        setIsAuthLoading(false);
+        return;
+      }
+
+      // Zkusíme creator token
+      const creatorToken = localStorage.getItem('creator_token') || sessionStorage.getItem('creator_token');
+      
+      if (creatorToken) {
+        try {
+          const response = await fetchWithTimeout('/api/creator/me', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${creatorToken}`,
+              'Content-Type': 'application/json'
+            }
+          }, 5000);
+
+          if (response.ok) {
+            const data = await response.json();
+            const creator = data.creator || data;
+            const newUser = {
+              id: creator.id || 'unknown-id',
+              name: creator.name || 'Unknown User',
+              email: creator.email || 'No email',
+              avatar: creator.avatar
+            };
+            setUser(newUser);
+            setUserType('creator');
+            setIsAuthLoading(false);
+            return;
+          } else {
+            localStorage.removeItem('creator_token');
+            localStorage.removeItem('creator_user');
+            sessionStorage.removeItem('creator_token');
+            sessionStorage.removeItem('creator_user');
+          }
+        } catch (creatorError) {
+          console.warn('⚠️ Creator auth check failed:', creatorError);
+        }
+      }
+
+      try {
+        // Zkusíme brand auth
+        const brandResponse = await fetchWithTimeout('/api/auth/brand/verify', {
+          method: 'GET',
+          credentials: 'include'
+        }, 5000);
+
+        if (brandResponse.ok) {
+          const data = await brandResponse.json();
+          setUser({
+            id: data.user.brandId || 'unknown-brand-id',
+            name: data.user.brandName || 'Unknown Brand',
+            email: data.user.email || 'No email'
+          });
+          setUserType('brand');
+          setIsAuthLoading(false);
+          return;
+        }
+      } catch (brandError) {
+        console.warn('⚠️ Brand auth check failed:', brandError);
+      }
+
+      setUser(null);
+      setUserType(null);
+      setIsAuthLoading(false);
+
+    } catch (error) {
+      console.error('❌ Error checking auth status:', error);
+      setUser(null);
+      setUserType(null);
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (userType === 'creator') {
+        localStorage.removeItem('creator_token');
+        localStorage.removeItem('creator_user');
+        sessionStorage.removeItem('creator_token');
+        sessionStorage.removeItem('creator_user');
+      } else if (userType === 'brand') {
+        await fetchWithTimeout('/api/auth/brand/logout', {
+          method: 'POST',
+          credentials: 'include'
+        }, 5000);
+      }
+      
+      setUser(null);
+      setUserType(null);
+      setShowUserMenu(false);
+      setIsMobileMenuOpen(false);
+      router.push('/');
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+      setUser(null);
+      setUserType(null);
+      setShowUserMenu(false);
+      setIsMobileMenuOpen(false);
+      router.push('/');
+    }
+  };
+
+  const getDashboardLink = () => {
+    if (userType === 'creator') return '/creator/dashboard';
+    if (userType === 'brand') return '/partner-company';
+    return '/';
+  };
+
+  const getProfileLink = () => {
+    if (userType === 'creator') return '/creator/profile';
+    if (userType === 'brand') return '/partner-company/settings';
+    return '/';
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 scroll-smooth">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu - IDENTICKÁ LOGIKA JAKO AuthHeader */}
+      <div className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 lg:hidden ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        {/* Mobile menu header */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-bold text-black tracking-tight">
+              GOOZY
+            </Link>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 text-gray-400 hover:text-gray-600 touch-target"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu content - na základě auth stavu */}
+        <nav className="p-4">
+          {isAuthLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+          ) : !user ? (
+            // NEPŘIHLÁŠENÝ STAV - identická struktura jako AuthHeader
+            <>
+              <div className="space-y-2">
+                <div className="py-2">
+                  <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">For Creators</h3>
+                  <div className="mt-2 space-y-1">
+                    <Link
+                      href="/creators"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      How It Works
+                    </Link>
+                    <a
+                      href="#creator-form"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                    >
+                      Apply Now
+                    </a>
+                    <Link
+                      href="/creator/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                    >
+                      Log In
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="py-2">
+                  <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">For Brands</h3>
+                  <div className="mt-2 space-y-1">
+                    <Link
+                      href="/brands"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      How It Works
+                    </Link>
+                    <a
+                      href="#brand-form"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                    >
+                      Start Partnership
+                    </a>
+                    <Link
+                      href="/brand/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                    >
+                      Brand Login
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            // PŘIHLÁŠENÝ STAV - identická struktura jako AuthHeader
+            <>
+              <div className="px-4 py-2 border-b border-gray-100 mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <span className="text-white font-semibold text-sm">
+                        {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{user.name || 'Unknown User'}</p>
+                    <p className="text-xs text-gray-500">{user.email || 'No email'}</p>
+                    <p className="text-xs text-blue-600 font-medium">
+                      {userType === 'creator' ? '✨ Creator' : '🏢 Brand Partner'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Link
+                  href={getDashboardLink()}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                
+                {userType === 'creator' && (
+                  <>
+                    <Link
+                      href="/creator/dashboard/products"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Product Catalog
+                    </Link>
+                    <Link
+                      href="/creator/dashboard/campaigns"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      My Campaigns
+                    </Link>
+                  </>
+                )}
+                
+                {userType === 'brand' && (
+                  <>
+                    <Link
+                      href="/partner-company/campaigns"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Campaigns
+                    </Link>
+                    <Link
+                      href="/partner-company/promotions"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Promotions
+                    </Link>
+                    <Link
+                      href="/partner-company/analytics"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Analytics
+                    </Link>
+                  </>
+                )}
+                
+                <Link
+                  href={getProfileLink()}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Profile Settings
+                </Link>
+                
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </nav>
+      </div>
+
       {/* Header */}
-      <header className="px-6 lg:px-8 py-6 border-b border-gray-100">
+      <header className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="text-3xl font-bold text-black tracking-tight hover:opacity-80 transition-opacity">
+            <Link href="/" className="text-2xl sm:text-3xl font-bold text-black tracking-tight hover:opacity-80 transition-opacity">
               GOOZY
             </Link>
           </div>
@@ -258,7 +617,10 @@ export default function Home() {
 
           {/* Mobile menu button */}
           <div className="lg:hidden">
-            <button className="text-gray-700 hover:text-black">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="text-gray-700 hover:text-black p-2 -m-2 touch-target"
+            >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -268,26 +630,28 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="px-6 lg:px-8 pt-24 pb-32">
+      <section className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8 sm:pb-12 lg:pt-20 lg:pb-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-6xl lg:text-8xl font-bold text-black mb-8 tracking-tight leading-none">
+          
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 mb-6 sm:mb-8 tracking-tight leading-tight">
             Your taste, made<br />
-            <span className="text-gray-400">effortlessly</span><br />
-            <span className="italic font-light">shoppable.</span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">effortlessly</span><br />
+            <span className="italic font-light text-gray-400">shoppable.</span>
           </h1>
-          <p className="text-xl lg:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-            The leading platform connecting micro & nano influencers with brands.
+          <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+            The leading platform connecting micro & nano creators with brands.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16">
             <Link
-              href="#influencer-form"
-              className="bg-black text-white px-10 py-4 rounded-full hover:bg-gray-800 transition-all duration-300 font-medium text-lg hover:scale-105"
+              href="#creator-form"
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-center"
             >
-              Start Earning
+              Start Earning Today
             </Link>
             <Link
               href="#brand-form"
-              className="text-black px-10 py-4 rounded-full border-2 border-gray-200 hover:border-black transition-all duration-300 font-medium text-lg hover:scale-105"
+              className="w-full sm:w-auto text-gray-700 hover:text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full border-2 border-gray-200 hover:border-gray-400 transition-all duration-300 font-medium text-base sm:text-lg hover:scale-105 bg-white/50 backdrop-blur-sm text-center"
             >
               I'm a Brand
             </Link>
@@ -296,38 +660,39 @@ export default function Home() {
       </section>
 
       {/* Stats/Trust indicators */}
-      <section className="px-6 lg:px-8 py-20 bg-gray-50">
+      <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-white/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center">
             <div>
-              <div className="text-4xl lg:text-5xl font-bold text-black mb-2">1000+</div>
-              <div className="text-gray-600 font-medium">Active Influencers</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-2">2500+</div>
+              <div className="text-gray-600 font-medium text-sm sm:text-base">Active Creators</div>
             </div>
             <div>
-              <div className="text-4xl lg:text-5xl font-bold text-black mb-2">50+</div>
-              <div className="text-gray-600 font-medium">Partner Brands</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-2">46+</div>
+              <div className="text-gray-600 font-medium text-sm sm:text-base">Partner Brands</div>
             </div>
             <div>
-              <div className="text-4xl lg:text-5xl font-bold text-black mb-2">€2M+</div>
-              <div className="text-gray-600 font-medium">Total Revenue</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-2">€45M+</div>
+              <div className="text-gray-600 font-medium text-sm sm:text-base">Total Revenue</div>
             </div>
             <div>
-              <div className="text-4xl lg:text-5xl font-bold text-black mb-2">95%</div>
-              <div className="text-gray-600 font-medium">Satisfaction Rate</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-2">96%</div>
+              <div className="text-gray-600 font-medium text-sm sm:text-base">Satisfaction Rate</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features for Influencers */}
-      <section id="for-influencers" className="px-6 lg:px-8 py-32">
+      {/* Features for Creators */}
+      <section id="for-creators" className="px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
+        <div id="how-it-works" className="absolute -top-32"></div>
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl lg:text-6xl font-bold text-black mb-6 tracking-tight">
+          <div className="text-center mb-16 sm:mb-20">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-4 sm:mb-6 tracking-tight">
               Some of our amazing brand<br />
               <span className="italic font-light text-gray-400">partners</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed mb-16">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed mb-12 sm:mb-16">
               Create your personal page with products and start earning on every sale.
             </p>
             
@@ -344,17 +709,32 @@ export default function Home() {
                 }
                 @keyframes scrollContinuous {
                   0% { transform: translateX(0); }
-                  100% { transform: translateX(calc(-8 * (8rem + 3rem))); }
+                  100% { transform: translateX(calc(-8 * (6rem + 2rem))); }
                 }
                 @keyframes scrollContinuousReverse {
-                  0% { transform: translateX(calc(-8 * (8rem + 3rem))); }
+                  0% { transform: translateX(calc(-8 * (6rem + 2rem))); }
                   100% { transform: translateX(0); }
                 }
                 .scroll-item {
                   flex-shrink: 0;
-                  width: 8rem;
-                  height: 8rem;
-                  margin-right: 3rem;
+                  width: 6rem;
+                  height: 6rem;
+                  margin-right: 2rem;
+                }
+                @media (min-width: 640px) {
+                  .scroll-item {
+                    width: 8rem;
+                    height: 8rem;
+                    margin-right: 3rem;
+                  }
+                  @keyframes scrollContinuous {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(calc(-8 * (8rem + 3rem))); }
+                  }
+                  @keyframes scrollContinuousReverse {
+                    0% { transform: translateX(calc(-8 * (8rem + 3rem))); }
+                    100% { transform: translateX(0); }
+                  }
                 }
               `}</style>
               
@@ -439,7 +819,7 @@ export default function Home() {
                     <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
                   </div>
                   
-                  {/* Čtvrtý duplikát */}
+                  {/* Třetí duplikát */}
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
                     <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
                   </div>
@@ -465,7 +845,7 @@ export default function Home() {
                     <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
                   </div>
                   
-                  {/* Pátý duplikát */}
+                  {/* Třetí duplikát */}
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
                     <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
                   </div>
@@ -574,6 +954,32 @@ export default function Home() {
                     <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
                   </div>
                   
+                  {/* Třetí duplikát */}
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                  </div>
+                  
                   {/* Čtvrtý duplikát */}
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
                     <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
@@ -630,43 +1036,7 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-black">Personal Page</h3>
-              <p className="text-gray-800 text-lg leading-relaxed">
-                Your own URL with your profile and selected products for your followers.
-              </p>
-            </div>
-            
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-black">Sales Commissions</h3>
-              <p className="text-gray-800 text-lg leading-relaxed">
-                Get a commission from every sale made with your personal discount code.
-              </p>
-            </div>
-            
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-8 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-black">Analytics</h3>
-              <p className="text-gray-800 text-lg leading-relaxed">
-                Track your earnings, sales counts, and coupon usage in real-time.
-              </p>
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -674,57 +1044,48 @@ export default function Home() {
       <section className="px-6 lg:px-8 py-32 bg-gray-50">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-5xl lg:text-6xl font-bold text-black mb-6 tracking-tight">
-            A full product suite to monetize<br />
-            <span className="italic font-light text-gray-400">wherever you are</span>
+            Everything you need to turn<br />
+            <span className="italic font-light text-gray-400">influence into income</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-16 font-light leading-relaxed">
-            Our platform provides everything you need to successfully monetize your content.
+            Connect with top brands, showcase products authentically, and earn from every sale.
           </p>
           
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="bg-white p-8 lg:p-10 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-black">Web</h3>
+              <h3 className="text-2xl font-bold mb-4 text-black">Personal Store</h3>
               <p className="text-gray-800 leading-relaxed mb-6">
-                A complete web platform to manage products and track earnings.
+                Your personalized storefront with curated products and your unique voice.
               </p>
-              <Link href="/products" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
-                Explore
-              </Link>
             </div>
             
             <div className="bg-white p-8 lg:p-10 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-black">App</h3>
+              <h3 className="text-2xl font-bold mb-4 text-black">Brand Partnerships</h3>
               <p className="text-gray-800 leading-relaxed mb-6">
-                A mobile app to manage content and communicate with your community.
+                Connect with premium brands and access exclusive partnership opportunities.
               </p>
-              <Link href="#" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
-                Explore
-              </Link>
             </div>
             
             <div className="bg-white p-8 lg:p-10 rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-black">Browser Extension</h3>
+              <h3 className="text-2xl font-bold mb-4 text-black">Real-time Analytics</h3>
               <p className="text-gray-800 leading-relaxed mb-6">
-                A browser extension to easily share products from social media.
+                Track your earnings, engagement, and sales performance in real-time.
               </p>
-              <Link href="#" className="inline-block bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
-                Explore
-              </Link>
             </div>
           </div>
         </div>
@@ -747,82 +1108,108 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Influencer Form Section */}
-      <section id="influencer-form" className="px-6 lg:px-8 py-24 bg-black">
+      {/* Creator Form Section */}
+      <section id="creator-form" className="px-6 lg:px-8 py-24 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
             Join the ultimate platform to monetize<br />
-            <span className="italic font-light text-gray-400">your influence</span>
+            <span className="italic font-light text-blue-200">your influence</span>
           </h2>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
-            Join thousands of influencers who are already earning with Goozy.
+          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+            Join thousands of creators who are already earning with Goozy.
           </p>
           
-          <div className="bg-white rounded-3xl">
-            <MultiStepInfluencerForm />
+          <div className="bg-white rounded-3xl shadow-xl">
+            <MultiStepCreatorForm />
           </div>
         </div>
       </section>
 
       {/* Brand Section */}
-      <section id="for-brands" className="px-6 lg:px-8 py-32">
+      <section id="for-brands" className="px-6 lg:px-8 py-32 bg-gradient-to-r from-purple-50 to-blue-50">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-stretch min-h-[700px]">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="flex flex-col justify-center">
-              <h2 className="text-3xl lg:text-4xl font-bold text-black mb-4 tracking-tight leading-tight">
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">
                 Grow your brand with<br />
-                <span className="italic font-light text-gray-400">authentic</span><br />
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">authentic</span><br />
                 partnerships
               </h2>
-              <p className="text-base text-gray-600 mb-6 font-light leading-relaxed">
-                Expand your reach through verified influencers with a quality community.
+              <p className="text-lg text-gray-600 mb-8 font-light leading-relaxed">
+                Expand your reach through verified creators with a quality community. 
+                Connect with micro and nano creators who truly engage with their audience.
               </p>
               
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs">✓</span>
+              <div className="space-y-6 mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-base mb-0.5">Verified Influencers</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">With a quality community and authentic content.</p>
+                    <h4 className="font-bold text-lg mb-2">Verified Creators</h4>
+                    <p className="text-gray-600 text-base leading-relaxed">
+                      Access to a curated network of authentic content creators with engaged communities.
+                    </p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs">✓</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-base mb-0.5">Automatic Integration</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">Connection with your warehouse and systems.</p>
+                    <h4 className="font-bold text-lg mb-2">Automatic Integration</h4>
+                    <p className="text-gray-600 text-base leading-relaxed">
+                      Seamless connection with your existing warehouse and fulfillment systems.
+                    </p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs">✓</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-base mb-0.5">Detailed Analytics</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">Complete reporting and performance tracking.</p>
+                    <h4 className="font-bold text-lg mb-2">Performance Analytics</h4>
+                    <p className="text-gray-600 text-base leading-relaxed">
+                      Real-time insights into sales, engagement, and campaign performance.
+                    </p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs">✓</span>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-white text-sm">✓</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-base mb-0.5">Easy Setup</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">Quick onboarding and straightforward integration.</p>
+                    <h4 className="font-bold text-lg mb-2">Commission-Based</h4>
+                    <p className="text-gray-600 text-base leading-relaxed">
+                      Pay only for performance. No upfront costs or hidden fees.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="text-center">
+                    <span className="block font-bold text-2xl text-gray-900">2,500+</span>
+                    <span className="text-sm text-gray-600">Active Creators</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block font-bold text-2xl text-gray-900">8.5%</span>
+                    <span className="text-sm text-gray-600">Avg Engagement</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block font-bold text-2xl text-gray-900">48h</span>
+                    <span className="text-sm text-gray-600">Setup Time</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex flex-col">
-              <div id="brand-form" className="bg-gray-50 p-8 lg:p-12 rounded-3xl h-full flex flex-col justify-center">
+            <div className="flex flex-col justify-center">
+              <div id="brand-form" className="bg-white/80 backdrop-blur-md p-8 lg:p-10 rounded-3xl border border-gray-200 shadow-lg">
                 <h3 className="text-2xl font-bold mb-6 text-center">Start Collaborating</h3>
                 <BrandForm />
               </div>
@@ -832,44 +1219,352 @@ export default function Home() {
       </section>
 
       {/* Login Section */}
-      <section className="px-6 lg:px-8 py-16 bg-gray-50">
+      <section className="px-6 lg:px-8 py-16 bg-white/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-gray-600 mb-8 text-xl">Already have an account?</p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <BrandLoginButton />
-            <InfluencerLoginButton />
+            <CreatorLoginButton />
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="px-6 lg:px-8 py-32">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-black mb-6 tracking-tight">
+              Frequently Asked<br />
+              <span className="italic font-light text-gray-400">Questions</span>
+            </h2>
+            <p className="text-lg text-gray-600 font-light leading-relaxed">
+              Everything you need to know about Goozy platform.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {/* FAQ Item 1 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <button
+                onClick={() => toggleFAQ(1)}
+                className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-bold text-lg text-black">How does Goozy work for creators?</h3>
+                <div className="flex-shrink-0 ml-4">
+                  {openFAQ === 1 ? (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+              {openFAQ === 1 && (
+                <div className="px-8 pb-8">
+                  <p className="text-gray-600 leading-relaxed">
+                    Creators join our platform, get approved, and gain access to products from verified brands. 
+                    You promote products through your content and earn commission on every sale made through your unique links.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Item 2 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <button
+                onClick={() => toggleFAQ(2)}
+                className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-bold text-lg text-black">What commission rates can I expect?</h3>
+                <div className="flex-shrink-0 ml-4">
+                  {openFAQ === 2 ? (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+              {openFAQ === 2 && (
+                <div className="px-8 pb-8">
+                  <p className="text-gray-600 leading-relaxed">
+                    Commission rates vary by brand and product category, typically ranging from 10-25%. 
+                    Premium brands and exclusive partnerships may offer higher rates for top-performing creators.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Item 3 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <button
+                onClick={() => toggleFAQ(3)}
+                className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-bold text-lg text-black">How do I get paid?</h3>
+                <div className="flex-shrink-0 ml-4">
+                  {openFAQ === 3 ? (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+              {openFAQ === 3 && (
+                <div className="px-8 pb-8">
+                  <p className="text-gray-600 leading-relaxed">
+                    Payments are processed monthly via bank transfer or PayPal. You can track your earnings 
+                    in real-time through your dashboard and receive detailed reports of all your sales.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Item 4 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <button
+                onClick={() => toggleFAQ(4)}
+                className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-bold text-lg text-black">What are the requirements to join as a creator?</h3>
+                <div className="flex-shrink-0 ml-4">
+                  {openFAQ === 4 ? (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+              {openFAQ === 4 && (
+                <div className="px-8 pb-8">
+                                  <p className="text-gray-600 leading-relaxed">
+                  We welcome micro and nano creators with engaged audiences. While follower count matters, 
+                  we prioritize engagement rate, content quality, and audience authenticity over pure numbers.
+                </p>
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Item 5 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <button
+                onClick={() => toggleFAQ(5)}
+                className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-bold text-lg text-black">How can brands get started?</h3>
+                <div className="flex-shrink-0 ml-4">
+                  {openFAQ === 5 ? (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+              {openFAQ === 5 && (
+                <div className="px-8 pb-8">
+                  <p className="text-gray-600 leading-relaxed">
+                    Brands can apply through our partnership form. After approval, you'll get access to our creator network, 
+                    campaign management tools, and detailed analytics. Setup typically takes 48-72 hours.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Item 6 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <button
+                onClick={() => toggleFAQ(6)}
+                className="w-full p-8 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-bold text-lg text-black">Is there any cost to join?</h3>
+                <div className="flex-shrink-0 ml-4">
+                  {openFAQ === 6 ? (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+              {openFAQ === 6 && (
+                <div className="px-8 pb-8">
+                  <p className="text-gray-600 leading-relaxed">
+                    Joining Goozy is completely free for creators. Brands operate on a commission-based model - 
+                    you only pay when sales are made. No upfront costs or hidden fees.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-6">Still have questions?</p>
+            <Link 
+              href="/contact" 
+              className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105 font-medium"
+            >
+              Contact Support
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="px-6 lg:px-8 py-12 border-t border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
+      <footer className="px-6 lg:px-8 py-16 bg-gradient-to-r from-gray-900 to-black text-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            
+            {/* Information */}
+            <div>
+              <h3 className="font-bold text-lg mb-6 text-white">Information</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/about" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    About GOOZY
+              </Link>
+                </li>
+                <li>
+                  <Link href="/#how-it-works" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    How It Works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#for-creators" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    For Creators
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="font-bold text-lg mb-6 text-white">Support</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="#faq" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    FAQ
+              </Link>
+                </li>
+                <li>
+                  <Link href="/shipping-returns" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Shipping & Returns
+              </Link>
+                </li>
+                <li>
+                  <Link href="/privacy-policy" target="_blank" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Privacy Policy
+              </Link>
+                </li>
+                <li>
+                  <Link href="/cookie-preferences" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Cookie Preferences
+              </Link>
+                </li>
+                <li>
+                  <Link href="/terms-conditions" target="_blank" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Terms & Conditions
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Join Us */}
+            <div>
+              <h3 className="font-bold text-lg mb-6 text-white">Join Us</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="#creator-form" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Become a Creator
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/creator/login" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Creator Login
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#brand-form" className="text-gray-300 hover:text-white transition-colors text-sm">
+                    Brand Partnerships
+                  </Link>
+                </li>
+              </ul>
+          </div>
+
+            {/* Social Media & Newsletter */}
+            <div>
+              <h3 className="font-bold text-lg mb-6 text-white">Social Media</h3>
+              <div className="flex space-x-4 mb-8">
+                <Link href="#" className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                </Link>
+                <Link href="#" className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                  </svg>
+                </Link>
+                <Link href="#" className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </Link>
+              </div>
+              
+              {/* Newsletter */}
+              <div>
+                <h4 className="font-bold text-base mb-3 text-white">Newsletter</h4>
+                <p className="text-sm text-gray-300 mb-4">Get tips, offers & creator drops</p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    className="flex-1 px-3 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                  />
+                  <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                    Subscribe
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Bottom section */}
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-700">
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-black tracking-tight hover:opacity-80 transition-opacity">
+              <Link href="/" className="text-2xl font-bold text-white tracking-tight hover:opacity-80 transition-opacity">
                 GOOZY
               </Link>
             </div>
-            <div className="flex flex-wrap gap-8 text-sm">
-              <Link href="/products" className="text-gray-600 hover:text-black transition-colors">
-                Products
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-black transition-colors">
-                About Us
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-black transition-colors">
-                Contact
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-black transition-colors">
-                Terms
-              </Link>
+            <div className="text-gray-400 text-sm">
+              © 2025 Goozy. All rights reserved.
             </div>
-          </div>
-          <div className="border-t border-gray-100 mt-8 pt-8 text-center">
-            <p className="text-gray-500 text-sm">
-              © 2024 Goozy. All rights reserved.
-            </p>
           </div>
         </div>
       </footer>

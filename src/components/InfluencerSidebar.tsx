@@ -1,12 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 
 interface InfluencerSidebarProps {
   currentPage?: string
 }
 
 const InfluencerSidebar = ({ currentPage = 'dashboard' }: InfluencerSidebarProps) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   const menuItems = [
     { 
       id: 'dashboard', 
@@ -73,34 +76,69 @@ const InfluencerSidebar = ({ currentPage = 'dashboard' }: InfluencerSidebarProps
   ]
 
   return (
-    <div className="w-64 bg-white h-screen shadow-lg border-r border-gray-100 fixed left-0 top-0 z-40">
-      <div className="p-6 border-b border-gray-100">
-        <Link href="/" className="flex items-center">
-          <h1 className="text-2xl font-bold text-black tracking-tight">GOOZY</h1>
-          <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">CREATOR</span>
-        </Link>
-      </div>
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow-lg border border-gray-200"
+      >
+        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 
-      <nav className="p-4">
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={item.href}
-                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
-                  currentPage === item.id
-                    ? 'bg-black text-white shadow-lg'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-black'
-                }`}
-              >
-                <span className="mr-3">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`w-64 bg-white h-screen shadow-lg border-r border-gray-100 fixed left-0 top-0 z-50 transform transition-transform duration-300 ease-in-out ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0`}>
+        
+        {/* Mobile close button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="p-6 border-b border-gray-100">
+          <Link href="/" className="flex items-center">
+            <h1 className="text-2xl font-bold text-black tracking-tight">GOOZY</h1>
+            <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">CREATOR</span>
+          </Link>
+        </div>
+
+        <nav className="p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+                    currentPage === item.id
+                      ? 'bg-black text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-black'
+                  }`}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </>
   )
 }
 

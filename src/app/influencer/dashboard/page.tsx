@@ -169,29 +169,31 @@ export default function InfluencerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-              <InfluencerSidebar currentPage="dashboard" />
+      <InfluencerSidebar currentPage="dashboard" />
       
-      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-64 z-30">
-        <div className="flex items-center justify-between h-full px-8">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
-            <p className="text-sm text-gray-500">Welcome back, {influencer.name || 'User'}</p>
+      {/* Header - responsive */}
+      <header className="bg-white border-b border-gray-100 h-16 fixed top-0 right-0 left-0 lg:left-64 z-30">
+        <div className="flex items-center justify-between h-full px-4 lg:px-8">
+          <div className="lg:block">
+            <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Dashboard</h2>
+            <p className="text-xs lg:text-sm text-gray-500 hidden sm:block">Welcome back, {influencer.name || 'User'}</p>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4">
             <Link
               href="/influencer/dashboard/products"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-2 lg:px-6 lg:py-2.5 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-1 lg:gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm lg:text-base"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Start New Campaign
+              <span className="hidden sm:inline">Start New Campaign</span>
+              <span className="sm:hidden">New</span>
             </Link>
             
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">
+            <div className="flex items-center space-x-2 lg:space-x-3">
+              <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-xs lg:text-sm">
                   {influencer.name ? influencer.name.charAt(0).toUpperCase() : '?'}
                 </span>
               </div>
@@ -199,249 +201,190 @@ export default function InfluencerDashboard() {
                 <p className="text-sm font-medium text-gray-900">{influencer.name || 'Unknown User'}</p>
                 <p className="text-xs text-gray-500">{influencer.email || 'No email'}</p>
               </div>
-              <button
-                onClick={handleLogout}
-                className="text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100"
-                title="Odhlásit se"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </button>
             </div>
           </div>
         </div>
       </header>
-      
-      <main className="ml-64 pt-16 p-8">
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white relative overflow-hidden">
-            <div className="relative z-10">
-              <h1 className="text-3xl font-bold mb-2">Welcome back, {influencer.name || 'User'}! 🎉</h1>
-              <p className="text-purple-100 mb-6 text-lg">
-                Your creator journey continues. Track your progress and grow your earnings.
-              </p>
 
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold text-gray-900">€{(influencer.totalEarnings || 0).toFixed(2)}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-gray-500">
-                {influencer.totalEarnings && influencer.totalEarnings > 0 
-                  ? '+12% from last month' 
-                  : 'Start promoting products to earn commissions'}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Products</p>
-                <p className="text-2xl font-bold text-gray-900">{influencer.activeProducts || 0}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </div>
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-gray-500">
-                {influencer.activeProducts && influencer.activeProducts > 0 
-                  ? 'Products in your catalog' 
-                  : 'Select products to start promoting'}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{influencer.totalOrders || 0}</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-gray-500">
-                {influencer.totalOrders && influencer.totalOrders > 0 
-                  ? 'Orders from your referrals' 
-                  : 'No orders yet'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h3>
-            <div className="space-y-4">
-              <div className="flex items-center p-3 bg-green-50 rounded-xl">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      {/* Main content - responsive padding */}
+      <main className="pt-16 lg:pt-16 lg:ml-64">
+        <div className="p-4 lg:p-8">
+          {/* Stats Cards Grid - responsive */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs lg:text-sm font-medium text-gray-600">Total Earnings</p>
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">€{influencer.totalEarnings?.toFixed(2) || '0.00'}</p>
+                </div>
+                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">Account Approved</p>
-                  <p className="text-sm text-gray-600">Your creator account is now active</p>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs lg:text-sm font-medium text-gray-600">Active Products</p>
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{influencer.activeProducts || 0}</p>
                 </div>
-                <span className="text-xs text-gray-500">Today</span>
+                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs lg:text-sm font-medium text-gray-600">Total Orders</p>
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{influencer.totalOrders || 0}</p>
+                </div>
+                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs lg:text-sm font-medium text-gray-600">Commission Rate</p>
+                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{influencer.commissionRate || 15}%</p>
+                </div>
+                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Campaign Status</h3>
-            {campaigns.length > 0 ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-gray-600">
-                    You have {campaigns.length} active campaign{campaigns.length > 1 ? 's' : ''}
-                  </p>
+          {/* Campaigns Section - responsive */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6 mb-6 lg:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 lg:mb-6">
+              <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Active Campaigns</h3>
+              <Link
+                href="/influencer/dashboard/campaigns"
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm lg:text-base"
+              >
+                View All →
+              </Link>
+            </div>
+            
+            {campaigns.length === 0 ? (
+              <div className="text-center py-8 lg:py-12">
+                <svg className="mx-auto h-10 w-10 lg:h-12 lg:w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="mt-2 text-sm lg:text-base font-medium text-gray-900">No active campaigns</h3>
+                <p className="mt-1 text-xs lg:text-sm text-gray-500">Get started by creating your first campaign.</p>
+                <div className="mt-4 lg:mt-6">
                   <Link
-                    href="/influencer/dashboard/campaigns"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    href="/influencer/dashboard/products"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                   >
-                    View All
+                    <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Start New Campaign
                   </Link>
                 </div>
-                
-                {campaigns.slice(0, 2).map((campaign) => {
-                  const isActive = new Date(campaign.startDate) <= new Date() && new Date() <= new Date(campaign.endDate)
-                  const isUpcoming = new Date(campaign.startDate) > new Date()
-                  const stats = campaign.stats || {
-                    totalSales: 0,
-                    totalRevenue: 0,
-                    totalOrders: 0,
-                    productCount: 6, // Default from influencer products
-                    conversionRate: 0
-                  }
-                  
-                  return (
-                    <div key={campaign.id} className={`p-4 rounded-xl border-2 ${
-                      isActive ? 'bg-green-50 border-green-200' : 
-                      isUpcoming ? 'bg-blue-50 border-blue-200' : 
-                      'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center">
-                          <div className={`w-3 h-3 rounded-full mr-3 ${
-                            isActive ? 'bg-green-500' : 
-                            isUpcoming ? 'bg-blue-500' : 
-                            'bg-gray-400'
-                          }`}></div>
-                          <div>
-                            <p className="font-medium text-gray-900">{campaign.brand.name}</p>
-                            <p className="text-xs text-gray-500">
-                              {isActive ? 'Active' : isUpcoming ? 'Upcoming' : 'Ended'} • {stats.productCount} products
-                            </p>
-                          </div>
-                        </div>
-                        <Link
-                          href={`/campaign/${campaign.slug}`}
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                        >
-                          View
-                        </Link>
-                      </div>
-                      
-                      {/* Campaign Stats */}
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="text-center">
-                          <p className="text-lg font-bold text-gray-900">{stats.totalOrders}</p>
-                          <p className="text-xs text-gray-500">Orders</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-bold text-gray-900">€{stats.totalRevenue.toFixed(0)}</p>
-                          <p className="text-xs text-gray-500">Revenue</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-bold text-gray-900">{stats.conversionRate.toFixed(1)}%</p>
-                          <p className="text-xs text-gray-500">Conversion</p>
-                        </div>
-                      </div>
-                      
-                      {/* Progress bar for campaign duration */}
-                      {(isActive || !isUpcoming) && (
-                        <div className="mt-3">
-                          <div className="flex justify-between text-xs text-gray-500 mb-1">
-                            <span>Progress</span>
-                            <span>{new Date(campaign.endDate).toLocaleDateString()}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
-                            <div 
-                              className={`h-1.5 rounded-full ${
-                                isActive ? 'bg-green-500' : 'bg-gray-400'
-                              }`}
-                              style={{
-                                width: (() => {
-                                  const start = new Date(campaign.startDate).getTime()
-                                  const end = new Date(campaign.endDate).getTime()
-                                  const now = new Date().getTime()
-                                  const progress = Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100))
-                                  return `${progress}%`
-                                })()
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
               </div>
             ) : (
-              <>
-                <p className="text-gray-600 mb-6">
-                  You need to select products first to create your campaign page.
-                </p>
-                
-                <div className="bg-yellow-50 rounded-xl p-4 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-                      <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 19c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                {campaigns.slice(0, 4).map((campaign) => (
+                  <div key={campaign.id} className="border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-base lg:text-lg font-medium text-gray-900">{campaign.name}</h4>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        campaign.status === 'active' ? 'bg-green-100 text-green-800' : 
+                        campaign.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {campaign.status}
+                      </span>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Waiting for Campaign</p>
-                      <p className="text-xs text-gray-500">Select products to start your campaign</p>
-                    </div>
+                    <p className="text-xs lg:text-sm text-gray-600 mb-3">{campaign.brand.name}</p>
+                    {campaign.stats && (
+                      <div className="grid grid-cols-3 gap-2 lg:gap-4">
+                        <div className="text-center">
+                          <div className="text-lg lg:text-xl font-bold text-gray-900">{campaign.stats.totalSales}</div>
+                          <div className="text-xs text-gray-500">Sales</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg lg:text-xl font-bold text-gray-900">€{campaign.stats.totalRevenue.toFixed(2)}</div>
+                          <div className="text-xs text-gray-500">Revenue</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg lg:text-xl font-bold text-gray-900">{campaign.stats.conversionRate}%</div>
+                          <div className="text-xs text-gray-500">Conversion</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex space-x-2">
-                    <Link
-                      href="/influencer/dashboard/products"
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Create Campaign
-                    </Link>
-                  </div>
-                </div>
-              </>
+                ))}
+              </div>
             )}
+          </div>
+
+          {/* Quick Actions - responsive */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
+            <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-4 lg:mb-6">Quick Actions</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+              <Link
+                href="/influencer/dashboard/products"
+                className="flex items-center p-3 lg:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm lg:text-base font-medium text-gray-900">Add Products</p>
+                  <p className="text-xs lg:text-sm text-gray-500">Browse and select products</p>
+                </div>
+              </Link>
+              
+              <Link
+                href="/influencer/profile"
+                className="flex items-center p-3 lg:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm lg:text-base font-medium text-gray-900">Update Profile</p>
+                  <p className="text-xs lg:text-sm text-gray-500">Edit your information</p>
+                </div>
+              </Link>
+              
+              <Link
+                href="/influencer/dashboard/analytics"
+                className="flex items-center p-3 lg:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm lg:text-base font-medium text-gray-900">View Analytics</p>
+                  <p className="text-xs lg:text-sm text-gray-500">Check your performance</p>
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
       </main>

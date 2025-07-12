@@ -21,7 +21,7 @@ interface FormData {
   bio: string
 }
 
-export default function MultiStepInfluencerForm() {
+export default function MultiStepCreatorForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -155,7 +155,7 @@ export default function MultiStepInfluencerForm() {
           bio: formData.bio
       }
 
-      const response = await fetch('/api/applications/influencer', {
+      const response = await fetch('/api/applications/creator', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

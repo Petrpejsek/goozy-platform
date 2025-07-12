@@ -13,6 +13,11 @@ export default async function AdminProductDetail({ params }: PageProps) {
       where: { id },
       include: {
         brands: true,
+        product_mappings: {
+          include: {
+            suppliers: true
+          }
+        }
       },
     })
 
@@ -34,6 +39,8 @@ export default async function AdminProductDetail({ params }: PageProps) {
     const images = product.images ? JSON.parse(product.images) : []
     const sizes = product.sizes ? JSON.parse(product.sizes) : []
     const colors = product.colors ? JSON.parse(product.colors) : []
+
+
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -135,6 +142,111 @@ export default async function AdminProductDetail({ params }: PageProps) {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Supplier Information */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="font-medium text-black mb-4 flex items-center">
+                    <span className="text-blue-600 mr-2">🏭</span>
+                    Supplier Information
+                  </h3>
+                  
+                  {product.product_mappings.length > 0 ? (
+                    <div className="space-y-4">
+                      {product.product_mappings.map((mapping) => (
+                        <div key={mapping.id} className="bg-white rounded-lg p-4 border border-blue-100">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-sm text-gray-600">Supplier Name:</span>
+                              <div className="font-medium text-black">{mapping.suppliers.name}</div>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Contact Email:</span>
+                              <div className="font-medium text-black">{mapping.suppliers.email}</div>
+                            </div>
+                            {mapping.suppliers.phone && (
+                              <div>
+                                <span className="text-sm text-gray-600">Phone:</span>
+                                <div className="font-medium text-black">{mapping.suppliers.phone}</div>
+                              </div>
+                            )}
+                            {mapping.suppliers.website && (
+                              <div>
+                                <span className="text-sm text-gray-600">Website:</span>
+                                <div className="font-medium text-black">
+                                  <a 
+                                    href={mapping.suppliers.website} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {mapping.suppliers.website}
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                            <div>
+                              <span className="text-sm text-gray-600">Supplier Product ID:</span>
+                              <div className="font-mono text-sm text-black">{mapping.supplierProductId}</div>
+                            </div>
+                            {mapping.supplierSku && (
+                              <div>
+                                <span className="text-sm text-gray-600">Supplier SKU:</span>
+                                <div className="font-mono text-sm text-black">{mapping.supplierSku}</div>
+                              </div>
+                            )}
+                            <div>
+                              <span className="text-sm text-gray-600">Last Sync:</span>
+                              <div className="text-sm text-black">
+                                {mapping.lastSyncAt 
+                                  ? new Date(mapping.lastSyncAt).toLocaleDateString('en-US') 
+                                  : 'Never'
+                                }
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Status:</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                mapping.isActive 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {mapping.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+                          {mapping.suppliers.description && (
+                            <div className="mt-3 pt-3 border-t border-blue-100">
+                              <span className="text-sm text-gray-600">Description:</span>
+                              <p className="text-sm text-black mt-1">{mapping.suppliers.description}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <span className="text-yellow-600 mr-2">⚠️</span>
+                        <div>
+                          <h4 className="font-medium text-yellow-800">No Supplier Assigned</h4>
+                          <p className="text-sm text-yellow-700 mt-1">
+                            This product doesn't have any supplier assigned. To manage inventory and fulfillment, 
+                            please assign a supplier to this product in the Partners section.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Link 
+                          href="/admin/partners" 
+                          className="inline-flex items-center px-3 py-2 border border-yellow-300 rounded-md text-sm font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors"
+                        >
+                          <span className="mr-1">🔗</span>
+                          Manage Partners
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Sizes and Colors */}

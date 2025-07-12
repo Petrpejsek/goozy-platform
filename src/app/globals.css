@@ -32,6 +32,21 @@ body {
   overflow: hidden;
 }
 
+/* Touch targets for mobile accessibility */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  position: relative;
+}
+
+/* Ensure touch targets are properly sized on mobile */
+@media (max-width: 768px) {
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
 /* Cursor rules for better UX */
 button,
 [role="button"],
@@ -50,12 +65,14 @@ input:disabled {
   cursor: not-allowed;
 }
 
-/* Hover effects for buttons */
-button:not(:disabled):hover,
-[role="button"]:not(:disabled):hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  transition: all 0.2s ease;
+/* Hover effects for buttons - only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):hover,
+  [role="button"]:not(:disabled):hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
 }
 
 /* Focus states removed - no outlines */
@@ -65,4 +82,22 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
+}
+
+/* Better tap highlights on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on touch devices for UI elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

@@ -216,7 +216,7 @@ export default function ProductsContent({
                         Status
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Performance
+                        Campaigns
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -298,19 +298,34 @@ export default function ProductsContent({
                           </td>
                           
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-xs text-gray-500">
-                              <div>👥 -- influencers</div>
-                              <div>🛒 -- orders</div>
+                            <div className="text-sm text-gray-900">
+                              <div className="font-medium text-center">
+                                {(() => {
+                                  const campaignCount = product.brands?._count?.campaigns || 0
+                                  return (
+                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                      campaignCount > 0 
+                                        ? 'bg-blue-100 text-blue-800' 
+                                        : 'bg-gray-100 text-gray-600'
+                                    }`}>
+                                      {campaignCount} {campaignCount === 1 ? 'campaign' : 'campaigns'}
+                                    </span>
+                                  )
+                                })()}
+                              </div>
                             </div>
                           </td>
                           
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex space-x-2">
-                              <button className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50">
+                              <a 
+                                href={`/admin/products/${product.id}`}
+                                className="text-blue-600 hover:text-blue-900 px-3 py-1 rounded hover:bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors"
+                              >
+                                📋 Detail
+                              </a>
+                              <button className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded hover:bg-gray-50 border border-gray-200 hover:border-gray-300 transition-colors">
                                 ✏️ Edit
-                              </button>
-                              <button className="text-green-600 hover:text-green-900 px-2 py-1 rounded hover:bg-green-50">
-                                👥 Assign
                               </button>
                             </div>
                           </td>
