@@ -9,7 +9,7 @@ async function main() {
   // Create test brand application with password
   const hashedPassword = await bcrypt.hash('password123', 10)
   
-  const testBrandApplication = await prisma.brand_applications.upsert({
+  const testBrandApplication = await prisma.brandApplication.upsert({
     where: { id: 'brand-app-001' },
     update: {},
     create: {
@@ -30,7 +30,7 @@ async function main() {
   console.log('✅ Brand application created:', testBrandApplication.brandName)
 
   // Create test brand
-  const testBrand = await prisma.brands.upsert({
+  const testBrand = await prisma.brand.upsert({
     where: { email: 'test@fashionbrand.com' },
     update: {},
     create: {
@@ -290,7 +290,7 @@ async function main() {
   ]
 
   // Delete existing products to avoid duplicates
-  await prisma.products.deleteMany({
+  await prisma.product.deleteMany({
     where: {
       brandId: testBrand.id
     }
@@ -299,7 +299,7 @@ async function main() {
   // Create products
   for (let i = 0; i < products.length; i++) {
     const productData = products[i]
-    const product = await prisma.products.create({
+    const product = await prisma.product.create({
       data: {
         id: `product-${productData.externalId.toLowerCase()}`,
         ...productData,
