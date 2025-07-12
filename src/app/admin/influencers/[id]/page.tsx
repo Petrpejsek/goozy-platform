@@ -14,8 +14,8 @@ export default async function InfluencerDetail({ params }: PageProps) {
   const influencer = await prisma.influencer.findUnique({
     where: { id },
           include: {
-        influencerSocials: true,
-              influencerCategories: true,
+        socialNetworks: true,
+              contentCategories: true,
       orders: {
         include: {
           order_items: {
@@ -251,11 +251,11 @@ export default async function InfluencerDetail({ params }: PageProps) {
             )}
 
                          {/* Social Media Profiles */}
-                          {influencer.influencerSocials.length > 0 && (
+                          {influencer.socialNetworks.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Social Media Profiles</h2>
                 <div className="space-y-3">
-                  {influencer.influencerSocials.map((social) => (
+                                      {influencer.socialNetworks.map((social) => (
                     <div key={social.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                         <span className="text-white text-xs font-bold uppercase">
@@ -285,11 +285,11 @@ export default async function InfluencerDetail({ params }: PageProps) {
             )}
 
                          {/* Content Categories */}
-                          {influencer.influencerCategories.length > 0 && (
+                          {influencer.contentCategories.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Content Categories</h2>
                 <div className="flex flex-wrap gap-2">
-                  {influencer.influencerCategories.map((category) => (
+                                      {influencer.contentCategories.map((category) => (
                     <span 
                       key={category.id}
                       className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"

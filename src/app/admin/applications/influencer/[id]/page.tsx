@@ -83,7 +83,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       // Remove @ symbol if present
       const instagramUsername = application.instagram.replace('@', '')
       searchCriteria.push({ 
-        influencerSocials: {
+        socialNetworks: {
           some: {
             platform: 'instagram',
             username: instagramUsername
@@ -115,7 +115,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
               createdAt: 'desc'
             }
           },
-          influencerSocials: true
+          socialNetworks: true
         }
       })
 

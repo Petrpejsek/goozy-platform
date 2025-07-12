@@ -27,8 +27,8 @@ export default async function InfluencersPage() {
   // Načtu všechny influencery s jejich sociálními sítěmi a statistikami
   const influencers = await prisma.influencer.findMany({
           include: {
-        influencerSocials: true,
-              influencerCategories: true,
+        socialNetworks: true,
+              contentCategories: true,
       orders: {
         select: {
           totalAmount: true,
@@ -219,9 +219,9 @@ export default async function InfluencersPage() {
                         </td>
                         
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {influencer.influencerSocials.length > 0 && (
+                          {influencer.socialNetworks.length > 0 && (
                             <div className="space-y-1">
-                              {influencer.influencerSocials.map((social) => (
+                                                              {influencer.socialNetworks.map((social) => (
                                 <div key={social.id} className="flex items-center text-sm">
                                   <span className="capitalize font-medium text-gray-700 w-16">
                                     {social.platform}:
@@ -267,16 +267,16 @@ export default async function InfluencersPage() {
                         </td>
                         
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {influencer.influencerCategories.length > 0 && (
+                          {influencer.contentCategories.length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                              {influencer.influencerCategories.slice(0, 2).map((category) => (
+                              {influencer.contentCategories.slice(0, 2).map((category) => (
                                 <span key={category.id} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                                   {category.category}
                                 </span>
                               ))}
-                              {influencer.influencerCategories.length > 2 && (
+                              {influencer.contentCategories.length > 2 && (
                                 <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                                  +{influencer.influencerCategories.length - 2}
+                                  +{influencer.contentCategories.length - 2}
                                 </span>
                               )}
                             </div>
