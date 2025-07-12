@@ -100,9 +100,9 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
         include: {
           orders: {
             include: {
-              order_items: {
+              items: {
                 include: {
-                  products: true
+                  product: true
                 }
               }
             },
@@ -140,14 +140,14 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
         commissionStats.commissions = commissions.slice(0, 5) // Show last 5 commissions
 
         // Get campaigns (we need to find campaigns that include this influencer)
-        const campaigns = await prisma.campaigns.findMany({
+        const campaigns = await prisma.campaign.findMany({
           where: {
             influencerIds: {
               contains: linkedInfluencer.id
             }
           },
           include: {
-            brands: true
+            brand: true
           },
           orderBy: {
             createdAt: 'desc'
@@ -169,7 +169,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       if (duplicate.type === 'database' && duplicate.followers > 0) {
         // Try to get detailed data from InfluencerDatabase
         try {
-          const dbProfile = await prisma.influencer_database.findUnique({
+          const dbProfile = await prisma.influencerDatabase.findUnique({
             where: { id: duplicate.id },
             select: {
               totalFollowers: true,
@@ -203,7 +203,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
       const instagramUsername = application.instagram.replace(/[@\/]/g, '').toLowerCase()
       
       // Check if this profile exists in our database
-      const existingProfile = await prisma.influencer_database.findFirst({
+      const existingProfile = await prisma.influencerDatabase.findFirst({
         where: {
           instagramUsername: instagramUsername
         },
