@@ -36,7 +36,17 @@ interface SupplierSettings {
   vat_included: boolean
 }
 
-export default function EditSupplierPage({ params }: { params: { id: string } }) {
+export default async function EditSupplierPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const resolvedParams = await params
+  
+  return <EditSupplierContent supplierId={resolvedParams.id} />
+}
+
+function EditSupplierContent({ supplierId }: { supplierId: string }) {
   const router = useRouter()
   const [settings, setSettings] = useState<SupplierSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,11 +73,11 @@ export default function EditSupplierPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     loadSupplierSettings()
-  }, [params.id])
+  }, [supplierId])
 
   const loadSupplierSettings = async () => {
     try {
-      const response = await fetch(`/api/admin/suppliers/${params.id}`)
+      const response = await fetch(`/api/admin/suppliers/${supplierId}`)
       if (!response.ok) {
         throw new Error('Chyba při načítání nastavení dodavatele')
       }
@@ -129,7 +139,7 @@ export default function EditSupplierPage({ params }: { params: { id: string } })
         vat_included: formData.vat_included
       }
 
-      const response = await fetch(`/api/admin/suppliers/${params.id}/settings`, {
+      const response = await fetch(`/api/admin/suppliers/${supplierId}/settings`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
