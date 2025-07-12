@@ -27,7 +27,7 @@ model User {
 model Campaign {
   id          String   @id @default(cuid())
   slug        String   @unique
-  title       String
+  title       String   @default("Untitled Campaign")
   description String?
   status      String   @default("active") // active, inactive, draft
   createdAt   DateTime @default(now())
@@ -52,7 +52,7 @@ model Product {
   description String?
   price       Float
   currency    String   @default("EUR")
-  supplier    String
+  supplier    String   @default("Unknown Supplier")
   image       String?
   status      String   @default("active") // active, inactive, out_of_stock
   stockCount  Int      @default(0)
