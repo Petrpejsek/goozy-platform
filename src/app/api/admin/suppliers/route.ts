@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const suppliers = await prisma.supplier.findMany({
       include: {
-        brands: {
+        brand: {
           select: {
             name: true
           }
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       isActive: supplier.isActive,
       brandId: supplier.brandId,
       brand: {
-        name: supplier.brands.name
+        name: supplier.brand.name
       },
       // Shipping settings
       has_shipping_api: supplier.has_shipping_api,

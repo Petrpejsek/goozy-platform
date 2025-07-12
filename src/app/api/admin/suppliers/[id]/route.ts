@@ -12,7 +12,7 @@ export async function GET(
     const supplier = await prisma.supplier.findUnique({
       where: { id },
       include: {
-        brands: {
+        brand: {
           select: {
             name: true
           }
@@ -36,7 +36,7 @@ export async function GET(
       isActive: supplier.isActive,
       brandId: supplier.brandId,
       brand: {
-        name: supplier.brands.name
+        name: supplier.brand.name
       },
       // Shipping settings
       shipping_api_endpoint: supplier.shipping_api_endpoint,

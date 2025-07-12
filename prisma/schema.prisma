@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,266 +7,455 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Existing models (keep if they exist)
-model User {
+model SuperAdmin {
   id        String   @id @default(cuid())
   email     String   @unique
-  name      String?
+  password  String
+  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relations
-  orders    Order[]
-  
-  @@map("users")
+
+  @@map("super_admins")
 }
 
-model Campaign {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String   @default("Untitled Campaign")
-  description String?
-  status      String   @default("active") // active, inactive, draft
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Campaign specific fields
-  startDate   DateTime?
-  endDate     DateTime?
-  targetGoal  Int?
-  metadata    Json?
-  
-  // Relations
-  orders      Order[]
-  products    Product[]
-  
-  @@map("campaigns")
+model Influencer {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  password            String?
+  name                String
+  slug                String               @unique
+  avatar              String?
+  bio                 String?
+  phone               String?
+  isApproved          Boolean              @default(false)
+  isActive            Boolean              @default(true)
+  commissionRate      Float                @default(0.1)
+  originType          String?
+  originProspectId    String?
+  originApplicationId String?
+  onboardingStatus    String               @default("pending")
+  verificationStatus  String               @default("unverified")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  commissions         Commission[]
+  discountCodes       DiscountCode[]
+  contentCategories   InfluencerCategory[]
+  selectedProducts    InfluencerProduct[]
+  profile             InfluencerProfile?
+  socialNetworks      InfluencerSocial[]
+  orders              Order[]
+
+  @@map("influencers")
+}
+
+model InfluencerSocial {
+  id           String     @id @default(cuid())
+  influencerId String
+  platform     String
+  username     String
+  followers    Int
+  url          String?
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_socials")
+}
+
+model InfluencerCategory {
+  id           String     @id @default(cuid())
+  influencerId String
+  category     String
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_categories")
+}
+
+model Brand {
+  id              String          @id @default(cuid())
+  name            String
+  email           String          @unique
+  password        String?
+  phone           String?
+  description     String?
+  website         String?
+  logo            String?
+  isApproved      Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  targetCountries String          @default("[]")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  apiConfig       BrandApiConfig?
+  campaigns       Campaign[]
+  products        Product[]
+  suppliers       Supplier[]
+  apiNotifications ApiNotification[]
+
+  @@map("brands")
+}
+
+model BrandApiConfig {
+  id          String  @id @default(cuid())
+  brandId     String  @unique
+  apiEndpoint String
+  apiKey      String
+  webhookUrl  String?
+  brand       Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_api_configs")
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Float
-  currency    String   @default("EUR")
-  supplier    String   @default("Unknown Supplier")
-  image       String?
-  status      String   @default("active") // active, inactive, out_of_stock
-  stockCount  Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  campaignId  String?
-  campaign    Campaign? @relation(fields: [campaignId], references: [id])
-  orderItems  OrderItem[]
-  
+  id                   String              @id @default(cuid())
+  brandId              String
+  externalId           String
+  name                 String
+  description          String?
+  price                Float
+  currency             String              @default("EUR")
+  images               String
+  category             String
+  sizes                String
+  colors               String
+  sku                  String
+  stockQuantity        Int                 @default(0)
+  isAvailable          Boolean             @default(true)
+  availabilityOverride Boolean?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  brand_name           String?
+  dimensions           String?
+  gender               String?
+  material             String?
+  weight               Float?
+  influencerProducts   InfluencerProduct[]
+  orderItems           OrderItem[]
+  brand                Brand               @relation(fields: [brandId], references: [id])
+  mappings             ProductMapping[]
+
+  @@unique([brandId, externalId])
   @@map("products")
 }
 
-// New e-commerce models
+model InfluencerProduct {
+  id             String     @id @default(cuid())
+  influencerId   String
+  productId      String
+  isActive       Boolean    @default(true)
+  addedAt        DateTime   @default(now())
+  recommendation String?
+  product        Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  influencer     Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@unique([influencerId, productId])
+  @@map("influencer_products")
+}
+
+model DiscountCode {
+  id            String     @id @default(cuid())
+  code          String     @unique
+  influencerId  String
+  discountType  String
+  discountValue Float
+  currency      String?
+  isActive      Boolean    @default(true)
+  usageLimit    Int?
+  usageCount    Int        @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  influencer    Influencer @relation(fields: [influencerId], references: [id])
+  orders        Order[]
+
+  @@map("discount_codes")
+}
+
+model Campaign {
+  id               String   @id @default(cuid())
+  slug             String   @unique // Unikátní slug pro URL kampaně
+  brandId          String
+  name             String
+  description      String?
+  startDate        DateTime
+  endDate          DateTime
+  targetCountries  String
+  targetGender     String?
+  targetCategories String?
+  influencerIds    String
+  expectedReach    Int?
+  budgetAllocated  Float?
+  currency         String   @default("EUR")
+  status           String   @default("draft")
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  brand            Brand    @relation(fields: [brandId], references: [id])
+
+  @@map("campaigns")
+}
+
 model Order {
-  id              String   @id @default(cuid())
-  orderNumber     String   @unique
-  status          String   @default("pending") // pending, processing, shipped, delivered, cancelled
-  
-  // Payment information
-  paymentIntentId String?
-  paymentStatus   String   @default("pending") // pending, paid, failed, refunded
-  
-  // Amounts (in cents to avoid floating point issues)
-  subtotal        Int      // Amount in cents
-  shippingCost    Int      // Amount in cents  
-  taxAmount       Int      // Amount in cents
-  totalAmount     Int      // Amount in cents
-  currency        String   @default("EUR")
-  
-  // Addresses (stored as JSON for flexibility)
-  billingAddress  Json
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  influencerId    String?
+  discountCodeId  String?
+  customerEmail   String
+  customerName    String
+  customerPhone   String?
   shippingAddress Json
-  
-  // Shipping
-  shippingMethod  String
+  billingAddress  Json?
+  subtotal        Float
+  discountAmount  Float         @default(0)
+  shippingCost    Float         @default(0)
+  totalAmount     Float
+  currency        String        @default("EUR")
+  status          String        @default("pending")
+  paymentStatus   String        @default("pending")
+  paymentIntentId String?
   trackingNumber  String?
-  estimatedDelivery DateTime?
-  
-  // Campaign relation
-  campaignSlug    String?
-  campaign        Campaign? @relation(fields: [campaignSlug], references: [slug])
-  appliedCampaigns String[] // Array of campaign slugs
-  
-  // User relation (optional for guest checkout)
-  userId          String?
-  user            User?     @relation(fields: [userId], references: [id])
-  customerEmail   String    // Always store email for order tracking
-  
-  // Metadata
-  metadata        Json?     // Store additional order data
-  
-  // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  // Relations
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  commission      Commission?
   items           OrderItem[]
-  payments        Payment[]
-  shipments       Shipment[]
-  
+  discountCode    DiscountCode? @relation(fields: [discountCodeId], references: [id])
+  influencer      Influencer?   @relation(fields: [influencerId], references: [id])
+  submissions     OrderSubmission[]
+
   @@map("orders")
 }
 
 model OrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  // Product information (snapshot at time of order)
-  productId   String?
-  product     Product? @relation(fields: [productId], references: [id])
-  
-  // Product details (stored for historical accuracy)
-  name        String
-  description String?
-  price       Int      // Price in cents at time of order
-  quantity    Int
-  supplier    String
-  image       String?
-  
-  // Supplier specific data
-  supplierOrderId String?  // ID from supplier system
-  supplierStatus  String?  // Status from supplier
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  size      String?
+  color     String?
+  price     Float
+  currency  String  @default("EUR")
+  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   @@map("order_items")
 }
 
-model Payment {
-  id              String   @id @default(cuid())
-  orderId         String
-  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  // Payment details
-  paymentIntentId String   @unique
-  amount          Int      // Amount in cents
-  currency        String   @default("EUR")
-  status          String   // pending, succeeded, failed, cancelled
-  paymentMethod   String?  // card, apple_pay, google_pay, etc.
-  
-  // Stripe specific
-  stripeClientSecret String?
-  stripePaymentMethodId String?
-  
-  // Transaction details
-  transactionId   String?
-  gatewayResponse Json?    // Full response from payment gateway
-  
-  // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  paidAt          DateTime?
-  
-  @@map("payments")
+model Commission {
+  id           String     @id @default(cuid())
+  orderId      String     @unique
+  influencerId String
+  amount       Float
+  currency     String     @default("EUR")
+  rate         Float
+  status       String     @default("pending")
+  payoutDate   DateTime?
+  paidAt       DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  influencer   Influencer @relation(fields: [influencerId], references: [id])
+  order        Order      @relation(fields: [orderId], references: [id])
+
+  @@map("commissions")
 }
 
-model Shipment {
-  id              String   @id @default(cuid())
-  orderId         String
-  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  // Shipping details
-  supplier        String
-  trackingNumber  String?
-  carrier         String?
-  status          String   @default("pending") // pending, shipped, in_transit, delivered, returned
-  
-  // Shipping address (can be different per supplier)
-  shippingAddress Json
-  
-  // Cost breakdown
-  shippingCost    Int      // Cost in cents
-  
-  // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  shippedAt       DateTime?
-  deliveredAt     DateTime?
-  
-  // Relations
-  items           ShipmentItem[]
-  
-  @@map("shipments")
+model InfluencerApplication {
+  id                   String   @id @default(cuid())
+  name                 String
+  email                String
+  password             String
+  instagram            String?
+  tiktok               String?
+  youtube              String?
+  facebook             String?
+  categories           String
+  bio                  String?
+  collaborationTypes   String?
+  status               String   @default("pending")
+  notes                String?
+  possibleDuplicateIds String?
+  mergeStatus          String   @default("none")
+  mergeData            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("influencer_applications")
 }
 
-model ShipmentItem {
+model BrandApplication {
   id          String   @id @default(cuid())
-  shipmentId  String
-  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-  
-  // Product reference
-  orderItemId String   // Reference to the original order item
-  productId   String
-  name        String
-  quantity    Int
-  
-  createdAt   DateTime @default(now())
-  
-  @@map("shipment_items")
-}
-
-// Analytics and tracking
-model OrderEvent {
-  id        String   @id @default(cuid())
-  orderId   String
-  type      String   // order_created, payment_completed, shipped, delivered, etc.
-  data      Json?    // Event specific data
-  createdAt DateTime @default(now())
-  
-  @@map("order_events")
-}
-
-// Configuration tables
-model ShippingRate {
-  id          String   @id @default(cuid())
-  supplier    String
-  country     String
-  rate        Int      // Rate in cents
-  isEU        Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@unique([supplier, country])
-  @@map("shipping_rates")
-}
-
-model TaxRate {
-  id        String   @id @default(cuid())
-  country   String   @unique
-  rate      Float    // VAT rate as decimal (0.21 for 21%)
-  isEU      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@map("tax_rates")
-}
-
-// Supplier and Brand models
-model Brand {
-  id          String   @id @default(cuid())
-  name        String
+  contactName String?
+  brandName   String
   email       String
+  password    String?  // Hashované heslo pro přihlášení
   website     String?
+  phone       String?
   description String?
-  isActive    Boolean  @default(true)
+  status      String   @default("pending")
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  // Relations
-  suppliers   Supplier[]
-  
-  @@map("brands")
+
+  @@map("brand_applications")
 }
+
+model InfluencerDatabase {
+  id                     String            @id @default(cuid())
+  name                   String
+  username               String
+  email                  String?
+  bio                    String?
+  avatar                 String?
+  country                String?
+  location               String?
+  instagramUsername      String?           @unique
+  instagramUrl           String?
+  instagramData          String?
+  tiktokUsername         String?
+  tiktokUrl              String?
+  tiktokData             String?
+  youtubeChannel         String?
+  youtubeUrl             String?
+  youtubeData            String?
+  totalFollowers         Int               @default(0)
+  engagementRate         Float?
+  avgLikes               Int?
+  avgComments            Int?
+  sourceHashtags         String?
+  sourceCountry          String?
+  foundBy                String?
+  isValidated            Boolean           @default(false)
+  hasEmail               Boolean           @default(false)
+  isActive               Boolean           @default(true)
+  lastScrapedAt          DateTime?
+  notes                  String?
+  promotionStatus        String            @default("none")
+  promotedToProspectIds  String?
+  promotedToInfluencerId String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  scrapingAttempts       ScrapingAttempt[]
+
+  @@map("influencer_database")
+}
+
+model ScrapingConfig {
+  id              String        @id @default(cuid())
+  name            String
+  countries       String
+  minFollowers    Int           @default(3000)
+  maxFollowers    Int           @default(500000)
+  platforms       String
+  targetCount     Int           @default(100)
+  isActive        Boolean       @default(false)
+  lastRunAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  /// Klíčová slova k vyloučení (JSON array) – profil nesmí obsahovat žádné
+  excludeKeywords String?
+  /// Hash-tagy použití pro cílené vyhledávání (JSON array ["fashion", "beauty"])
+  hashtags        String?
+  /// Povinná klíčová slova (JSON array) – profil musí obsahovat alespoň jedno
+  keywords        String?
+  scrapingRuns    ScrapingRun[]
+
+  @@map("scraping_configs")
+}
+
+model ScrapingRun {
+  id               String               @id @default(cuid())
+  configId         String
+  type             String               @default("google_search")
+  sourceFilter     String?
+  status           String               @default("running")
+  totalFound       Int                  @default(0)
+  totalProcessed   Int                  @default(0)
+  errors           String?
+  startedAt        DateTime             @default(now())
+  completedAt      DateTime?
+  prospects        InfluencerProspect[]
+  scrapingAttempts ScrapingAttempt[]
+  config           ScrapingConfig       @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@map("scraping_runs")
+}
+
+model ScrapingAttempt {
+  id              String              @id @default(cuid())
+  scrapingRunId   String
+  targetProfileId String?
+  platform        String
+  username        String
+  profileUrl      String?
+  country         String?
+  status          String
+  errorMessage    String?
+  scrapedData     String?
+  prospectId      String?
+  attemptedAt     DateTime            @default(now())
+  duration        Int?
+  targetProfile   InfluencerDatabase? @relation(fields: [targetProfileId], references: [id])
+  scrapingRun     ScrapingRun         @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
+
+  @@map("scraping_attempts")
+}
+
+model InfluencerProspect {
+  id                     String      @id @default(cuid())
+  scrapingRunId          String
+  name                   String
+  email                  String?
+  bio                    String?
+  avatar                 String?
+  country                String?
+  instagramUsername      String?
+  instagramUrl           String?
+  tiktokUsername         String?
+  tiktokUrl              String?
+  youtubeChannel         String?
+  youtubeUrl             String?
+  instagramData          String?
+  tiktokData             String?
+  youtubeData            String?
+  totalFollowers         Int         @default(0)
+  engagementRate         Float?
+  avgLikes               Int?
+  avgComments            Int?
+  status                 String      @default("pending")
+  duplicateOf            String?
+  duplicateReason        String?
+  notes                  String?
+  originDatabaseId       String?
+  promotionStatus        String      @default("none")
+  promotedToInfluencerId String?
+  promotedAt             DateTime?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  scrapingRun            ScrapingRun @relation(fields: [scrapingRunId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_prospects")
+}
+
+model InfluencerProfile {
+  id                String     @id @default(cuid())
+  influencerId      String     @unique
+  age               Int?
+  gender            String?
+  location          String?
+  audienceAgeGroups String?
+  audienceGenders   String?
+  audienceCountries String?
+  avgReach          Int?
+  avgComments       Int?
+  avgStoryViews     Int?
+  clickThroughRate  Float?
+  contentCategories String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  influencer        Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_profiles")
+}
+
+// API Integration Framework Models
 
 model Supplier {
   id          String   @id @default(cuid())
@@ -303,11 +489,139 @@ model Supplier {
   currency      String  @default("EUR")
   vat_included  Boolean @default(true)
   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   // Relations
-  brands Brand @relation(fields: [brandId], references: [id])
+  brand           Brand                @relation(fields: [brandId], references: [id])
+  apiConnections  SupplierApiConnection[]
+  inventoryLogs   InventoryLog[]
+  orderSubmissions OrderSubmission[]
+  productMappings ProductMapping[]
+  apiNotifications ApiNotification[]
   
   @@map("suppliers")
+}
+
+model SupplierApiConnection {
+  id                String   @id @default(cuid())
+  supplierId        String
+  connectionName    String
+  apiEndpoint       String
+  apiKey            String
+  apiSecret         String?
+  webhookUrl        String?
+  authType          String   @default("api_key")
+  isActive          Boolean  @default(true)
+  lastTestAt        DateTime?
+  lastTestStatus    String?
+  lastTestError     String?
+  capabilities      String
+  configuration     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  supplier         Supplier           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  inventoryLogs    InventoryLog[]
+  orderSubmissions OrderSubmission[]
+  
+  @@map("supplier_api_connections")
+}
+
+model InventoryLog {
+  id               String   @id @default(cuid())
+  supplierId       String
+  connectionId     String
+  syncType         String
+  status           String
+  productsChecked  Int      @default(0)
+  productsUpdated  Int      @default(0)
+  errors           String?
+  responseTime     Int?
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  
+  // Relations
+  supplier    Supplier              @relation(fields: [supplierId], references: [id])
+  connection  SupplierApiConnection @relation(fields: [connectionId], references: [id])
+  
+  @@map("inventory_logs")
+}
+
+model OrderSubmission {
+  id                String   @id @default(cuid())
+  orderId           String
+  supplierId        String
+  connectionId      String
+  submissionMethod  String
+  status            String
+  attempts          Int      @default(1)
+  maxAttempts       Int      @default(3)
+  lastAttemptAt     DateTime @default(now())
+  nextRetryAt       DateTime?
+  responseData      String?
+  errorMessage      String?
+  submittedData     String
+  
+  // Relations
+  order       Order                 @relation(fields: [orderId], references: [id])
+  supplier    Supplier              @relation(fields: [supplierId], references: [id])
+  connection  SupplierApiConnection @relation(fields: [connectionId], references: [id])
+  
+  @@map("order_submissions")
+}
+
+model ProductMapping {
+  id                String   @id @default(cuid())
+  productId         String
+  supplierId        String
+  supplierProductId String
+  supplierSku       String?
+  variantMapping    String?
+  isActive          Boolean  @default(true)
+  lastSyncAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  
+  @@unique([productId, supplierId])
+  @@map("product_mappings")
+}
+
+model ApiNotification {
+  id          String   @id @default(cuid())
+  type        String
+  category    String
+  title       String
+  message     String
+  supplierId  String?
+  brandId     String?
+  isRead      Boolean  @default(false)
+  severity    String   @default("medium")
+  metadata    String?
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+  
+  // Relations
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
+  brand    Brand?    @relation(fields: [brandId], references: [id])
+  
+  @@map("api_notifications")
+}
+
+model CommissionRate {
+  id          String   @id @default(cuid())
+  type        String   // "global", "brand", "category", "product"
+  entityId    String?  // brandId, category name, nebo productId
+  rate        Float    // Provize v %
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([type, entityId]) // Jeden rate per entita
+  @@map("commission_rates")
 }
