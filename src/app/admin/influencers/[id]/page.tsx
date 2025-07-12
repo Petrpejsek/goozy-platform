@@ -16,14 +16,14 @@ export default async function InfluencerDetail({ params }: PageProps) {
           include: {
         socialNetworks: true,
               contentCategories: true,
-      orders: {
-        include: {
-          order_items: {
-            include: {
-              products: true
+              orders: {
+          include: {
+            items: {
+              include: {
+                product: true
+              }
             }
-          }
-        },
+          },
         orderBy: {
           createdAt: 'desc'
         }
