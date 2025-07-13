@@ -26,7 +26,7 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' }
+        { error: 'Application not found' },
         { status: 404 }
       )
     }
@@ -51,7 +51,7 @@ export async function PATCH(
     }
     
     const updatedApplication = await prisma.brandApplication.update({
-      where: { id: applicationId }
+      where: { id: applicationId },
       data: updateData,
     })
     
@@ -68,13 +68,13 @@ export async function PATCH(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid data', details: error.errors }
+        { error: 'Invalid data', details: error.errors },
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Server error' }
+      { error: 'Server error' },
       { status: 500 }
     )
   }
@@ -96,7 +96,7 @@ export async function DELETE(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' }
+        { error: 'Application not found' },
         { status: 404 }
       )
     }
@@ -114,7 +114,7 @@ export async function DELETE(
     console.error('Error deleting application:', error)
     
     return NextResponse.json(
-      { error: 'Server error' }
+      { error: 'Server error' },
       { status: 500 }
     )
   }

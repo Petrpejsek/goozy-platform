@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
           where: {
             email: influencer.email,
             status: 'converted'
-          }
+          },
           orderBy: {
             createdAt: 'desc'
           }
@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
 
         // Aktualizuj influencer s heslem z aplikace
         await prisma.influencer.update({
-          where: { id: influencer.id }
+          where: { id: influencer.id },
           data: { password: originalApplication.password }
         })
 
         fixedInfluencers.push({
           id: influencer.id,
-          name: influencer.name
+          name: influencer.name,
           email: influencer.email,
         })
 
@@ -70,15 +70,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Úspěšně opraveno heslo pro ${fixedInfluencers.length} influencerů`
-      fixed: fixedInfluencers.length
+      message: `Úspěšně opraveno heslo pro ${fixedInfluencers.length} influencerů`,
+      fixed: fixedInfluencers.length,
       influencers: fixedInfluencers
     })
     
   } catch (error) {
     console.error('❌ [FIX-PASSWORDS] Chyba:', error)
     return NextResponse.json({
-      success: false
+      success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }

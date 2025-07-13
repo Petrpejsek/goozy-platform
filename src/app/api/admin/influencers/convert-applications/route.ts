@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const approvedApplications = await prisma.influencerApplication.findMany({
       where: {
         status: 'approved'
-      }
+      },
       orderBy: {
         createdAt: 'asc'
       }
@@ -58,10 +58,10 @@ export async function POST(request: NextRequest) {
             slug: slug,
             isActive: true,
             isApproved: true,
-            onboardingStatus: 'completed'
+            onboardingStatus: 'completed',
             commissionRate: 0.1, // 10% základní komise
-            avatar: null
-            bio: application.bio || null
+            avatar: null,
+            bio: application.bio || null,
             updatedAt: new Date()
           }
         })
@@ -71,10 +71,10 @@ export async function POST(request: NextRequest) {
           await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
-              influencerId: newInfluencer.id
-              platform: 'instagram'
-              username: application.instagram.replace('@', '')
-              url: `https://instagram.com/${application.instagram.replace('@', '')}`
+              influencerId: newInfluencer.id,
+              platform: 'instagram',
+              username: application.instagram.replace('@', ''),
+              url: `https://instagram.com/${application.instagram.replace('@', '')}`,
               followers: 10000, // Výchozí hodnota, bude aktualizována později
             }
           })
@@ -84,10 +84,10 @@ export async function POST(request: NextRequest) {
           await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
-              influencerId: newInfluencer.id
-              platform: 'tiktok'
-              username: application.tiktok.replace('@', '')
-              url: `https://tiktok.com/@${application.tiktok.replace('@', '')}`
+              influencerId: newInfluencer.id,
+              platform: 'tiktok',
+              username: application.tiktok.replace('@', ''),
+              url: `https://tiktok.com/@${application.tiktok.replace('@', '')}`,
               followers: 10000, // Výchozí hodnota, bude aktualizována později
             }
           })
@@ -97,10 +97,10 @@ export async function POST(request: NextRequest) {
           await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
-              influencerId: newInfluencer.id
-              platform: 'youtube'
-              username: application.youtube
-              url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/${application.youtube}`
+              influencerId: newInfluencer.id,
+              platform: 'youtube',
+              username: application.youtube,
+              url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/${application.youtube}`,
               followers: 5000, // Výchozí hodnota, bude aktualizována později
             }
           })

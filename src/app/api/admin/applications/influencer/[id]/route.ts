@@ -26,7 +26,7 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' }
+        { error: 'Application not found' },
         { status: 404 }
       )
     }
@@ -38,7 +38,7 @@ export async function PATCH(
       // Add new note to history (stored as JSON array)
       if (!notes?.trim()) {
         return NextResponse.json(
-          { error: 'Note content is required' }
+          { error: 'Note content is required' },
           { status: 400 }
         )
       }
@@ -59,8 +59,8 @@ export async function PATCH(
       
       // Add new note to history
       notesHistory.unshift({
-        text: notes.trim()
-        timestamp: new Date().toISOString()
+        text: notes.trim(),
+        timestamp: new Date().toISOString(),
         admin: 'admin' // TODO: Use actual admin user when auth is implemented
       })
       
@@ -88,14 +88,14 @@ export async function PATCH(
       // Add note about status change
       if (notes?.trim()) {
         notesHistory.unshift({
-          text: `${action === 'approve' ? 'APPROVED' : 'REJECTED'}: ${notes.trim()}`
-          timestamp: new Date().toISOString()
+          text: `${action === 'approve' ? 'APPROVED' : 'REJECTED'}: ${notes.trim()}`,
+          timestamp: new Date().toISOString(),
           admin: 'admin'
         })
       } else {
         notesHistory.unshift({
-          text: `Application ${action === 'approve' ? 'approved' : 'rejected'}`
-          timestamp: new Date().toISOString()
+          text: `Application ${action === 'approve' ? 'approved' : 'rejected'}`,
+          timestamp: new Date().toISOString(),
           admin: 'admin'
         })
       }
@@ -318,7 +318,7 @@ export async function DELETE(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' }
+        { error: 'Application not found' },
         { status: 404 }
       )
     }
