@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
             order: {
               include: {
                 discountCode: true,
-                commissions: true
+                commission: true
               }
             }
           }
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
 
       const productRevenue = productOrders.reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
       const productCommission = productOrders.reduce((sum, item) => {
-        const commission = (item.order.commissions as any)?.[0]?.amount || 0
+        const commission = item.order.commission?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
       const productReturns = productOrders.filter(item => item.order.status === 'returned').reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
