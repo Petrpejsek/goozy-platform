@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     
     for (const order of allOrders) {
       const orderTotal = parseFloat(order.totalAmount.toString())
-      const commission = (order.commissions as any)?.[0]?.amount || 0
+      const commission = order.commission?.amount || 0
       const returnAmount = order.status === 'returned' ? orderTotal : 0
 
       totalRevenue += orderTotal
