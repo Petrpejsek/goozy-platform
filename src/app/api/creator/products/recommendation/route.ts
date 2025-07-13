@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const influencerProduct = await prisma.influencerproducts.findUnique({
+    const influencerProduct = await prisma.influencerProduct.findUnique({
       where: {
         influencerId_productId: {
           influencerId,
