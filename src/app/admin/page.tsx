@@ -11,12 +11,12 @@ export default async function AdminDashboard() {
           prisma.influencerApplication.findMany({ orderBy: { createdAt: 'desc' } }),
           prisma.brandApplication.findMany({ orderBy: { createdAt: 'desc' } }),
           prisma.product.findMany({
-      include: { brands: { select: { id: true, name: true } } },
+      include: { brand: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 10,
     }),
     // Počet aktivních kampaní (probíhají právě teď)
-    prisma.campaigns.count({
+    prisma.campaign.count({
       where: {
         AND: [
           { startDate: { lte: new Date() } },
@@ -26,7 +26,7 @@ export default async function AdminDashboard() {
       }
     }),
     // Počet nadcházejících kampaní (začínají v budoucnu)
-    prisma.campaigns.count({
+    prisma.campaign.count({
       where: {
         startDate: { gt: new Date() }
       }
@@ -130,7 +130,8 @@ export default async function AdminDashboard() {
                   key={product.id} 
                   product={{
                     ...product,
-                    description: product.description || undefined
+                    description: product.description || undefined,
+                    brands: product.brand
                   }} 
                 />
               ))}

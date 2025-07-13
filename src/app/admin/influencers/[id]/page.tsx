@@ -33,13 +33,13 @@ export default async function InfluencerDetail({ params }: PageProps) {
           createdAt: 'desc'
         }
       },
-      influencer_products: {
+      selectedProducts: {
         include: {
-          products: true
+          product: true
         }
       },
-      influencer_profiles: true,
-      discount_codes: true
+      profile: true,
+      discountCodes: true
     }
   })
 
@@ -58,14 +58,14 @@ export default async function InfluencerDetail({ params }: PageProps) {
     .reduce((sum, comm) => sum + comm.amount, 0)
 
   // Get campaigns that include this influencer
-  const campaigns = await prisma.campaigns.findMany({
+  const campaigns = await prisma.campaign.findMany({
     where: {
       influencerIds: {
         contains: influencer.id
       }
     },
     include: {
-      brands: true
+      brand: true
     },
     orderBy: {
       createdAt: 'desc'
@@ -194,7 +194,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                 </div>
                 
                 <div className="bg-orange-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{influencer.influencer_products.length}</div>
+                  <div className="text-2xl font-bold text-orange-600">{influencer.selectedProducts.length}</div>
                   <div className="text-sm text-gray-600">Selected Products</div>
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                           <div>
                             <div className="font-medium text-sm">{campaign.name}</div>
                             <div className="text-xs text-gray-500">
-                              {campaign.brands?.name} • {new Date(campaign.startDate).toLocaleDateString()}
+                              {campaign.brand?.name} • {new Date(campaign.startDate).toLocaleDateString()}
                             </div>
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -327,7 +327,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Discount Codes:</span>
-                  <span className="font-medium text-gray-900">{influencer.discount_codes.length}</span>
+                  <span className="font-medium text-gray-900">{influencer.discountCodes.length}</span>
                 </div>
               </div>
             </div>

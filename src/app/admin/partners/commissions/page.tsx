@@ -21,7 +21,7 @@ export default async function CommissionsPage() {
   // Získání všech kategorií produktů
   const productCategories = await prisma.product.findMany({
     where: {
-      brands: {
+      brand: {
         isActive: true,
         isApproved: true
       }

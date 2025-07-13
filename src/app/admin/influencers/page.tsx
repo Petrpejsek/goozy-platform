@@ -41,12 +41,12 @@ export default async function InfluencersPage() {
           status: true
         }
       },
-      influencer_profiles: true,
+      profile: true,
       _count: {
         select: {
           orders: true,
           commissions: true,
-          influencer_products: true
+          selectedProducts: true
         }
       }
     },
@@ -56,7 +56,7 @@ export default async function InfluencersPage() {
   })
 
   // Získám statistiky podle zemí z kampaní
-  const campaigns = await prisma.campaigns.findMany({
+  const campaigns = await prisma.campaign.findMany({
     select: {
       targetCountries: true,
       influencerIds: true,
@@ -261,7 +261,7 @@ export default async function InfluencersPage() {
                               €{totalCommissions.toFixed(2)} commission
                             </div>
                             <div className="text-xs text-gray-400">
-                              {influencer._count.orders} orders • {influencer._count.influencer_products} products
+                              {influencer._count.orders} orders • {influencer._count.selectedProducts} products
                             </div>
                           </div>
                         </td>

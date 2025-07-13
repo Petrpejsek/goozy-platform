@@ -25,10 +25,10 @@ export default async function AdminIntegrationsPage({
     recentLogs
   ] = await Promise.all([
     // Celkový počet dodavatelů
-    prisma.suppliers.count(),
+    prisma.supplier.count(),
     
     // Aktivní připojení
-    prisma.supplier_api_connections.count({
+    prisma.supplierApiConnection.count({
       where: { 
         isActive: true,
         lastTestStatus: 'success'
@@ -36,7 +36,7 @@ export default async function AdminIntegrationsPage({
     }),
     
     // Neúspěšná připojení
-    prisma.supplier_api_connections.count({
+    prisma.supplierApiConnection.count({
       where: { 
         OR: [
           { lastTestStatus: 'failed' },
@@ -46,22 +46,22 @@ export default async function AdminIntegrationsPage({
     }),
     
     // Celkový počet notifikací
-    prisma.api_notifications.count(),
+    prisma.apiNotification.count(),
     
     // Nepřečtené notifikace
-    prisma.api_notifications.count({
+    prisma.apiNotification.count({
       where: { isRead: false }
     }),
     
     // Poslední logy synchronizace
-    prisma.inventory_logs.findMany({
+    prisma.inventoryLog.findMany({
       take: 5,
       orderBy: { startedAt: 'desc' },
       include: {
-        suppliers: {
+        supplier: {
           select: { name: true }
         },
-        supplier_api_connections: {
+        connection: {
           select: { connectionName: true }
         }
       }
@@ -82,13 +82,13 @@ export default async function AdminIntegrationsPage({
     ]
   }
 
-  const suppliers = await prisma.suppliers.findMany({
+  const suppliers = await prisma.supplier.findMany({
     where: whereClause,
           include: {
-        brands: {
+        brand: {
           select: { name: true }
         },
-        supplier_api_connections: {
+        apiConnections: {
         select: {
           id: true,
           connectionName: true,
@@ -99,9 +99,9 @@ export default async function AdminIntegrationsPage({
       },
               _count: {
           select: {
-            inventory_logs: true,
-            order_submissions: true,
-            api_notifications: true
+            inventoryLogs: true,
+            orderSubmissions: true,
+            apiNotifications: true
           }
         }
     },
@@ -293,13 +293,13 @@ export default async function AdminIntegrationsPage({
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-900">
-                      {supplier.brands.name}
+                      {supplier.brand.name}
                     </span>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="space-y-1">
-                      {supplier.supplier_api_connections.map((conn) => (
+                      {supplier.apiConnections.map((conn) => (
                         <div key={conn.id} className="flex items-center space-x-2">
                           <span className="text-sm text-gray-900">
                             {conn.connectionName}
@@ -330,9 +330,9 @@ export default async function AdminIntegrationsPage({
                   
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="space-y-1">
-                      <div>📊 {supplier._count.inventory_logs} syncs</div>
-                      <div>📦 {supplier._count.order_submissions} orders</div>
-                      <div>🔔 {supplier._count.api_notifications} alerts</div>
+                      <div>📊 {supplier._count.inventoryLogs} syncs</div>
+                      <div>📦 {supplier._count.orderSubmissions} orders</div>
+                      <div>🔔 {supplier._count.apiNotifications} alerts</div>
                     </div>
                   </td>
                   
@@ -374,7 +374,7 @@ export default async function AdminIntegrationsPage({
                   </span>
                   <div>
                     <div className="text-sm font-medium text-gray-900">
-                      {log.suppliers.name} - {log.supplier_api_connections.connectionName}
+                      {log.supplier.name} - {log.connection.connectionName}
                     </div>
                     <div className="text-sm text-gray-500">
                       {log.syncType} sync • {log.productsChecked} products checked • {log.productsUpdated} updated

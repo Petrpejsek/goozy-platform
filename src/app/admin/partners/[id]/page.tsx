@@ -25,8 +25,8 @@ export default async function PartnerDetailPage({ params }: Props) {
         include: {
           _count: {
             select: {
-              influencer_products: true,
-              order_items: true
+              influencerProducts: true,
+              orderItems: true
             }
           }
         },
@@ -229,7 +229,7 @@ export default async function PartnerDetailPage({ params }: Props) {
                           <div className="font-medium text-gray-900">{product.stockQuantity}</div>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="font-medium text-gray-900">{product._count.influencer_products}</div>
+                          <div className="font-medium text-gray-900">{product._count.influencerProducts}</div>
                         </td>
                         <td className="py-4 px-4">
                           <div className="font-medium text-green-600">15%</div>
