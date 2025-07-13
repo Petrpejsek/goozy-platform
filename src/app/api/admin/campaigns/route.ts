@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const campaigns = await prisma.campaign.findMany({
       include: {
-        brands: true
+        brand: true
       },
       orderBy: {
         createdAt: 'desc'
