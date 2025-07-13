@@ -73,7 +73,7 @@ function calculateShippingCost(cartItems: any[], shippingAddress: any): number {
   // Calculate shipping for each supplier
   let totalShipping = 0;
   Object.keys(supplierGroups).forEach(supplier => {
-    const cost = SHIPPING_COSTS[region][supplier] || SHIPPING_COSTS[region]['default'];
+    const cost = (SHIPPING_COSTS as any)[region][supplier] || (SHIPPING_COSTS as any)[region]['default'];
     totalShipping += cost;
   });
 
