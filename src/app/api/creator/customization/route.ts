@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
     console.log('📋 [CUSTOMIZATION] Data:', { theme, background, heroLayout, customSettings })
 
     // Check if influencer has existing customization
-    const existingCustomization = await prisma.influencercustomization.findFirst({
-      where: { influencerId: decoded.id }
+    const existingCustomization = await prisma.influencer.findFirst({
+      where: { id: decoded.id }
     })
 
     if (existingCustomization) {
