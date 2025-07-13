@@ -566,7 +566,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
                     <div>
                       <h3 className="font-medium text-gray-900 mb-2">Recent Campaigns</h3>
                       <div className="space-y-2">
-                        {campaignStats.campaign.map((campaign) => (
+                        {campaignStats.campaigns.map((campaign) => (
                           <div key={campaign.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div>
                               <div className="font-medium text-sm">{campaign.name}</div>
