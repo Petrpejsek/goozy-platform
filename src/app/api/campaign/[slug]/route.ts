@@ -82,7 +82,7 @@ export async function GET(
           isActive: true
         },
         include: {
-          products: true
+          product: true
         }
       })
       
@@ -91,12 +91,12 @@ export async function GET(
         
         // Extract products and build recommendations map
         products = influencerProducts
-          .map(ip => ip.products)
+          .map(ip => ip.product)
           .filter(p => p !== null && p.isAvailable === true)
           
         // Build recommendations map
         influencerProducts.forEach(ip => {
-          if (ip.products && ip.recommendation) {
+          if (ip.product && ip.recommendation) {
             (productRecommendations as any)[ip.product.id] = ip.recommendation
           }
         })
