@@ -352,7 +352,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
             </div>
 
                          {/* Recent Orders */}
-            {influencer.order.length > 0 && (
+            {influencer.orders.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h2>
                 <div className="space-y-3">
