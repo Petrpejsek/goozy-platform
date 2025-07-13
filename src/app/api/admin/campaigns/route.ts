@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         startDate: campaign.startDate.toISOString(),
         endDate: campaign.endDate.toISOString(),
         status: campaign.status,
-        brand: campaign.brands,
+        brand: campaign.brand,
         expectedReach: campaign.expectedReach,
         budgetAllocated: campaign.budgetAllocated,
         currency: campaign.currency,
