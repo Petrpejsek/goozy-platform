@@ -74,7 +74,7 @@ export async function GET(
     }
 
     // Get products selected for this influencer
-    const influencerProducts = await prisma.influencerproducts.findMany({
+    const influencerProducts = await prisma.influencerProduct.findMany({
       where: {
         influencerId: influencerId,
         isActive: true
