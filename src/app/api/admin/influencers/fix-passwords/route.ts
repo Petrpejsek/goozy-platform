@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     for (const influencer of influencersWithoutPassword) {
       try {
         // Najdi původní aplikaci podle emailu
-        const originalApplication = await prisma.influencer_applications.findFirst({
+        const originalApplication = await prisma.influencerApplication.findFirst({
           where: {
             email: influencer.email,
             status: 'converted'

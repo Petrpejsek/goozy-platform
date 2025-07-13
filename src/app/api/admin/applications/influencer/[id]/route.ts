@@ -20,7 +20,7 @@ export async function PATCH(
     const applicationId = resolvedParams.id
     
     // Find the application
-    const application = await prisma.influencer_applications.findUnique({ 
+    const application = await prisma.influencerApplication.findUnique({ 
       where: { id: applicationId } 
     })
     
@@ -133,7 +133,7 @@ export async function PATCH(
       message = `Application status changed to ${action} successfully`
     }
     
-    const updatedApplication = await prisma.influencer_applications.update({
+    const updatedApplication = await prisma.influencerApplication.update({
       where: { id: applicationId },
       data: updateData
     })
@@ -312,7 +312,7 @@ export async function DELETE(
     const applicationId = resolvedParams.id
     
     // Check if the application exists
-    const application = await prisma.influencer_applications.findUnique({
+    const application = await prisma.influencerApplication.findUnique({
       where: { id: applicationId }
     })
     
@@ -324,7 +324,7 @@ export async function DELETE(
     }
     
     // Delete the application
-    await prisma.influencer_applications.delete({
+    await prisma.influencerApplication.delete({
       where: { id: applicationId }
     })
     

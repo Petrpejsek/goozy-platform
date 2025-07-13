@@ -99,7 +99,7 @@ async function findPossibleDuplicates(applicationData: any) {
   
   // Search in existing InfluencerApplication (Layer 3)
   if (searchConditions.length > 0) {
-    const applicationMatches = await prisma.influencer_applications.findMany({
+    const applicationMatches = await prisma.influencerApplication.findMany({
       where: { 
         OR: [
           { email: applicationData.email },
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Validation passed:', JSON.stringify(validatedData, null, 2))
     
     // Check if email already exists in database
-    const existingApplication = await prisma.influencer_applications.findFirst({
+    const existingApplication = await prisma.influencerApplication.findFirst({
       where: { email: validatedData.email }
     })
     
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(validatedData.password, 12)
     
     // Save application to database
-    const application = await prisma.influencer_applications.create({
+    const application = await prisma.influencerApplication.create({
       data: {
         id: crypto.randomUUID(),
         name: validatedData.name,
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         console.log(`⚠️  Found ${duplicates.length} possible duplicates:`, duplicates)
         
         // Update application with duplicate detection results
-        await prisma.influencer_applications.update({
+        await prisma.influencerApplication.update({
           where: { id: application.id },
           data: {
             possibleDuplicateIds: JSON.stringify(duplicates.map(d => d.id)),

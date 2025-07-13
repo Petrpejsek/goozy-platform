@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     console.log('🔄 [CONVERT-APPLICATIONS] Převádím schválené aplikace na influencery...')
     
     // Najdi všechny schválené aplikace, které ještě nebyly převedeny
-    const approvedApplications = await prisma.influencer_applications.findMany({
+    const approvedApplications = await prisma.influencerApplication.findMany({
       where: {
         status: 'approved'
       },
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Změň status aplikace na 'converted'
-        await prisma.influencer_applications.update({
+        await prisma.influencerApplication.update({
           where: { id: application.id },
           data: { status: 'converted' }
         })
