@@ -190,7 +190,7 @@ export default async function InfluencersPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {influencers.map((influencer) => {
-                    const totalRevenue = influencer.order.reduce((sum, order) => sum + order.totalAmount, 0)
+                    const totalRevenue = influencer.orders.reduce((sum, order) => sum + order.totalAmount, 0)
                     const totalCommissions = influencer.commissions.reduce((sum, comm) => sum + comm.amount, 0)
                     
                     return (
