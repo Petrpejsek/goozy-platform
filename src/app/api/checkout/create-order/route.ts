@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Group items by supplier for order processing
-    const supplierGroups = cartItems.reduce((groups, item) => {
+    const supplierGroups = cartItems.reduce((groups: any, item) => {
       const supplier = item.supplier || 'default';
       if (!groups[supplier]) {
         groups[supplier] = {
