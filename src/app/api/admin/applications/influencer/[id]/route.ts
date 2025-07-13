@@ -261,7 +261,7 @@ export async function PATCH(
               }))
               
               if (categoryRecords.length > 0) {
-                await prisma.influencer_categories.createMany({
+                await prisma.influencerCategory.createMany({
                   data: categoryRecords
                 })
               }

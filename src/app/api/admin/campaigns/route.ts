@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 // GET - Fetch all campaigns for admin overview
 export async function GET(request: NextRequest) {
   try {
-    const campaigns = await prisma.campaigns.findMany({
+    const campaigns = await prisma.campaign.findMany({
       include: {
         brands: true
       },
@@ -68,7 +68,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const campaign = await prisma.campaigns.update({
+    const campaign = await prisma.campaign.update({
       where: { id: campaignId },
       data: { status },
       include: { brands: true }

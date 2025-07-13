@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get customization from database
-    const customization = await prisma.influencer_customization.findFirst({
+    const customization = await prisma.influencercustomization.findFirst({
       where: { influencerId: decoded.id }
     })
 
@@ -86,13 +86,13 @@ export async function POST(request: NextRequest) {
     console.log('📋 [CUSTOMIZATION] Data:', { theme, background, heroLayout, customSettings })
 
     // Check if influencer has existing customization
-    const existingCustomization = await prisma.influencer_customization.findFirst({
+    const existingCustomization = await prisma.influencercustomization.findFirst({
       where: { influencerId: decoded.id }
     })
 
     if (existingCustomization) {
       // Update existing customization
-      await prisma.influencer_customization.update({
+      await prisma.influencercustomization.update({
         where: { id: existingCustomization.id },
         data: {
           theme: theme || existingCustomization.theme,
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       console.log('🔄 [CUSTOMIZATION] Updated existing customization')
     } else {
       // Create new customization
-      await prisma.influencer_customization.create({
+      await prisma.influencercustomization.create({
         data: {
           id: crypto.randomUUID(),
           influencerId: decoded.id,

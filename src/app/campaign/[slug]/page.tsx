@@ -224,13 +224,13 @@ export default function LiveCampaign() {
         console.log('📊 Campaign data loaded:', {
           creator: campaignData.creator?.name,
           creatorBio: campaignData.creator?.bio,
-          productsCount: campaignData.products.length,
+          productsCount: campaignData.product.length,
           startDate: campaignData.startDate,
           isActive: campaignData.isActive
         })
         
         // Log first few products for debugging
-        if (campaignData.products.length > 0) {
+        if (campaignData.product.length > 0) {
           console.log('📦 First product:', campaignData.products[0])
         }
         
@@ -573,13 +573,13 @@ export default function LiveCampaign() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">My Selected Products</h3>
               <p className="text-xs sm:text-sm text-gray-500">
-                {campaignData.products.length} products • All prices include 20% discount
+                {campaignData.product.length} products • All prices include 20% discount
               </p>
             </div>
             
             {/* Responsive product grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {campaignData.products.map((product) => {
+              {campaignData.product.map((product) => {
                 return (
                   <div
                     key={product.id}

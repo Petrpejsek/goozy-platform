@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 // Přehled tabulek = co chceme přenášet (přidejte / ubírejte podle potřeby)
 const tables = [
   {
-    sqliteName: 'influencer_database',     // název tabulky v SQLite
+    sqliteName: 'influencerDatabase',     // název tabulky v SQLite
     prismaName: 'influencerDatabase',      // název modelu v Prisma
     cols: [
       'id','name','username','email','bio','avatar','country','location',

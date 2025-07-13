@@ -81,12 +81,12 @@ export async function POST(request: NextRequest) {
     console.log(`🔍 Creating campaign for influencer: ${influencerData.name} (${influencerData.email})`)
     
     // Get or create a mock brand for the campaign
-    let mockBrand = await prisma.brands.findFirst({
+    let mockBrand = await prisma.brand.findFirst({
       where: { email: 'demo@goozy.com' }
     })
     
     if (!mockBrand) {
-      mockBrand = await prisma.brands.create({
+      mockBrand = await prisma.brand.create({
         data: {
           id: `brand-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           name: 'Goozy Demo Brand',
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create campaign in database
-    const campaign = await prisma.campaigns.create({
+    const campaign = await prisma.campaign.create({
       data: {
         id: `campaign-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
         slug: campaignSlug,
@@ -232,7 +232,7 @@ export async function GET(request: NextRequest) {
     
     console.log('🔍 Searching for campaigns with influencerIds:', influencerId)
     
-    const campaigns = await prisma.campaigns.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: {
         influencerIds: influencerId
       },
@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
     const campaignsWithStats = await Promise.all(
       campaigns.map(async (campaign) => {
         // Get orders for this campaign (mock data for now)
-        const orders = await prisma.orders.findMany({
+        const orders = await prisma.order.findMany({
           where: {
             influencerId: influencerId,
             status: 'completed'
@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
         })
 
         // Get influencer products count
-        const productCount = await prisma.influencer_products.count({
+        const productCount = await prisma.influencerproducts.count({
           where: {
             influencerId: influencerId,
             isActive: true

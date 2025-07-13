@@ -40,8 +40,8 @@ export default async function PartnerDetailPage({ params }: Props) {
   }
 
   // Statistiky partnera
-  const totalProductValue = partner.products.reduce((sum, product) => sum + product.price, 0)
-  const avgProductPrice = partner.products.length > 0 ? totalProductValue / partner.products.length : 0
+  const totalProductValue = partner.product.reduce((sum, product) => sum + product.price, 0)
+  const avgProductPrice = partner.product.length > 0 ? totalProductValue / partner.product.length : 0
 
   return (
     <div>
@@ -160,7 +160,7 @@ export default async function PartnerDetailPage({ params }: Props) {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Products ({partner.products.length})</h2>
+              <h2 className="text-xl font-bold text-gray-900">Products ({partner.product.length})</h2>
               <p className="text-gray-600 mt-1">All products from this partner</p>
             </div>
             
@@ -177,7 +177,7 @@ export default async function PartnerDetailPage({ params }: Props) {
             </div>
           </div>
           
-          {partner.products.length === 0 ? (
+          {partner.product.length === 0 ? (
             <div className="text-center py-20">
               <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -199,7 +199,7 @@ export default async function PartnerDetailPage({ params }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {partner.products.slice(0, 10).map((product) => {
+                  {partner.product.slice(0, 10).map((product) => {
                     const images = product.images ? JSON.parse(product.images) : []
                     return (
                       <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50">
@@ -250,13 +250,13 @@ export default async function PartnerDetailPage({ params }: Props) {
                 </tbody>
               </table>
               
-              {partner.products.length > 10 && (
+              {partner.product.length > 10 && (
                 <div className="mt-4 text-center">
                   <Link
                     href={`/admin/products?brand=${partner.id}`}
                     className="text-blue-600 hover:text-blue-800 font-medium"
                   >
-                    View all {partner.products.length} products →
+                    View all {partner.product.length} products →
                   </Link>
                 </div>
               )}

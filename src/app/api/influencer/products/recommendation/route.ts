@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Najdi nebo vytvoř záznam InfluencerProduct
-    const influencerProduct = await prisma.influencer_products.upsert({
+    const influencerProduct = await prisma.influencerproducts.upsert({
       where: {
         influencerId_productId: {
           influencerId,
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const influencerProduct = await prisma.influencer_products.findUnique({
+    const influencerProduct = await prisma.influencerproducts.findUnique({
       where: {
         influencerId_productId: {
           influencerId,

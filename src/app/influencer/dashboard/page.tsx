@@ -64,7 +64,7 @@ export default function InfluencerDashboard() {
 
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ Successfully loaded campaigns:', data.campaigns.length)
+        console.log('✅ Successfully loaded campaigns:', data.campaign.length)
         setCampaigns(data.campaigns || [])
       } else {
         console.log('❌ Failed to load campaigns')

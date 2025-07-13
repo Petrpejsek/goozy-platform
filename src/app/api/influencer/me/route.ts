@@ -67,9 +67,9 @@ export async function GET(request: NextRequest) {
       where: { id: influencerId },
       include: {
         influencerSocial: true,
-        influencer_categories: true,
+        influencerCategory: true,
         influencer_profiles: true,
-        influencer_products: {
+        influencerProduct: {
           include: {
             products: true
           }
@@ -90,8 +90,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const totalEarnings = influencer.commissions.reduce((sum, commission) => sum + commission.amount, 0)
-    const activeProducts = influencer.influencer_products.length
-    const totalOrders = influencer.orders.length
+    const activeProducts = influencer.influencerProduct.length
+    const totalOrders = influencer.order.length
     const totalFollowers = influencer.influencerSocial.reduce((sum, social) => sum + (social.followers || 0), 0)
 
     // Get main social network for followers display
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
         totalOrders: totalOrders,
         commissionRate: Math.round(influencer.commissionRate * 100), // Convert to percentage
         socialNetworks: influencer.influencerSocial,
-        contentCategories: influencer.influencer_categories,
+        contentCategories: influencer.influencerCategory,
         profile: influencer.influencer_profiles,
         isActive: influencer.isActive,
         isApproved: influencer.isApproved,

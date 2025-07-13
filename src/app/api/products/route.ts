@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Load products with brand information
-    const products = await prisma.products.findMany({
+    const products = await prisma.product.findMany({
       where,
       include: {
         brands: {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Count total products
-    const totalCount = await prisma.products.count({ where })
+    const totalCount = await prisma.product.count({ where })
 
     // Transform data for frontend
     const transformedProducts = products.map(product => ({

@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
           csvData.push([
             new Date(day.date).toLocaleDateString('cs-CZ'),
             day.revenue.toString(),
-            day.orders.toString(),
+            day.order.toString(),
             avgOrderValue
           ])
         })

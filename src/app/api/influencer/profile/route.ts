@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
     // Aktualizovat nebo vytvořit profil
     if (profile && (profile.age || profile.gender || profile.location)) {
       console.log('🔄 [PROFILE-UPDATE] Updating profile data...')
-      await prisma.influencer_profiles.upsert({
+      await prisma.influencerprofiles.upsert({
         where: { influencerId },
         update: {
           age: profile.age || null,
@@ -129,13 +129,13 @@ export async function PUT(request: NextRequest) {
     if (contentCategories && Array.isArray(contentCategories)) {
       console.log('🔄 [PROFILE-UPDATE] Updating content categories...')
       // Smazat existující kategorie
-      await prisma.influencer_categories.deleteMany({
+      await prisma.influencerCategory.deleteMany({
         where: { influencerId }
       })
 
       // Přidat nové kategorie
       if (contentCategories.length > 0) {
-        await prisma.influencer_categories.createMany({
+        await prisma.influencerCategory.createMany({
           data: contentCategories.map(category => ({
             id: randomUUID(),
             influencerId,

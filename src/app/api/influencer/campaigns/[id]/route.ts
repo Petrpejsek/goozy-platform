@@ -47,7 +47,7 @@ export async function GET(
     }
 
     // Find campaign and verify ownership
-    const campaign = await prisma.campaigns.findUnique({
+    const campaign = await prisma.campaign.findUnique({
       where: { id },
       include: {
         brands: {
@@ -155,7 +155,7 @@ export async function DELETE(
     }
 
     // Find campaign and verify ownership
-    const campaign = await prisma.campaigns.findUnique({
+    const campaign = await prisma.campaign.findUnique({
       where: { id }
     })
 
@@ -186,9 +186,9 @@ export async function DELETE(
       )
     }
 
-    // Delete related data first (influencer_products, commissions, etc.)
+    // Delete related data first (influencerProduct, commissions, etc.)
     // Delete influencer-product relationships for this campaign
-    await prisma.influencer_products.deleteMany({
+    await prisma.influencerproducts.deleteMany({
       where: {
         influencerId: influencerId
         // Note: We might need a campaignId field in future for better filtering
@@ -196,7 +196,7 @@ export async function DELETE(
     })
 
     // Delete the campaign
-    await prisma.campaigns.delete({
+    await prisma.campaign.delete({
       where: { id }
     })
 

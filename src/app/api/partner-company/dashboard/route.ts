@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
-    let brand = await prisma.brands.findFirst({
+    let brand = await prisma.brand.findFirst({
       where: { email: brandApplication.email },
       include: {
         campaigns: {
@@ -40,7 +40,7 @@ export async function GET() {
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
     if (!brand) {
-      brand = await prisma.brands.create({
+      brand = await prisma.brand.create({
         data: {
           id: `brand-${brandApplication.id}`,
           name: brandApplication.brandName,
@@ -80,8 +80,8 @@ export async function GET() {
     }
 
     // Vypočítat metriky
-    const activeCampaigns = brand.campaigns.filter(c => c.status === 'active').length
-    const upcomingCampaigns = brand.campaigns.filter(c => {
+    const activeCampaigns = brand.campaign.filter(c => c.status === 'active').length
+    const upcomingCampaigns = brand.campaign.filter(c => {
       const startDate = new Date(c.startDate)
       const now = new Date()
       return c.status === 'draft' && startDate > now
@@ -102,7 +102,7 @@ export async function GET() {
     // Zatím prázdná data pro charts - až budeme mít Order systém
     const salesData: Array<{date: string, sales: number, orders: number}> = []
     const topProducts: Array<{name: string, sales: number, orders: number, revenue: string}> = []
-    const recentCampaigns = brand.campaigns.slice(0, 5).map(campaign => ({
+    const recentCampaigns = brand.campaign.slice(0, 5).map(campaign => ({
       id: campaign.id,
       name: campaign.name,
       startDate: campaign.startDate.toISOString(),

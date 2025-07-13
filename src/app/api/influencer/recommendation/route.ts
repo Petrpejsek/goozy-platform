@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Upsert influencer_products record
-    await prisma.influencer_products.upsert({
+    // Upsert influencerProduct record
+    await prisma.influencerproducts.upsert({
       where: {
         influencerId_productId: {
           influencerId,

@@ -48,7 +48,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
   }
 
   // Calculate statistics
-  const totalRevenue = influencer.orders.reduce((sum, order) => sum + order.totalAmount, 0)
+  const totalRevenue = influencer.order.reduce((sum, order) => sum + order.totalAmount, 0)
   const totalCommissions = influencer.commissions.reduce((sum, comm) => sum + comm.amount, 0)
   const paidCommissions = influencer.commissions
     .filter(comm => comm.status === 'paid')
@@ -182,7 +182,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                 </div>
                 
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{influencer.orders.length}</div>
+                  <div className="text-2xl font-bold text-blue-600">{influencer.order.length}</div>
                   <div className="text-sm text-gray-600">Total Orders</div>
                 </div>
                 
@@ -352,11 +352,11 @@ export default async function InfluencerDetail({ params }: PageProps) {
             </div>
 
                          {/* Recent Orders */}
-            {influencer.orders.length > 0 && (
+            {influencer.order.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h2>
                 <div className="space-y-3">
-                  {influencer.orders.slice(0, 5).map((order) => (
+                  {influencer.order.slice(0, 5).map((order) => (
                     <div key={order.id} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-start">
                         <div>

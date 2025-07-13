@@ -41,12 +41,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all orders related to this influencer through discount codes
-    const discountCodes = await prisma.discount_codes.findMany({
+    const discountCodes = await prisma.discountcodes.findMany({
       where: { influencerId },
       include: {
         orders: {
           include: {
-            order_items: {
+            orderItem: {
               include: {
                 products: true
               }
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get campaigns data
-    const campaigns = await prisma.campaigns.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: {
         influencerIds: {
           contains: influencerId
@@ -126,13 +126,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Get product performance
-    const products = await prisma.products.findMany({
+    const products = await prisma.product.findMany({
       include: {
-        order_items: {
+        orderItem: {
           include: {
             orders: {
               include: {
-                discount_codes: true,
+                discountCode: true,
                 commissions: true
               }
             }
@@ -142,16 +142,16 @@ export async function GET(req: NextRequest) {
     })
 
     for (const product of products) {
-      const productOrders = product.order_items.filter(item => 
-        item.orders.discount_codes?.influencerId === influencerId
+      const productOrders = product.orderItem.filter(item => 
+        item.order.discountCode?.influencerId === influencerId
       )
 
       const productRevenue = productOrders.reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
       const productCommission = productOrders.reduce((sum, item) => {
-        const commission = (item.orders.commissions as any)?.[0]?.amount || 0
+        const commission = (item.order.commissions as any)?.[0]?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
-      const productReturns = productOrders.filter(item => item.orders.status === 'returned').reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
+      const productReturns = productOrders.filter(item => item.order.status === 'returned').reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
 
       if (productRevenue > 0) {
         productPerformance.push({

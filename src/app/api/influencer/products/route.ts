@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get selected products
-    const selectedProducts = await prisma.influencer_products.findMany({
+    const selectedProducts = await prisma.influencerproducts.findMany({
       where: {
         influencerId: influencerId,
         isActive: true
@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
     // Transform data for frontend
     const products = selectedProducts.map(sp => ({
       ...sp.products,
-      images: JSON.parse(sp.products.images || '[]'),
-      sizes: JSON.parse(sp.products.sizes || '[]'),
-      colors: JSON.parse(sp.products.colors || '[]'),
-      brand: sp.products.brands,
+      images: JSON.parse(sp.product.images || '[]'),
+      sizes: JSON.parse(sp.product.sizes || '[]'),
+      colors: JSON.parse(sp.product.colors || '[]'),
+      brand: sp.product.brands,
       addedAt: sp.addedAt
     }))
 
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       // Add products to selection (or reactivate)
       for (const productId of productIds) {
         // First try to find existing record
-        const existing = await prisma.influencer_products.findFirst({
+        const existing = await prisma.influencerproducts.findFirst({
           where: {
             influencerId: influencerId,
             productId: productId
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
 
         if (existing) {
           // Update existing
-          await prisma.influencer_products.update({
+          await prisma.influencerproducts.update({
             where: { id: existing.id },
             data: {
               isActive: true,
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
                       })
         } else {
           // Create new
-          await prisma.influencer_products.create({
+          await prisma.influencerproducts.create({
             data: {
               id: randomUUID(),
               influencerId: influencerId,
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
 
     } else if (action === 'remove') {
       // Remove products from selection (deactivate)
-      await prisma.influencer_products.updateMany({
+      await prisma.influencerproducts.updateMany({
         where: {
           influencerId: influencerId,
           productId: {
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
       // Set complete selection (overwrite current selection)
       
       // 1. Deactivate all current selections
-      await prisma.influencer_products.updateMany({
+      await prisma.influencerproducts.updateMany({
         where: {
           influencerId: influencerId,
           isActive: true
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
       // 2. Activate new products
       for (const productId of productIds) {
         // First try to find existing record
-        const existing = await prisma.influencer_products.findFirst({
+        const existing = await prisma.influencerproducts.findFirst({
           where: {
             influencerId: influencerId,
             productId: productId
@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
 
         if (existing) {
           // Update existing
-          await prisma.influencer_products.update({
+          await prisma.influencerproducts.update({
             where: { id: existing.id },
             data: {
               isActive: true,
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
                       })
         } else {
           // Create new
-          await prisma.influencer_products.create({
+          await prisma.influencerproducts.create({
             data: {
               id: randomUUID(),
               influencerId: influencerId,
@@ -352,7 +352,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Deactivate all selected products
-    const result = await prisma.influencer_products.updateMany({
+    const result = await prisma.influencerproducts.updateMany({
       where: {
         influencerId: influencerId,
         isActive: true

@@ -48,7 +48,7 @@ export async function GET(
     }
 
     // Find campaign and verify ownership
-    const campaign = await prisma.campaigns.findUnique({
+    const campaign = await prisma.campaign.findUnique({
       where: { id }
     })
 
@@ -74,7 +74,7 @@ export async function GET(
     }
 
     // Get products selected for this influencer
-    const influencerProducts = await prisma.influencer_products.findMany({
+    const influencerProducts = await prisma.influencerproducts.findMany({
       where: {
         influencerId: influencerId,
         isActive: true
@@ -95,18 +95,18 @@ export async function GET(
     })
 
     const products = influencerProducts.map(ip => ({
-      id: ip.products.id,
-      name: ip.products.name,
-      description: ip.products.description,
-      price: ip.products.price,
-      currency: ip.products.currency,
-      images: ip.products.images,
-      category: ip.products.category,
-      sizes: ip.products.sizes,
-      colors: ip.products.colors,
-      sku: ip.products.sku,
-      stockQuantity: ip.products.stockQuantity,
-      brand: ip.products.brands,
+      id: ip.product.id,
+      name: ip.product.name,
+      description: ip.product.description,
+      price: ip.product.price,
+      currency: ip.product.currency,
+      images: ip.product.images,
+      category: ip.product.category,
+      sizes: ip.product.sizes,
+      colors: ip.product.colors,
+      sku: ip.product.sku,
+      stockQuantity: ip.product.stockQuantity,
+      brand: ip.product.brands,
       recommendation: ip.recommendation
     }))
 
@@ -180,7 +180,7 @@ export async function POST(
     }
 
     // Find campaign and verify ownership
-    const campaign = await prisma.campaigns.findUnique({
+    const campaign = await prisma.campaign.findUnique({
       where: { id }
     })
 
@@ -212,7 +212,7 @@ export async function POST(
     console.log('🔄 Updating campaign products:', id, productIds.length)
 
     // Remove all current selections for this influencer
-    await prisma.influencer_products.deleteMany({
+    await prisma.influencerproducts.deleteMany({
       where: {
         influencerId: influencerId
       }
@@ -228,7 +228,7 @@ export async function POST(
         addedAt: new Date()
       }))
 
-      await prisma.influencer_products.createMany({
+      await prisma.influencerproducts.createMany({
         data: newSelections
       })
     }

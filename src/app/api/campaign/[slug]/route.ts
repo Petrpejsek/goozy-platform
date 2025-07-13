@@ -22,7 +22,7 @@ export async function GET(
     }
     
     // Find campaign by slug
-    const campaign = await prisma.campaigns.findUnique({
+    const campaign = await prisma.campaign.findUnique({
       where: { slug },
       include: {
         brands: true
@@ -76,7 +76,7 @@ export async function GET(
     
     if (influencer) {
       // First try to get influencer's selected products
-      const influencerProducts = await prisma.influencer_products.findMany({
+      const influencerProducts = await prisma.influencerproducts.findMany({
         where: {
           influencerId: influencer.id,
           isActive: true
@@ -97,7 +97,7 @@ export async function GET(
         // Build recommendations map
         influencerProducts.forEach(ip => {
           if (ip.products && ip.recommendation) {
-            (productRecommendations as any)[ip.products.id] = ip.recommendation
+            (productRecommendations as any)[ip.product.id] = ip.recommendation
           }
         })
         
@@ -105,7 +105,7 @@ export async function GET(
       } else {
         console.log('⚠️ No selected products found, falling back to brand products')
         // Fallback to brand products if influencer hasn't selected any
-        products = await prisma.products.findMany({
+        products = await prisma.product.findMany({
           where: {
             brandId: campaign.brandId,
             isAvailable: true
@@ -115,7 +115,7 @@ export async function GET(
       }
     } else {
       // No influencer, get brand products
-      products = await prisma.products.findMany({
+      products = await prisma.product.findMany({
         where: {
           brandId: campaign.brandId,
           isAvailable: true
@@ -171,7 +171,7 @@ export async function GET(
           price: product.price,
           discountedPrice: product.price * 0.8, // 20% discount
           images: parseArrayField(product.images),
-          brand: product.brand_name || campaign.brands.name,
+          brand: product.brand_name || campaign.brand.name,
           category: product.category,
           sizes: parseArrayField(product.sizes),
           colors: parseArrayField(product.colors),

@@ -174,8 +174,8 @@ function InfluencerProductCatalogContent() {
         console.log('✅ [EDIT] Campaign products loaded:', productsData.products)
         
         // Set selected products from campaign
-        if (productsData.products && productsData.products.length > 0) {
-          const productIds = productsData.products.map((p: any) => p.id)
+        if (productsData.products && productsData.product.length > 0) {
+          const productIds = productsData.product.map((p: any) => p.id)
           setSelectedProducts(new Set(productIds))
           console.log('📝 [EDIT] Pre-selected products:', productIds)
         }
@@ -330,7 +330,7 @@ function InfluencerProductCatalogContent() {
       
       if (response.ok) {
         const data = await response.json()
-        const savedProductIds = data.products.map((p: Product) => p.id)
+        const savedProductIds = data.product.map((p: Product) => p.id)
         setSelectedProducts(new Set(savedProductIds))
         console.log(`Loaded ${savedProductIds.length} previously saved products from API`)
       }

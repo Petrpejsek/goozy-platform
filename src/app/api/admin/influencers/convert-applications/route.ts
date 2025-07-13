@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
           try {
             const categories = JSON.parse(application.categories)
             for (const category of categories) {
-              await prisma.influencer_categories.create({
+              await prisma.influencerCategory.create({
                 data: {
                   id: Date.now().toString() + Math.random().toString(),
                   influencerId: newInfluencer.id,
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
           } catch (parseError) {
             console.log(`⚠️  Chyba při parsování kategorií pro ${application.email}:`, parseError)
             // Pokud parsing selže, přidáme alespoň jednu kategorii
-            await prisma.influencer_categories.create({
+            await prisma.influencerCategory.create({
               data: {
                 id: Date.now().toString() + Math.random().toString(),
                 influencerId: newInfluencer.id,

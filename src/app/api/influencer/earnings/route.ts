@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       include: {
         orders: {
           include: {
-            order_items: {
+            orderItem: {
               include: {
                 products: true
               }
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
       }
 
       totalOrders++
-      const orderValue = parseFloat(commission.orders.totalAmount.toString())
+      const orderValue = parseFloat(commission.order.totalAmount.toString())
       orderValues.push(orderValue)
     }
 

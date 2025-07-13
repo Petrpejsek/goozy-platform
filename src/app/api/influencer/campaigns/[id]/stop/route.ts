@@ -45,7 +45,7 @@ export async function PATCH(
     }
 
     // Find campaign and verify ownership
-    const campaign = await prisma.campaigns.findUnique({
+    const campaign = await prisma.campaign.findUnique({
       where: { id }
     })
 
@@ -84,7 +84,7 @@ export async function PATCH(
     }
 
     // Stop the campaign by setting end date to now and status to inactive
-    const updatedCampaign = await prisma.campaigns.update({
+    const updatedCampaign = await prisma.campaign.update({
       where: { id },
       data: {
         endDate: now,

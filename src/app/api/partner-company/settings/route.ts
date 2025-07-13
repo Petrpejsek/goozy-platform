@@ -22,13 +22,13 @@ export async function GET() {
     }
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
-    let brand = await prisma.brands.findFirst({
+    let brand = await prisma.brand.findFirst({
       where: { email: brandApplication.email }
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
     if (!brand) {
-      brand = await prisma.brands.create({
+      brand = await prisma.brand.create({
         data: {
           id: `brand-${brandApplication.id}`,
           name: brandApplication.brandName,
@@ -122,13 +122,13 @@ export async function PUT(request: NextRequest) {
     }
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
-    let brand = await prisma.brands.findFirst({
+    let brand = await prisma.brand.findFirst({
       where: { email: brandApplication.email }
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
     if (!brand) {
-      brand = await prisma.brands.create({
+      brand = await prisma.brand.create({
         data: {
           id: `brand-${brandApplication.id}`,
           name: brandApplication.brandName,
@@ -164,7 +164,7 @@ export async function PUT(request: NextRequest) {
     updateData.updatedAt = new Date()
 
     // Aktualizovat brand v databázi pomocí správného ID
-    const updatedBrand = await prisma.brands.update({
+    const updatedBrand = await prisma.brand.update({
       where: { id: brand.id },
       data: updateData
     })

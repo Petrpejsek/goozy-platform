@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     // Get all unique categories from available products
-    const categories = await prisma.products.findMany({
+    const categories = await prisma.product.findMany({
       where: {
         isAvailable: true,
         stockQuantity: {
@@ -20,7 +20,7 @@ export async function GET() {
     // Count products in each category
     const categoriesWithCount = await Promise.all(
       categories.map(async (cat) => {
-        const count = await prisma.products.count({
+        const count = await prisma.product.count({
           where: {
             category: cat.category,
             isAvailable: true,

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     // Získání schválených brandů (partners)
-    const partners = await prisma.brands.findMany({
+    const partners = await prisma.brand.findMany({
       where: { 
         isActive: true,
         isApproved: true 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const partnersWithStats = await Promise.all(
       partners.map(async (partner) => {
         // Spočítání celkové hodnoty produktů
-        const totalProductValue = partner.products.reduce((sum, product) => sum + product.price, 0)
+        const totalProductValue = partner.product.reduce((sum, product) => sum + product.price, 0)
         
         // Zatím mock data pro revenue a orders - až budeme mít Order systém
         const monthlyRevenue = 0

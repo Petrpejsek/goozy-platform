@@ -36,13 +36,13 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
   
   for (const item of items) {
     const product = item.product
-    const brandId = product.brands.id
+    const brandId = product.brand.id
     
     if (!itemsBySupplier.has(brandId)) {
       itemsBySupplier.set(brandId, {
         items: [],
         subtotal: 0,
-        supplierName: product.brands.name
+        supplierName: product.brand.name
       })
     }
     
@@ -60,7 +60,7 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
     console.log(`📦 [SHIPPING-API] Processing supplier ${brandId} with subtotal €${supplierData.subtotal}`)
     
     // Get supplier shipping settings
-    const supplier = await prisma.suppliers.findFirst({
+    const supplier = await prisma.supplier.findFirst({
       where: { brandId: brandId }
     })
     
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch products from database
     const productIds = items.map(item => item.productId)
-    const products = await prisma.products.findMany({
+    const products = await prisma.product.findMany({
       where: {
         id: { in: productIds },
         isAvailable: true

@@ -95,7 +95,7 @@ export default async function InfluencersPage() {
   const activeInfluencers = influencers.filter(inf => inf.isActive && inf.isApproved).length
   const pendingInfluencers = influencers.filter(inf => inf.onboardingStatus === 'pending').length
   const totalRevenue = influencers.reduce((sum, inf) => 
-    sum + inf.orders.reduce((orderSum, order) => orderSum + order.totalAmount, 0), 0
+    sum + inf.order.reduce((orderSum, order) => orderSum + order.totalAmount, 0), 0
   )
 
   return (
@@ -190,7 +190,7 @@ export default async function InfluencersPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {influencers.map((influencer) => {
-                    const totalRevenue = influencer.orders.reduce((sum, order) => sum + order.totalAmount, 0)
+                    const totalRevenue = influencer.order.reduce((sum, order) => sum + order.totalAmount, 0)
                     const totalCommissions = influencer.commissions.reduce((sum, comm) => sum + comm.amount, 0)
                     
                     return (

@@ -78,7 +78,7 @@ export default function ProductDetail() {
       if (!campaign && !prod) {
         // Use fallback mock
         setInfluencer(mockCampaignData.influencer)
-        const fallback = mockCampaignData.products.find(p=>String(p.id)===String(productId)) || mockCampaignData.products[0]
+        const fallback = mockCampaignData.product.find(p=>String(p.id)===String(productId)) || mockCampaignData.products[0]
         setProduct(fallback)
       }
       setIsLoading(false)

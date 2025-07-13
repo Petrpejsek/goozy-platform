@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     let finalBrandId = brandId
     if (newBrandName && newBrandName.trim()) {
       // Create new brand
-      const newBrand = await prisma.brands.create({
+      const newBrand = await prisma.brand.create({
         data: {
           id: `brand_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
           name: newBrandName.trim(),
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate external ID for admin-created products
-    const adminProductsCount = await prisma.products.count({
+    const adminProductsCount = await prisma.product.count({
       where: {
         externalId: {
           startsWith: 'ADMIN_'
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const externalId = `ADMIN_${String(adminProductsCount + 1).padStart(3, '0')}`
 
     // Create product
-    const product = await prisma.products.create({
+    const product = await prisma.product.create({
       data: {
         id: `product_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
         brandId: finalBrandId,

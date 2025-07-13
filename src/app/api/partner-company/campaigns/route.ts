@@ -22,13 +22,13 @@ export async function GET() {
     }
 
     // Najít asociovaný brand v brands tabulce
-    let brand = await prisma.brands.findFirst({
+    let brand = await prisma.brand.findFirst({
       where: { email: brandApplication.email }
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
     if (!brand) {
-      brand = await prisma.brands.create({
+      brand = await prisma.brand.create({
         data: {
           id: `brand-${brandApplication.id}`,
           name: brandApplication.brandName,
@@ -47,7 +47,7 @@ export async function GET() {
     }
 
     // Načíst kampaně pro tento brand
-    const campaigns = await prisma.campaigns.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: {
         brandId: brand.id,
         isActive: true
@@ -82,7 +82,7 @@ export async function GET() {
         }
 
         // Počet produktů v kampani (zatím přes všechny produkty brandu)
-        const productCount = await prisma.products.count({
+        const productCount = await prisma.product.count({
           where: {
             brandId: brand.id,
             isAvailable: true

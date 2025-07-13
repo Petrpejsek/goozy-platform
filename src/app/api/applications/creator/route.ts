@@ -44,7 +44,7 @@ async function findPossibleDuplicates(applicationData: any) {
   console.log('🔍 Search conditions:', JSON.stringify(searchConditions, null, 2))
   if (searchConditions.length > 0) {
     console.log('🗄️  Searching in InfluencerDatabase...')
-    const databaseMatches = await prisma.influencer_database.findMany({
+    const databaseMatches = await prisma.influencerdatabase.findMany({
       where: { OR: searchConditions },
       select: {
         id: true,
@@ -71,7 +71,7 @@ async function findPossibleDuplicates(applicationData: any) {
   
   // Search in InfluencerProspect (Layer 2)
   if (searchConditions.length > 0) {
-    const prospectMatches = await prisma.influencer_prospects.findMany({
+    const prospectMatches = await prisma.influencerprospects.findMany({
       where: { OR: searchConditions },
       select: {
         id: true,

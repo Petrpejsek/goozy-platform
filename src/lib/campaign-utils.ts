@@ -18,7 +18,7 @@ export async function generateUniqueCampaignSlug(
       : `${baseSlug}-${generateRandomSuffix()}`
     
     // Kontrola, zda slug už neexistuje
-    const existingCampaign = await prisma.campaigns.findUnique({
+    const existingCampaign = await prisma.campaign.findUnique({
       where: { slug }
     }).catch(() => null) // Ignorujeme chyby, pokud tabulka nemá zatím slug pole
     
