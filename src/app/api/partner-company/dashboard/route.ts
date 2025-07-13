@@ -13,7 +13,7 @@ export async function GET() {
     }
 
     // Najít brand application - to je náš zdroj pravdy
-    const brandApplication = await prisma.brand_applications.findUnique({
+    const brandApplication = await prisma.brandApplication.findUnique({
       where: { id: user.brandId }
     })
 
