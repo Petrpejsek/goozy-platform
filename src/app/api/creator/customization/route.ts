@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get customization from database
-    const customization = await prisma.influencercustomization.findFirst({
+    const customization = await prisma.influencerCustomization.findFirst({
       where: { influencerId: decoded.id }
     })
 
