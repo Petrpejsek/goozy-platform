@@ -48,7 +48,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
   }
 
   // Calculate statistics
-  const totalRevenue = influencer.order.reduce((sum, order) => sum + order.totalAmount, 0)
+  const totalRevenue = influencer.orders.reduce((sum, order) => sum + order.totalAmount, 0)
   const totalCommissions = influencer.commissions.reduce((sum, comm) => sum + comm.amount, 0)
   const paidCommissions = influencer.commissions
     .filter(comm => comm.status === 'paid')
