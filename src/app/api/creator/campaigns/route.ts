@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date()
       },
       include: {
-        brands: true
+        brand: true
       }
     })
 
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
         startDate: campaign.startDate.toISOString(),
         endDate: campaign.endDate.toISOString(),
         status: campaign.status,
-        brand: campaign.brands,
+        brand: campaign.brand,
         influencer: {
           id: influencerData.id,
           name: influencerData.name,
@@ -237,7 +237,7 @@ export async function GET(request: NextRequest) {
         influencerIds: influencerId
       },
       include: {
-        brands: true
+        brand: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -278,7 +278,7 @@ export async function GET(request: NextRequest) {
           startDate: campaign.startDate.toISOString(),
           endDate: campaign.endDate.toISOString(),
           status: campaign.status,
-          brand: campaign.brands,
+          brand: campaign.brand,
           expectedReach: campaign.expectedReach,
           budgetAllocated: campaign.budgetAllocated,
           currency: campaign.currency,
