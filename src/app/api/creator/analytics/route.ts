@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all orders related to this influencer through discount codes
-    const discountCodes = await prisma.discountcodes.findMany({
+    const discountCodes = await prisma.discountCode.findMany({
       where: { influencerId },
       include: {
         orders: {
