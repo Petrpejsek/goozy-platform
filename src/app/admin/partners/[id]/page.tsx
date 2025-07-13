@@ -199,7 +199,7 @@ export default async function PartnerDetailPage({ params }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {partner.product.slice(0, 10).map((product) => {
+                  {partner.products.slice(0, 10).map((product) => {
                     const images = product.images ? JSON.parse(product.images) : []
                     return (
                       <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50">
