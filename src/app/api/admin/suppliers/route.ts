@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error loading suppliers:', error)
     return NextResponse.json(
-      { error: 'Chyba při načítání dodavatelů' }
-      { status: 500 }
+      { error:  'Chyba při načítání dodavatelů' }
+      { status:  500 }
     )
   } finally {
     await prisma.$disconnect()

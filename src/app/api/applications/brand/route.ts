@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     
     if (existingApplication) {
       return NextResponse.json(
-        { error: 'An application with this email has already been submitted' }
-        { status: 400 }
+        { error:  'An application with this email has already been submitted' }
+        { status:  400 }
       )
     }
     
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Save application to database
     const application = await prisma.brandApplication.create({
       data: {
-        id: Date.now().toString() + Math.random().toString()
+        id: Date.now().toString() + Math.random().toString(),
         contactName: validatedData.contactName
         brandName: validatedData.brandName
         email: validatedData.email
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         message: 'Application submitted successfully! We will contact you within 48 hours.'
         applicationId: application.id
       }
-      { status: 201 }
+      { status:  201 }
     )
     
   } catch (error) {
@@ -74,14 +74,14 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid form data', details: error.errors }
-        { status: 400 }
+        { error:  'Invalid form data', details: error.errors }
+        { status:  400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Internal Server Error. Please try again later.' }
-      { status: 500 }
+      { error:  'Internal Server Error. Please try again later.' }
+      { status:  500 }
     )
   }
 } 

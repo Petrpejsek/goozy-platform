@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function GET(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -22,8 +22,8 @@ export async function GET(
 
     if (!supplier) {
       return NextResponse.json(
-        { error: 'Dodavatel nenalezen' }
-        { status: 404 }
+        { error:  'Dodavatel nenalezen' }
+        { status:  404 }
       )
     }
 
@@ -63,8 +63,8 @@ export async function GET(
   } catch (error) {
     console.error('Error loading supplier:', error)
     return NextResponse.json(
-      { error: 'Chyba při načítání dodavatele' }
-      { status: 500 }
+      { error:  'Chyba při načítání dodavatele' }
+      { status:  500 }
     )
   } finally {
     await prisma.$disconnect()

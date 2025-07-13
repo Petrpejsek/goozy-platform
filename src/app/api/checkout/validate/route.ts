@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error: securityResult.reason }
-      { status: securityResult.status }
+      { error:  securityResult.reason }
+      { status:  securityResult.status }
     );
   }
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const hasErrors = validationResults.some(item => !item.available);
 
     return NextResponse.json({
-      success: true
+      success: true,
       valid: !hasErrors
       summary: {
         totalItems: cartItems.length
@@ -97,13 +97,13 @@ export async function POST(request: NextRequest) {
           error: 'Neplatná data'
           details: error.errors
         }
-        { status: 400 }
+        { status:  400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Chyba při validaci košíku' }
-      { status: 500 }
+      { error:  'Chyba při validaci košíku' }
+      { status:  500 }
     );
   }
 } 

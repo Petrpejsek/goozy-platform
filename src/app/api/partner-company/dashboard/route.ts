@@ -9,7 +9,7 @@ export async function GET() {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
     }
 
     // Najít brand application - to je náš zdroj pravdy
@@ -18,7 +18,7 @@ export async function GET() {
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
     }
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
@@ -31,7 +31,7 @@ export async function GET() {
         product: true
         _count: {
           select: {
-            campaigns: true
+            campaigns: true,
             product: true
           }
         }
@@ -49,7 +49,7 @@ export async function GET() {
           description: brandApplication.description
           website: brandApplication.website
           isApproved: true
-          isActive: true
+          isActive: true,
           targetCountries: '[]', // Zatím prázdné, nastavit se dá v settings
           createdAt: new Date()
           updatedAt: new Date()
@@ -61,7 +61,7 @@ export async function GET() {
           product: true
           _count: {
             select: {
-              campaigns: true
+              campaigns: true,
               product: true
             }
           }
@@ -116,7 +116,7 @@ export async function GET() {
     console.log('📊 [DASHBOARD] Active countries:', activeCountries)
     
     return NextResponse.json({
-      success: true
+      success: true,
       metrics
       salesData
       topProducts
@@ -133,8 +133,8 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [DASHBOARD] Error loading metrics:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' }
-      { status: 500 }
+      { error:  'Internal Server Error' }
+      { status:  500 }
     )
   }
 } 

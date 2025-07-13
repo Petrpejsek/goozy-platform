@@ -129,8 +129,8 @@ export async function POST(request: NextRequest) {
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error: securityResult.reason }
-      { status: securityResult.status }
+      { error:  securityResult.reason }
+      { status:  securityResult.status }
     );
   }
 
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
           expected: expectedTotal
           received: totalAmount 
         }
-        { status: 400 }
+        { status:  400 }
       );
     }
 
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
 
     // Return success response
     return NextResponse.json({
-      success: true
+      success: true,
       order: {
         id: order.id
         orderNumber: order.orderNumber
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
             message: err.message
           }))
         }
-        { status: 400 }
+        { status:  400 }
       );
     }
 
@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create order'
         message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
       }
-      { status: 500 }
+      { status:  500 }
     );
   }
 } 

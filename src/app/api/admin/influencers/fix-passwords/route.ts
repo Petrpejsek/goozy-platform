@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
 
     if (influencersWithoutPassword.length === 0) {
       return NextResponse.json({
-        success: true
-        message: 'Všichni influenceři mají hesla'
+        success: true,
+        message: 'Všichni influenceři mají hesla',
         fixed: 0
       })
     }
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
         // Najdi původní aplikaci podle emailu
         const originalApplication = await prisma.influencerApplication.findFirst({
           where: {
-            email: influencer.email
+            email: influencer.email,
             status: 'converted'
-          }
+          },
           orderBy: {
             createdAt: 'desc'
           }
@@ -49,14 +49,14 @@ export async function POST(request: NextRequest) {
 
         // Aktualizuj influencer s heslem z aplikace
         await prisma.influencer.update({
-          where: { id: influencer.id }
+          where: { id: influencer.id },
           data: { password: originalApplication.password }
         })
 
         fixedInfluencers.push({
           id: influencer.id
           name: influencer.name
-          email: influencer.email
+          email: influencer.email,
         })
 
         console.log(`✅ Opraveno heslo pro: ${influencer.name} (${influencer.email})`)
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     console.log(`🎉 Opraveno heslo pro ${fixedInfluencers.length} influencerů`)
 
     return NextResponse.json({
-      success: true
+      success: true,
       message: `Úspěšně opraveno heslo pro ${fixedInfluencers.length} influencerů`
       fixed: fixedInfluencers.length
       influencers: fixedInfluencers
@@ -80,6 +80,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false
       error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    }, { status:  500 })
   }
 } 

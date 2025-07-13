@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         console.error('❌ Authentication failed:', fallbackError)
         return NextResponse.json(
           { success: false, error: 'Invalid authentication' }
-          { status: 401 }
+          { status:  401 }
         )
       }
     }
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     if (!influencerData) {
       return NextResponse.json(
         { success: false, error: 'Influencer not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           name: 'Goozy Demo Brand'
           email: 'demo@goozy.com'
           isApproved: true
-          isActive: true
+          isActive: true,
           targetCountries: '["CZ"]'
           createdAt: new Date()
           updatedAt: new Date()
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         currency: 'EUR'
         expectedReach: data.expectedReach || 10000
         budgetAllocated: data.budgetAllocated || 1000
-        isActive: true
+        isActive: true,
         createdAt: new Date()
         updatedAt: new Date()
       }
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     const campaignUrl = `${origin}/campaign/${campaignSlug}`
 
     return NextResponse.json({
-      success: true
+      success: true,
       campaign: {
         id: campaign.id
         name: campaign.name
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ Error creating campaign:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create campaign' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 }
@@ -194,7 +194,7 @@ export async function GET(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
       } catch (fallbackError) {
         return NextResponse.json(
           { success: false, error: 'Invalid authentication' }
-          { status: 401 }
+          { status:  401 }
         )
       }
     }
@@ -226,7 +226,7 @@ export async function GET(request: NextRequest) {
     if (!influencerId) {
       return NextResponse.json(
         { success: false, error: 'Influencer not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
     
@@ -261,7 +261,7 @@ export async function GET(request: NextRequest) {
         const productCount = await prisma.influencerProduct.count({
           where: {
             influencerId: influencerId
-            isActive: true
+            isActive: true,
           }
         })
 
@@ -295,7 +295,7 @@ export async function GET(request: NextRequest) {
     )
 
     return NextResponse.json({
-      success: true
+      success: true,
       campaigns: campaignsWithStats
     })
 
@@ -303,7 +303,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ Error fetching campaigns:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch campaigns' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

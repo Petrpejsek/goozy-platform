@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { productId, recommendation } = await request.json()
 
     if (!productId || typeof recommendation !== 'string') {
-      return NextResponse.json({ success: false, error: 'Invalid input' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Invalid input' }, { status:  400 })
     }
 
     // Extract token – first try cookie, then Authorization header
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status:  401 })
     }
 
     // Decode JWT – try token first, then fallback to base64-encoded email (same logic as other influencer endpoints)
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         influencerId = influencer.id
         console.log('✅ [RECOMMENDATION] Fallback auth successful for', email)
       } catch (fallbackError) {
-        return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 })
+        return NextResponse.json({ success: false, error: 'Invalid token' }, { status:  401 })
       }
     }
 
@@ -61,20 +61,20 @@ export async function POST(request: NextRequest) {
       }
       update: {
         recommendation: recommendation.trim()
-        isActive: true
+        isActive: true,
       }
       create: {
         id: randomUUID()
         influencerId
         productId
         recommendation: recommendation.trim()
-        isActive: true
+        isActive: true,
       }
     })
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('❌ Error saving recommendation:', error)
-    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Server error' }, { status:  500 })
   }
 } 

@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error: securityResult.reason }
-      { status: securityResult.status }
+      { error:  securityResult.reason }
+      { status:  securityResult.status }
     );
   }
 
@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     // Validate Stripe keys
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_default') {
       return NextResponse.json(
-        { error: 'Stripe není nakonfigurováno' }
-        { status: 500 }
+        { error:  'Stripe není nakonfigurováno' }
+        { status:  500 }
       );
     }
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      success: true
+      success: true,
       clientSecret: paymentIntent.client_secret
       paymentIntentId: paymentIntent.id
       amount: amount
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
             message: err.message
           }))
         }
-        { status: 400 }
+        { status:  400 }
       );
     }
 
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           error: 'Chyba platebního systému'
           message: error.message 
         }
-        { status: 400 }
+        { status:  400 }
       );
     }
 
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         error: 'Nepodařilo se vytvořit platbu'
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
       }
-      { status: 500 }
+      { status:  500 }
     );
   }
 } 

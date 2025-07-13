@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      return NextResponse.json({ error:  'Authentication required' }, { status:  401 })
     }
 
     let influencerId: string
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         influencerId = influencerData.id
         console.log('✅ [PRODUCTS-GET] Fallback authentication successful for:', email)
       } catch (fallbackError) {
-        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
       }
     }
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const selectedProducts = await prisma.influencerProduct.findMany({
       where: {
         influencerId: influencerId
-        isActive: true
+        isActive: true,
       }
       include: {
         product: {
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error loading selected product:', error)
-    return NextResponse.json({ error: 'Failed to load selected products' }, { status: 500 })
+    return NextResponse.json({ error:  'Failed to load selected products' }, { status:  500 })
   }
 }
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
     
     if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      return NextResponse.json({ error:  'Authentication required' }, { status:  401 })
     }
 
     let influencerId: string
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
         influencerId = influencerData.id
         console.log('✅ [PRODUCTS-POST] Fallback authentication successful for:', email)
       } catch (fallbackError) {
-        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
       }
     }
 
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     if (!Array.isArray(productIds) || !action) {
       console.log('❌ [PRODUCTS-POST] Invalid data validation failed:', { productIds, action })
-      return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
+      return NextResponse.json({ error:  'Invalid data' }, { status:  400 })
     }
 
     if (action === 'add') {
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
           await prisma.influencerProduct.update({
             where: { id: existing.id }
             data: {
-              isActive: true
+              isActive: true,
               addedAt: new Date()
             }
                       })
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
               id: randomUUID()
               influencerId: influencerId
               productId: productId
-              isActive: true
+              isActive: true,
             }
           })
         }
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
       await prisma.influencerProduct.updateMany({
         where: {
           influencerId: influencerId
-          isActive: true
+          isActive: true,
         }
         data: {
           isActive: false
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
           await prisma.influencerProduct.update({
             where: { id: existing.id }
             data: {
-              isActive: true
+              isActive: true,
               addedAt: new Date()
             }
                       })
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
               id: randomUUID()
               influencerId: influencerId
               productId: productId
-              isActive: true
+              isActive: true,
             }
           })
         }
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
       })
 
     } else {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+      return NextResponse.json({ error:  'Invalid action' }, { status:  400 })
     }
 
   } catch (error) {
@@ -292,7 +292,7 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : 'No stack trace'
       name: error instanceof Error ? error.name : 'Unknown error type'
     })
-    return NextResponse.json({ error: 'Failed to update product selection' }, { status: 500 })
+    return NextResponse.json({ error:  'Failed to update product selection' }, { status:  500 })
   }
 }
 
@@ -312,7 +312,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      return NextResponse.json({ error:  'Authentication required' }, { status:  401 })
     }
 
     let influencerId: string
@@ -347,7 +347,7 @@ export async function DELETE(request: NextRequest) {
         influencerId = influencerData.id
         console.log('✅ [PRODUCTS-DELETE] Fallback authentication successful for:', email)
       } catch (fallbackError) {
-        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
       }
     }
 
@@ -355,7 +355,7 @@ export async function DELETE(request: NextRequest) {
     const result = await prisma.influencerProduct.updateMany({
       where: {
         influencerId: influencerId
-        isActive: true
+        isActive: true,
       }
       data: {
         isActive: false
@@ -369,6 +369,6 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('Error deleting product selection:', error)
-    return NextResponse.json({ error: 'Failed to delete product selection' }, { status: 500 })
+    return NextResponse.json({ error:  'Failed to delete product selection' }, { status:  500 })
   }
 }

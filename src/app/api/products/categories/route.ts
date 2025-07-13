@@ -41,7 +41,7 @@ export async function GET() {
     categoriesWithCount.sort((a, b) => b.count - a.count)
 
     return NextResponse.json({
-      success: true
+      success: true,
       data: {
         categories: categoriesWithCount
       }
@@ -54,7 +54,7 @@ export async function GET() {
         success: false, 
         error: 'Failed to load categories' 
       }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

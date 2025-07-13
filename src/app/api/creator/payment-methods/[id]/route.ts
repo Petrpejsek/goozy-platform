@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 
 // PUT endpoint for updating payment methods
 export async function PUT(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -20,7 +20,7 @@ export async function PUT(
       // Get JWT token from Authorization header
       const authHeader = request.headers.get('Authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'Missing or invalid authorization header' }, { status: 401 })
+        return NextResponse.json({ error:  'Missing or invalid authorization header' }, { status:  401 })
       }
 
       const token = authHeader.split(' ')[1]
@@ -29,7 +29,7 @@ export async function PUT(
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string }
         influencerId = decoded.id
       } catch (error) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
       }
     }
     const body = await request.json()
@@ -71,7 +71,7 @@ export async function PUT(
     const paymentMethod = defaultPaymentMethods.find(method => method.id === methodId)
 
     if (!paymentMethod) {
-      return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Payment method not found' }, { status:  404 })
     }
 
     // For hardcoded data, simulate successful update
@@ -84,16 +84,16 @@ export async function PUT(
     return NextResponse.json({ 
       message: 'Payment method updated successfully'
       paymentMethod: updatedPaymentMethod
-    }, { status: 200 })
+    }, { status:  200 })
 
   } catch (error) {
     console.error('Error updating payment method:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
   }
 }
 
 export async function DELETE(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -110,7 +110,7 @@ export async function DELETE(
       // Get JWT token from Authorization header
       const authHeader = request.headers.get('Authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'Missing or invalid authorization header' }, { status: 401 })
+        return NextResponse.json({ error:  'Missing or invalid authorization header' }, { status:  401 })
       }
 
       const token = authHeader.split(' ')[1]
@@ -119,7 +119,7 @@ export async function DELETE(
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string }
         influencerId = decoded.id
       } catch (error) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
       }
     }
 
@@ -159,23 +159,23 @@ export async function DELETE(
     const paymentMethod = defaultPaymentMethods.find(method => method.id === methodId)
 
     if (!paymentMethod) {
-      return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Payment method not found' }, { status:  404 })
     }
 
     // Check if this is the default payment method
     if (paymentMethod.isDefault) {
       return NextResponse.json({ 
         error: 'Cannot delete default payment method. Please set another method as default first.' 
-      }, { status: 400 })
+      }, { status:  400 })
     }
 
     // For hardcoded data, we can't actually delete, but we simulate success
     return NextResponse.json({ 
       message: 'Payment method deleted successfully' 
-    }, { status: 200 })
+    }, { status:  200 })
 
   } catch (error) {
     console.error('Error deleting payment method:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
   }
 } 

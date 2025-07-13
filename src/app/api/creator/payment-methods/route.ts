@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       // Get token from Authorization header
       const authHeader = req.headers.get('authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+        return NextResponse.json({ error:  'No token provided' }, { status:  401 })
       }
 
       const token = authHeader.substring(7)
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       try {
         decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
       } catch (error) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
       }
 
       influencerId = decoded.id
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       })
 
       if (!influencer) {
-        return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+        return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
       }
     }
 
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Payment methods API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
   } finally {
     await prisma.$disconnect()
   }
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     // Get token from Authorization header
     const authHeader = req.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+      return NextResponse.json({ error:  'No token provided' }, { status:  401 })
     }
 
     const token = authHeader.substring(7)
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
     } catch (error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
     }
 
     const influencerId = decoded.id
@@ -109,13 +109,13 @@ export async function POST(req: NextRequest) {
     })
 
     if (!influencer) {
-      return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
     }
 
     // For now, just return success since table doesn't exist yet
     // In future, this will create: prisma.payment_methods.create()
     const newPaymentMethod = {
-      id: Date.now().toString()
+      id: Date.now().toString(),
       type
       name
       details
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Payment methods POST API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
   } finally {
     await prisma.$disconnect()
   }

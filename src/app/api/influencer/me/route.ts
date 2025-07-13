@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     
     if (!token) {
       console.log('❌ [INFLUENCER-ME] No valid authentication found')
-      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
     }
 
     // Try to decode JWT token first
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         console.log('✅ [INFLUENCER-ME] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         console.log('❌ [INFLUENCER-ME] Authentication failed:', fallbackError)
-        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
       }
     }
 
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     if (!influencer) {
       console.log('❌ [INFLUENCER-ME] Influencer not found:', influencerId)
-      return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
     }
 
     // Calculate statistics
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       influencer: {
         id: influencer.id
         name: influencer.name
-        email: influencer.email
+        email: influencer.email,
         phone: influencer.phone
         slug: influencer.slug
         avatar: influencer.avatar
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ [INFLUENCER-ME] Error:', error)
     return NextResponse.json({
       error: error instanceof Error ? error.message : 'Internal server error'
-    }, { status: 500 })
+    }, { status:  500 })
   }
 }
 

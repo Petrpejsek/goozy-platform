@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const campaigns = await prisma.campaign.findMany({
       include: {
         brand: true
-      }
+      },
       orderBy: {
         createdAt: 'desc'
       }
@@ -15,18 +15,18 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const stats = {
-      total: campaigns.length
-      active: campaigns.filter(c => c.status === 'active').length
-      draft: campaigns.filter(c => c.status === 'draft').length
-      completed: campaigns.filter(c => c.status === 'completed').length
-      totalBudget: campaigns.reduce((sum, c) => sum + (c.budgetAllocated || 0), 0)
-      totalReach: campaigns.reduce((sum, c) => sum + (c.expectedReach || 0), 0)
+      total: campaigns.length,
+      active: campaigns.filter(c => c.status === 'active').length,
+      draft: campaigns.filter(c => c.status === 'draft').length,
+      completed: campaigns.filter(c => c.status === 'completed').length,
+      totalBudget: campaigns.reduce((sum, c) => sum + (c.budgetAllocated || 0), 0),
+      totalReach: campaigns.reduce((sum, c) => sum + (c.expectedReach || 0), 0),
     }
 
     console.log(`📊 Admin: Found ${campaigns.length} campaigns`)
 
     return NextResponse.json({
-      success: true
+      success: true,
       campaigns: campaigns.map(campaign => ({
         id: campaign.id
         slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`, // Fallback pro starší kampaně
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ Error fetching admin campaigns:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch campaigns' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 }
@@ -64,7 +64,7 @@ export async function PUT(request: NextRequest) {
     if (!campaignId || !status) {
       return NextResponse.json(
         { success: false, error: 'Campaign ID and status are required' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest) {
     console.log(`✅ Admin: Updated campaign ${campaignId} status to ${status}`)
 
     return NextResponse.json({
-      success: true
+      success: true,
       campaign: {
         id: updatedCampaign.id
         name: updatedCampaign.name
@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest) {
     console.error('❌ Error updating campaign:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update campaign' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     }))
 
     return NextResponse.json({
-      success: true
+      success: true,
       data: {
         product: transformedProducts
         pagination: {
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         success: false, 
         error: 'Failed to load products' 
       }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

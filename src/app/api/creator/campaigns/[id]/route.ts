@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 
 // GET - Get single campaign details
 export async function GET(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,7 +15,7 @@ export async function GET(
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { success: false, error: 'No authorization token provided' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -42,7 +42,7 @@ export async function GET(
       console.log('❌ [DEBUG-JWT] JWT verification failed:', error)
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -63,7 +63,7 @@ export async function GET(
     if (!campaign) {
       return NextResponse.json(
         { success: false, error: 'Campaign not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -77,14 +77,14 @@ export async function GET(
       console.log('❌ [DEBUG] Ownership check failed!')
       return NextResponse.json(
         { success: false, error: 'Access denied - not your campaign' }
-        { status: 403 }
+        { status:  403 }
       )
     }
 
     console.log('✅ Campaign data retrieved:', id)
 
     return NextResponse.json({
-      success: true
+      success: true,
       campaign: {
         id: campaign.id
         name: campaign.name
@@ -107,14 +107,14 @@ export async function GET(
     console.error('❌ Error getting campaign:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to get campaign' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 }
 
 // DELETE - Delete campaign (only if not active)
 export async function DELETE(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -125,7 +125,7 @@ export async function DELETE(
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { success: false, error: 'No authorization token provided' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -142,7 +142,7 @@ export async function DELETE(
         console.error('❌ [DELETE-CAMPAIGN] No influencer ID found in token')
         return NextResponse.json(
           { success: false, error: 'Invalid token - missing user ID' }
-          { status: 401 }
+          { status:  401 }
         )
       }
       
@@ -150,7 +150,7 @@ export async function DELETE(
     } catch (error) {
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -162,7 +162,7 @@ export async function DELETE(
     if (!campaign) {
       return NextResponse.json(
         { success: false, error: 'Campaign not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -170,7 +170,7 @@ export async function DELETE(
     if (campaign.influencerIds !== influencerId) {
       return NextResponse.json(
         { success: false, error: 'Access denied - not your campaign' }
-        { status: 403 }
+        { status:  403 }
       )
     }
 
@@ -182,7 +182,7 @@ export async function DELETE(
     if (now >= startDate && now <= endDate && campaign.isActive) {
       return NextResponse.json(
         { success: false, error: 'Cannot delete active campaign. Please stop it first.' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -203,7 +203,7 @@ export async function DELETE(
     console.log('✅ Campaign deleted successfully:', id)
 
     return NextResponse.json({
-      success: true
+      success: true,
       message: 'Campaign deleted successfully'
     })
 
@@ -211,7 +211,7 @@ export async function DELETE(
     console.error('❌ Error deleting campaign:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to delete campaign' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

@@ -9,7 +9,7 @@ export async function GET() {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
     }
 
     // Najít brand application - to je náš zdroj pravdy
@@ -18,7 +18,7 @@ export async function GET() {
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
     }
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
@@ -37,7 +37,7 @@ export async function GET() {
           description: brandApplication.description
           website: brandApplication.website
           isApproved: true
-          isActive: true
+          isActive: true,
           targetCountries: '[]'
           createdAt: new Date()
           updatedAt: new Date()
@@ -58,7 +58,7 @@ export async function GET() {
     console.log(`✅ [PARTNER-SETTINGS] Settings loaded for: ${brand.name}`)
     
     return NextResponse.json({
-      success: true
+      success: true,
       settings: {
         id: brand.id
         name: brand.name
@@ -77,8 +77,8 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [PARTNER-SETTINGS] GET error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' }
-      { status: 500 }
+      { error:  'Internal Server Error' }
+      { status:  500 }
     )
   }
 }
@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest) {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
     }
 
     const body = await request.json()
@@ -118,7 +118,7 @@ export async function PUT(request: NextRequest) {
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
     }
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
@@ -137,7 +137,7 @@ export async function PUT(request: NextRequest) {
           description: brandApplication.description
           website: brandApplication.website
           isApproved: true
-          isActive: true
+          isActive: true,
           targetCountries: '[]'
           createdAt: new Date()
           updatedAt: new Date()
@@ -172,7 +172,7 @@ export async function PUT(request: NextRequest) {
     console.log(`✅ [PARTNER-SETTINGS] Settings updated for: ${updatedBrand.name}`)
 
     return NextResponse.json({
-      success: true
+      success: true,
       message: 'Settings updated successfully'
       settings: {
         id: updatedBrand.id
@@ -189,8 +189,8 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('❌ [PARTNER-SETTINGS] PUT error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' }
-      { status: 500 }
+      { error:  'Internal Server Error' }
+      { status:  500 }
     )
   }
 } 

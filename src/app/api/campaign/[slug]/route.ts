@@ -4,7 +4,7 @@ import { validateCampaignSlug } from '@/lib/campaign-utils'
 
 // GET - Fetch campaign by slug
 export async function GET(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
@@ -17,7 +17,7 @@ export async function GET(
       console.log('❌ Invalid slug format:', slug)
       return NextResponse.json(
         { success: false, error: 'Invalid campaign slug format' }
-        { status: 400 }
+        { status:  400 }
       )
     }
     
@@ -33,7 +33,7 @@ export async function GET(
       console.log('❌ Campaign not found for slug:', slug)
       return NextResponse.json(
         { success: false, error: 'Campaign not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -79,7 +79,7 @@ export async function GET(
       const influencerProducts = await prisma.influencerProduct.findMany({
         where: {
           influencerId: influencer.id
-          isActive: true
+          isActive: true,
         }
         include: {
           product: true
@@ -145,7 +145,7 @@ export async function GET(
     console.log('✅ Influencer data:', influencer ? influencer.name : 'None')
     
     return NextResponse.json({
-      success: true
+      success: true,
       campaign: {
         id: campaign.id
         slug: campaign.slug
@@ -184,7 +184,7 @@ export async function GET(
     console.error('❌ Error fetching campaign by slug:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch campaign' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

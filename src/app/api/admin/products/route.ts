@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
           name: newBrandName.trim()
           email: `admin-created-${Date.now()}@goozy.platform`
           isApproved: true
-          isActive: true
+          isActive: true,
           createdAt: new Date()
           updatedAt: new Date()
         }
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      success: true
+      success: true,
       data: product
       message: 'Product created successfully'
     })
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create product'
         details: error instanceof Error ? error.message : 'Unknown error'
       }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

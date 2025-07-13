@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
     if (!signature || !webhookSecret) {
       console.error('Missing Stripe signature or webhook secret');
       return NextResponse.json(
-        { error: 'Webhook signature missing' }
-        { status: 400 }
+        { error:  'Webhook signature missing' }
+        { status:  400 }
       );
     }
 
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
       return NextResponse.json(
-        { error: 'Invalid signature' }
-        { status: 400 }
+        { error:  'Invalid signature' }
+        { status:  400 }
       );
     }
 
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json(
-      { error: 'Webhook handler failed' }
-      { status: 500 }
+      { error:  'Webhook handler failed' }
+      { status:  500 }
     );
   }
 }

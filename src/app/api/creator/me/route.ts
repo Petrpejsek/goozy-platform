@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     
     if (!token) {
       console.log('❌ [CREATOR-ME] No valid authentication found')
-      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
     }
 
     // Try to decode JWT token first
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         console.log('✅ [CREATOR-ME] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         console.log('❌ [CREATOR-ME] Authentication failed:', fallbackError)
-        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
       }
     }
 
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     if (!creator) {
       console.log('❌ [CREATOR-ME] Creator not found:', creatorId)
-      return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Creator not found' }, { status:  404 })
     }
 
     // Calculate statistics
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ [CREATOR-ME] Error:', error)
     return NextResponse.json({
       error: error instanceof Error ? error.message : 'Internal server error'
-    }, { status: 500 })
+    }, { status:  500 })
   }
 }
 

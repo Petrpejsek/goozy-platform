@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
     }
 
     const token = authHeader.split(' ')[1]
@@ -21,11 +21,11 @@ export async function GET(request: NextRequest) {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key')
     } catch (error) {
       console.log('❌ [CUSTOMIZATION] Invalid token:', error)
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
     }
 
     if (!decoded.id || decoded.type !== 'influencer') {
-      return NextResponse.json({ error: 'Invalid token type' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token type' }, { status:  401 })
     }
 
     // Get customization from database
@@ -42,13 +42,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       customization: customization || defaultCustomization
-    }, { status: 200 })
+    }, { status:  200 })
 
   } catch (error) {
     console.error('❌ [CUSTOMIZATION] Get error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' }
-      { status: 500 }
+      { error:  'Internal Server Error' }
+      { status:  500 }
     )
   }
 }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
     }
 
     const token = authHeader.split(' ')[1]
@@ -72,11 +72,11 @@ export async function POST(request: NextRequest) {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key')
     } catch (error) {
       console.log('❌ [CUSTOMIZATION] Invalid token:', error)
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
     }
 
     if (!decoded.id || decoded.type !== 'influencer') {
-      return NextResponse.json({ error: 'Invalid token type' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token type' }, { status:  401 })
     }
 
     // Get customization data from request
@@ -118,13 +118,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Customization saved successfully'
       customization: { theme, background, heroLayout, customSettings }
-    }, { status: 200 })
+    }, { status:  200 })
 
   } catch (error) {
     console.error('❌ [CUSTOMIZATION] Save error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' }
-      { status: 500 }
+      { error:  'Internal Server Error' }
+      { status:  500 }
     )
   }
 } 

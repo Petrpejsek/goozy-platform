@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 
 // PATCH - Stop campaign (set end date to now and status to inactive)
 export async function PATCH(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,7 +15,7 @@ export async function PATCH(
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { success: false, error: 'No authorization token provided' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -32,7 +32,7 @@ export async function PATCH(
         console.error('❌ [STOP-CAMPAIGN] No influencer ID found in token')
         return NextResponse.json(
           { success: false, error: 'Invalid token - missing user ID' }
-          { status: 401 }
+          { status:  401 }
         )
       }
       
@@ -40,7 +40,7 @@ export async function PATCH(
     } catch (error) {
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -52,7 +52,7 @@ export async function PATCH(
     if (!campaign) {
       return NextResponse.json(
         { success: false, error: 'Campaign not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -60,7 +60,7 @@ export async function PATCH(
     if (campaign.influencerIds !== influencerId) {
       return NextResponse.json(
         { success: false, error: 'Access denied - not your campaign' }
-        { status: 403 }
+        { status:  403 }
       )
     }
 
@@ -72,14 +72,14 @@ export async function PATCH(
     if (now < startDate) {
       return NextResponse.json(
         { success: false, error: 'Cannot stop campaign that hasn\'t started yet' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
     if (now > endDate) {
       return NextResponse.json(
         { success: false, error: 'Campaign has already ended' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -97,7 +97,7 @@ export async function PATCH(
     console.log('✅ Campaign stopped successfully:', id)
 
     return NextResponse.json({
-      success: true
+      success: true,
       campaign: {
         id: updatedCampaign.id
         status: updatedCampaign.status
@@ -110,7 +110,7 @@ export async function PATCH(
     console.error('❌ Error stopping campaign:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to stop campaign' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

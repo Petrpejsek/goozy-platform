@@ -9,7 +9,7 @@ export async function GET() {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
     }
 
     // Najít brand application - to je náš zdroj pravdy
@@ -18,7 +18,7 @@ export async function GET() {
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
     }
 
     // Najít asociovaný brand v brands tabulce
@@ -37,7 +37,7 @@ export async function GET() {
           description: brandApplication.description
           website: brandApplication.website
           isApproved: true
-          isActive: true
+          isActive: true,
           targetCountries: '[]'
           createdAt: new Date()
           updatedAt: new Date()
@@ -50,7 +50,7 @@ export async function GET() {
     const campaigns = await prisma.campaign.findMany({
       where: {
         brandId: brand.id
-        isActive: true
+        isActive: true,
       }
       include: {
         brand: true
@@ -142,7 +142,7 @@ export async function GET() {
     console.log(`✅ [CAMPAIGNS] Loaded campaigns for: ${brand.name}`)
     
     return NextResponse.json({
-      success: true
+      success: true,
       campaigns: campaignsWithStats
       stats
       brand: {
@@ -155,8 +155,8 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [CAMPAIGNS] Error loading campaigns:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' }
-      { status: 500 }
+      { error:  'Internal Server Error' }
+      { status:  500 }
     )
   }
 } 

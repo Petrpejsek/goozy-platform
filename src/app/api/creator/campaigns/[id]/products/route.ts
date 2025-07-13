@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto'
 
 // GET - Get products for a campaign
 export async function GET(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -16,7 +16,7 @@ export async function GET(
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { success: false, error: 'No authorization token provided' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -43,7 +43,7 @@ export async function GET(
       console.log('❌ [DEBUG-JWT-GET] JWT verification failed:', error)
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -55,7 +55,7 @@ export async function GET(
     if (!campaign) {
       return NextResponse.json(
         { success: false, error: 'Campaign not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -69,7 +69,7 @@ export async function GET(
       console.log('❌ [DEBUG-PRODUCTS-GET] Ownership check failed!')
       return NextResponse.json(
         { success: false, error: 'Access denied - not your campaign' }
-        { status: 403 }
+        { status:  403 }
       )
     }
 
@@ -77,7 +77,7 @@ export async function GET(
     const influencerProducts = await prisma.influencerProduct.findMany({
       where: {
         influencerId: influencerId
-        isActive: true
+        isActive: true,
       }
       include: {
         product: {
@@ -113,7 +113,7 @@ export async function GET(
     console.log('✅ Campaign products retrieved:', id, products.length)
 
     return NextResponse.json({
-      success: true
+      success: true,
       product: products
     })
 
@@ -121,14 +121,14 @@ export async function GET(
     console.error('❌ Error getting campaign product:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to get campaign products' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 }
 
 // POST - Update products for a campaign
 export async function POST(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -140,7 +140,7 @@ export async function POST(
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { success: false, error: 'No authorization token provided' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -167,7 +167,7 @@ export async function POST(
       console.log('❌ [DEBUG-JWT-POST] JWT verification failed:', error)
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' }
-        { status: 401 }
+        { status:  401 }
       )
     }
 
@@ -175,7 +175,7 @@ export async function POST(
     if (!Array.isArray(productIds)) {
       return NextResponse.json(
         { success: false, error: 'Product IDs must be an array' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -187,7 +187,7 @@ export async function POST(
     if (!campaign) {
       return NextResponse.json(
         { success: false, error: 'Campaign not found' }
-        { status: 404 }
+        { status:  404 }
       )
     }
 
@@ -201,7 +201,7 @@ export async function POST(
       console.log('❌ [DEBUG-PRODUCTS-POST] Ownership check failed!')
       return NextResponse.json(
         { success: false, error: 'Access denied - not your campaign' }
-        { status: 403 }
+        { status:  403 }
       )
     }
 
@@ -224,7 +224,7 @@ export async function POST(
         id: randomUUID()
         influencerId: influencerId
         productId: productId
-        isActive: true
+        isActive: true,
         addedAt: new Date()
       }))
 
@@ -236,7 +236,7 @@ export async function POST(
     console.log('✅ Campaign products updated successfully:', id)
 
     return NextResponse.json({
-      success: true
+      success: true,
       message: 'Campaign products updated successfully'
       productCount: productIds.length
     })
@@ -245,7 +245,7 @@ export async function POST(
     console.error('❌ Error updating campaign product:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update campaign products' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

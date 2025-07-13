@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!influencerId || !productId) {
       return NextResponse.json(
         { success: false, error: 'Missing influencerId or productId' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     if (recommendation && recommendation.length > 300) {
       return NextResponse.json(
         { success: false, error: 'Recommendation must be 300 characters or less' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
         influencerId
         productId
         recommendation: recommendation || null
-        isActive: true
+        isActive: true,
       }
     })
 
     return NextResponse.json({
-      success: true
+      success: true,
       data: influencerProduct
     })
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     console.error('Error saving recommendation:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to save recommendation' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 }
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (!influencerId || !productId) {
       return NextResponse.json(
         { success: false, error: 'Missing influencerId or productId' }
-        { status: 400 }
+        { status:  400 }
       )
     }
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({
-      success: true
+      success: true,
       data: {
         recommendation: influencerProduct?.recommendation || null
       }
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching recommendation:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch recommendation' }
-      { status: 500 }
+      { status:  500 }
     )
   }
 } 

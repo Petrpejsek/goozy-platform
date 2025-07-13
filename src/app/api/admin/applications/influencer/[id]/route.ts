@@ -3,12 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const updateApplicationSchema = z.object({
-  action: z.enum(['approve', 'reject', 'add_notes', 'pending', 'approved', 'rejected'])
+  action: z.enum(['approve', 'reject', 'add_notes', 'pending', 'approved', 'rejected']),
   notes: z.string().optional()
 })
 
 export async function PATCH(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -26,8 +26,8 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' }
-        { status: 404 }
+        { error:  'Application not found' }
+        { status:  404 }
       )
     }
     
@@ -38,8 +38,8 @@ export async function PATCH(
       // Add new note to history (stored as JSON array)
       if (!notes?.trim()) {
         return NextResponse.json(
-          { error: 'Note content is required' }
-          { status: 400 }
+          { error:  'Note content is required' }
+          { status:  400 }
         )
       }
       
@@ -166,13 +166,13 @@ export async function PATCH(
           const newInfluencer = await prisma.influencer.create({
             data: {
               id: crypto.randomUUID()
-              email: application.email
+              email: application.email,
               password: application.password, // Password is already hashed from application
-              name: application.name
-              slug: slug
+              name: application.name,
+              slug: slug,
               bio: application.bio || ''
               isApproved: true
-              isActive: true
+              isActive: true,
               commissionRate: 10.0, // Default commission rate
               originType: 'application'
               originApplicationId: application.id
@@ -194,7 +194,7 @@ export async function PATCH(
               url: `https://instagram.com/${application.instagram}`
               followers: 0
               isVerified: false
-              isActive: true
+              isActive: true,
               createdAt: new Date()
               updatedAt: new Date()
             })
@@ -208,7 +208,7 @@ export async function PATCH(
               url: `https://tiktok.com/@${application.tiktok}`
               followers: 0
               isVerified: false
-              isActive: true
+              isActive: true,
               createdAt: new Date()
               updatedAt: new Date()
             })
@@ -222,7 +222,7 @@ export async function PATCH(
               url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/@${application.youtube}`
               followers: 0
               isVerified: false
-              isActive: true
+              isActive: true,
               createdAt: new Date()
               updatedAt: new Date()
             })
@@ -236,7 +236,7 @@ export async function PATCH(
               url: application.facebook.includes('facebook.com') ? application.facebook : `https://facebook.com/${application.facebook}`
               followers: 0
               isVerified: false
-              isActive: true
+              isActive: true,
               createdAt: new Date()
               updatedAt: new Date()
             })
@@ -290,20 +290,20 @@ export async function PATCH(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid data', details: error.errors }
-        { status: 400 }
+        { error:  'Invalid data', details: error.errors }
+        { status:  400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Server error' }
-      { status: 500 }
+      { error:  'Server error' }
+      { status:  500 }
     )
   }
 }
 
 export async function DELETE(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -318,8 +318,8 @@ export async function DELETE(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' }
-        { status: 404 }
+        { error:  'Application not found' }
+        { status:  404 }
       )
     }
     
@@ -336,8 +336,8 @@ export async function DELETE(
     console.error('Error deleting application:', error)
     
     return NextResponse.json(
-      { error: 'Server error' }
-      { status: 500 }
+      { error:  'Server error' }
+      { status:  500 }
     )
   }
 } 

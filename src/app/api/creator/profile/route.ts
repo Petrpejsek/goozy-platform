@@ -11,7 +11,7 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       console.log('❌ [PROFILE-UPDATE] No valid auth header')
-      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
     }
 
     const token = authHeader.split(' ')[1]
@@ -23,12 +23,12 @@ export async function PUT(request: NextRequest) {
       console.log('✅ [PROFILE-UPDATE] Token verified for:', decoded.email)
     } catch (error) {
       console.log('❌ [PROFILE-UPDATE] Invalid token:', error)
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
     }
 
     if (!decoded.id || decoded.type !== 'influencer') {
       console.log('❌ [PROFILE-UPDATE] Invalid token type')
-      return NextResponse.json({ error: 'Invalid token type' }, { status: 401 })
+      return NextResponse.json({ error:  'Invalid token type' }, { status:  401 })
     }
 
     const body = await request.json()
@@ -157,8 +157,8 @@ export async function PUT(request: NextRequest) {
     console.error('❌ [PROFILE-UPDATE] Error:', error)
     console.error('❌ [PROFILE-UPDATE] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' }
-      { status: 500 }
+      { error:  'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' }
+      { status:  500 }
     )
   }
 } 

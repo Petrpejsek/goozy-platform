@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false
         error: 'No items provided'
-      }, { status: 400 })
+      }, { status:  400 })
     }
 
     // Fetch products from database
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
           select: {
             id: true
             name: true
-            isActive: true
+            isActive: true,
           }
         }
       }
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false
         error: 'Some products are not available'
-      }, { status: 400 })
+      }, { status:  400 })
     }
 
     // Build items with product data
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
     const result = await calculateShippingCostBySupplier(enrichedItems, country)
     
     return NextResponse.json({
-      success: true
+      success: true,
       shipping: {
         totalCost: result.totalShippingCost
         currency: 'EUR'
@@ -281,13 +281,13 @@ export async function POST(request: NextRequest) {
         success: false
         error: 'Invalid shipping calculation data'
         details: error.errors
-      }, { status: 400 })
+      }, { status:  400 })
     }
 
     return NextResponse.json({
       success: false
       error: 'Internal server error during shipping calculation'
-    }, { status: 500 })
+    }, { status:  500 })
   } finally {
     await prisma.$disconnect()
   }

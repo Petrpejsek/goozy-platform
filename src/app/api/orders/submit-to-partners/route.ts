@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error: securityResult.reason }
-      { status: securityResult.status }
+      { error:  securityResult.reason }
+      { status:  securityResult.status }
     );
   }
 
@@ -96,13 +96,13 @@ export async function POST(request: NextRequest) {
           error: 'Neplatná data'
           details: error.errors
         }
-        { status: 400 }
+        { status:  400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Chyba při odesílání objednávky partnerům' }
-      { status: 500 }
+      { error:  'Chyba při odesílání objednávky partnerům' }
+      { status:  500 }
     );
   }
 }
@@ -214,8 +214,8 @@ export async function GET(request: NextRequest) {
   
   if (!orderId) {
     return NextResponse.json(
-      { error: 'Order ID is required' }
-      { status: 400 }
+      { error:  'Order ID is required' }
+      { status:  400 }
     );
   }
 

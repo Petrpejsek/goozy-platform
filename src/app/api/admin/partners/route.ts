@@ -6,14 +6,14 @@ export async function GET(request: NextRequest) {
     // Získání schválených brandů (partners)
     const partners = await prisma.brand.findMany({
       where: { 
-        isActive: true
+        isActive: true,
         isApproved: true 
-      }
+      },
       include: {
         _count: {
           select: {
-            products: true
-            campaigns: true
+            products: true,
+            campaigns: true,
           }
         }
         product: {
@@ -80,8 +80,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching partners:', error)
     return NextResponse.json(
-      { error: 'Internal server error' }
-      { status: 500 }
+      { error:  'Internal server error' }
+      { status:  500 }
     )
   }
 } 

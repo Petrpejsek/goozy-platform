@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function PATCH(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -36,30 +36,30 @@ export async function PATCH(
 
     if (!existingSupplier) {
       return NextResponse.json(
-        { error: 'Dodavatel nenalezen' }
-        { status: 404 }
+        { error:  'Dodavatel nenalezen' }
+        { status:  404 }
       )
     }
 
     // Validace dat
     if (has_shipping_api && !shipping_api_endpoint) {
       return NextResponse.json(
-        { error: 'API endpoint je povinný když je zapnuté API' }
-        { status: 400 }
+        { error:  'API endpoint je povinný když je zapnuté API' }
+        { status:  400 }
       )
     }
 
     if (return_policy_days && (return_policy_days < 0 || return_policy_days > 365)) {
       return NextResponse.json(
-        { error: 'Počet dní na vrácení musí být mezi 0 a 365' }
-        { status: 400 }
+        { error:  'Počet dní na vrácení musí být mezi 0 a 365' }
+        { status:  400 }
       )
     }
 
     if (return_policy_cost && !['customer', 'supplier', 'shared'].includes(return_policy_cost)) {
       return NextResponse.json(
-        { error: 'Neplatná hodnota pro return_policy_cost' }
-        { status: 400 }
+        { error:  'Neplatná hodnota pro return_policy_cost' }
+        { status:  400 }
       )
     }
 
@@ -100,7 +100,7 @@ export async function PATCH(
     })
 
     return NextResponse.json({
-      success: true
+      success: true,
       message: 'Nastavení úspěšně aktualizováno'
       supplier: updatedSupplier
     })
@@ -112,15 +112,15 @@ export async function PATCH(
       // Prisma validation errors
       if (error.message.includes('Invalid JSON')) {
         return NextResponse.json(
-          { error: 'Neplatný JSON formát v shipping regions' }
-          { status: 400 }
+          { error:  'Neplatný JSON formát v shipping regions' }
+          { status:  400 }
         )
       }
     }
     
     return NextResponse.json(
-      { error: 'Chyba při aktualizaci nastavení' }
-      { status: 500 }
+      { error:  'Chyba při aktualizaci nastavení' }
+      { status:  500 }
     )
   } finally {
     await prisma.$disconnect()

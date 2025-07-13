@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function PATCH(
-  request: NextRequest
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -14,8 +14,8 @@ export async function PATCH(
 
     if (typeof isActive !== 'boolean') {
       return NextResponse.json(
-        { error: 'isActive musí být boolean hodnota' }
-        { status: 400 }
+        { error:  'isActive musí být boolean hodnota' }
+        { status:  400 }
       )
     }
 
@@ -26,8 +26,8 @@ export async function PATCH(
 
     if (!existingSupplier) {
       return NextResponse.json(
-        { error: 'Dodavatel nenalezen' }
-        { status: 404 }
+        { error:  'Dodavatel nenalezen' }
+        { status:  404 }
       )
     }
 
@@ -41,7 +41,7 @@ export async function PATCH(
     })
 
     return NextResponse.json({
-      success: true
+      success: true,
       message: `Dodavatel ${isActive ? 'aktivován' : 'deaktivován'}`
       supplier: {
         id: updatedSupplier.id
@@ -52,8 +52,8 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating supplier status:', error)
     return NextResponse.json(
-      { error: 'Chyba při aktualizaci stavu dodavatele' }
-      { status: 500 }
+      { error:  'Chyba při aktualizaci stavu dodavatele' }
+      { status:  500 }
     )
   } finally {
     await prisma.$disconnect()

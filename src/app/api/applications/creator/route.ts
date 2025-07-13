@@ -170,8 +170,8 @@ export async function POST(request: NextRequest) {
     
     if (existingApplication) {
       return NextResponse.json(
-        { error: 'An application with this email already exists.' }
-        { status: 409 }
+        { error:  'An application with this email already exists.' }
+        { status:  409 }
       )
     }
     
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
         message: 'Application submitted successfully! We will review it and get back to you soon.'
         applicationId: application.id
       }
-      { status: 201 }
+      { status:  201 }
     )
     
   } catch (error) {
@@ -246,8 +246,8 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       console.error('📋 Validation errors:', error.errors)
       return NextResponse.json(
-        { error: 'Invalid form data', details: error.errors }
-        { status: 400 }
+        { error:  'Invalid form data', details: error.errors }
+        { status:  400 }
       )
     }
     
@@ -255,8 +255,8 @@ export async function POST(request: NextRequest) {
     console.error('💥 Error details:', error)
     
     return NextResponse.json(
-      { error: 'Internal Server Error', debug: process.env.NODE_ENV === 'development' ? String(error) : undefined }
-      { status: 500 }
+      { error:  'Internal Server Error', debug: process.env.NODE_ENV === 'development' ? String(error) : undefined }
+      { status:  500 }
     )
   }
 } 
