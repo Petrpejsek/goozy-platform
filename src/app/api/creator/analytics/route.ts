@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 
       const campaignRevenue = campaignOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
       const campaignCommission = campaignOrders.reduce((sum, order) => {
-        const commission = (order.commissions as any)?.[0]?.amount || 0
+        const commission = order.commission?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
       const campaignReturns = campaignOrders.filter(order => order.status === 'returned').reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
