@@ -188,7 +188,7 @@ export async function DELETE(
 
     // Delete related data first (influencerProduct, commissions, etc.)
     // Delete influencer-product relationships for this campaign
-    await prisma.influencerproducts.deleteMany({
+    await prisma.influencerProduct.deleteMany({
       where: {
         influencerId: influencerId
         // Note: We might need a campaignId field in future for better filtering
