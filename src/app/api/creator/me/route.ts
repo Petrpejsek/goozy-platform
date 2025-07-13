@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
         totalOrders: totalOrders,
         commissionRate: Math.round(creator.commissionRate * 100), // Convert to percentage
         socialNetworks: creator.socialNetworks,
-        contentCategories: creator.influencerCategory,
-        profile: creator.influencer_profiles,
+        contentCategories: creator.contentCategories,
+        profile: creator.profile,
         isActive: creator.isActive,
         isApproved: creator.isApproved,
         onboardingStatus: creator.onboardingStatus
