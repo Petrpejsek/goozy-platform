@@ -69,9 +69,9 @@ export async function GET(request: NextRequest) {
         socialNetworks: true,
         contentCategories: true,
         profile: true,
-        influencerProduct: {
+        influencerProducts: {
           include: {
-            products: true
+            product: true
           }
         },
         orders: {
@@ -90,8 +90,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const totalEarnings = creator.commissions.reduce((sum, commission) => sum + commission.amount, 0)
-    const activeProducts = creator.influencerProduct.length
-    const totalOrders = creator.order.length
+    const activeProducts = creator.influencerProducts.length
+    const totalOrders = creator.orders.length
     const totalFollowers = creator.influencerSocial.reduce((sum, social) => sum + (social.followers || 0), 0)
 
     // Get main social network for followers display
