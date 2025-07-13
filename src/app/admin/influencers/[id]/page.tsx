@@ -182,7 +182,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
                 </div>
                 
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{influencer.order.length}</div>
+                  <div className="text-2xl font-bold text-blue-600">{influencer.orders.length}</div>
                   <div className="text-sm text-gray-600">Total Orders</div>
                 </div>
                 
