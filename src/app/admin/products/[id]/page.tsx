@@ -162,25 +162,25 @@ export default async function AdminProductDetail({ params }: PageProps) {
                             </div>
                             <div>
                               <span className="text-sm text-gray-600">Contact Email:</span>
-                              <div className="font-medium text-black">{mapping.suppliers.email}</div>
+                              <div className="font-medium text-black">{mapping.supplier.email}</div>
                             </div>
-                            {mapping.suppliers.phone && (
+                            {mapping.supplier.phone && (
                               <div>
                                 <span className="text-sm text-gray-600">Phone:</span>
-                                <div className="font-medium text-black">{mapping.suppliers.phone}</div>
+                                <div className="font-medium text-black">{mapping.supplier.phone}</div>
                               </div>
                             )}
-                            {mapping.suppliers.website && (
+                            {mapping.supplier.website && (
                               <div>
                                 <span className="text-sm text-gray-600">Website:</span>
                                 <div className="font-medium text-black">
                                   <a 
-                                    href={mapping.suppliers.website} 
+                                    href={mapping.supplier.website} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-blue-600 hover:underline"
                                   >
-                                    {mapping.suppliers.website}
+                                    {mapping.supplier.website}
                                   </a>
                                 </div>
                               </div>
@@ -215,10 +215,10 @@ export default async function AdminProductDetail({ params }: PageProps) {
                               </span>
                             </div>
                           </div>
-                          {mapping.suppliers.description && (
+                          {mapping.supplier.description && (
                             <div className="mt-3 pt-3 border-t border-blue-100">
                               <span className="text-sm text-gray-600">Description:</span>
-                              <p className="text-sm text-black mt-1">{mapping.suppliers.description}</p>
+                              <p className="text-sm text-black mt-1">{mapping.supplier.description}</p>
                             </div>
                           )}
                         </div>
