@@ -160,7 +160,7 @@ export default async function PartnerDetailPage({ params }: Props) {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Products ({partner.product.length})</h2>
+              <h2 className="text-xl font-bold text-gray-900">Products ({partner.products.length})</h2>
               <p className="text-gray-600 mt-1">All products from this partner</p>
             </div>
             
