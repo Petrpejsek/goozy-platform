@@ -41,10 +41,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all commissions for this influencer
-    const commissions = await prisma.commissions.findMany({
+    const commissions = await prisma.commission.findMany({
       where: { influencerId },
       include: {
-        orders: {
+        order: {
           include: {
             orderItem: {
               include: {
