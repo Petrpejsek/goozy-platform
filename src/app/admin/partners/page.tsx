@@ -34,7 +34,7 @@ export default async function PartnersPage() {
     // Celkový počet produktů
           prisma.product.count({
       where: {
-        brands: {
+        brand: {
           isActive: true,
           isApproved: true
         }
