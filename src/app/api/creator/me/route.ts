@@ -66,9 +66,9 @@ export async function GET(request: NextRequest) {
     const creator = await prisma.influencer.findUnique({
       where: { id: creatorId },
       include: {
-        influencerSocial: true,
-        influencerCategory: true,
-        influencer_profiles: true,
+        socialNetworks: true,
+        contentCategories: true,
+        profile: true,
         influencerProduct: {
           include: {
             products: true
