@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
                 product: true
               }
             },
-            commissions: true
+            commission: true
           }
         }
       }
