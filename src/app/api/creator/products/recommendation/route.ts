@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Najdi nebo vytvoř záznam InfluencerProduct
-    const influencerProduct = await prisma.influencerproducts.upsert({
+    const influencerProduct = await prisma.influencerProduct.upsert({
       where: {
         influencerId_productId: {
           influencerId,
