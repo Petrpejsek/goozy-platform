@@ -80,9 +80,9 @@ export async function GET(
         isActive: true
       },
       include: {
-        products: {
+        product: {
           include: {
-            brands: {
+            brand: {
               select: {
                 id: true,
                 name: true,
@@ -106,7 +106,7 @@ export async function GET(
       colors: ip.product.colors,
       sku: ip.product.sku,
       stockQuantity: ip.product.stockQuantity,
-      brand: ip.product.brands,
+      brand: ip.product.brand,
       recommendation: ip.recommendation
     }))
 
