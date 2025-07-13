@@ -96,7 +96,7 @@ export default async function AdminProductDetail({ params }: PageProps) {
               <div className="space-y-6">
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-sm text-gray-600">{product.brands.name}</span>
+                    <span className="text-sm text-gray-600">{product.brand.name}</span>
                     <span className="text-sm text-gray-400">•</span>
                     <span className="text-sm text-gray-600">{product.category}</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
