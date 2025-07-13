@@ -25,15 +25,15 @@ export async function POST(request: NextRequest) {
     rateLimits: {
       requests: 10
       windowMs: 60000, // 1 minute
-    }
+    },
   });
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error:  securityResult.reason }
-      { status:  securityResult.status }
+      { error: securityResult.reason },
+      { status: securityResult.status },
     );
-  }
+  },
 
   try {
     const body = await request.json();
@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
     // Validate Stripe keys
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_default') {
       return NextResponse.json(
-        { error:  'Stripe není nakonfigurováno' }
-        { status:  500 }
+        { error: 'Stripe není nakonfigurováno' },
+        { status: 500 },
       );
-    }
+    },
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         campaignSlug: campaignSlug || ''
         customerEmail: customerEmail || ''
         createdAt: new Date().toISOString()
-      }
+      },
       description: `Goozy objednávka - ${cartItems.length} položek`
       statement_descriptor: 'GOOZY*'
     });
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         itemsCount: cartItems.length
         campaignSlug: campaignSlug
-      }
+      },
     });
 
   } catch (error) {
@@ -90,27 +90,27 @@ export async function POST(request: NextRequest) {
             field: err.path.join('.')
             message: err.message
           }))
-        }
-        { status:  400 }
+        },
+        { status: 400 },
       );
-    }
+    },
 
     if (error instanceof Stripe.errors.StripeError) {
       return NextResponse.json(
         { 
           error: 'Chyba platebního systému'
           message: error.message 
-        }
-        { status:  400 }
+        },
+        { status: 400 },
       );
-    }
+    },
 
     return NextResponse.json(
       { 
         error: 'Nepodařilo se vytvořit platbu'
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-      }
-      { status:  500 }
+      },
+      { status: 500 },
     );
-  }
+  },
 } 

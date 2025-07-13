@@ -15,37 +15,37 @@ async function findPossibleDuplicates(applicationData: any) {
     const instagramUsername = applicationData.instagram.replace(/[@\/]/g, '').toLowerCase()
     console.log('📱 Instagram search for:', instagramUsername)
     searchConditions.push(
-      { instagramUsername: instagramUsername }
-      { instagramUrl: { contains: instagramUsername } }
+      { instagramUsername: instagramUsername },
+      { instagramUrl: { contains: instagramUsername } },
     )
-  }
+  },
   
   if (applicationData.tiktok) {
     const tiktokUsername = applicationData.tiktok.replace(/[@\/]/g, '').toLowerCase()
     searchConditions.push(
-      { tiktokUsername: tiktokUsername }
-      { tiktokUrl: { contains: tiktokUsername } }
+      { tiktokUsername: tiktokUsername },
+      { tiktokUrl: { contains: tiktokUsername } },
     )
-  }
+  },
   
   if (applicationData.youtube) {
     const youtubeChannel = applicationData.youtube.toLowerCase()
     searchConditions.push(
-      { youtubeChannel: { contains: youtubeChannel } }
-      { youtubeUrl: { contains: youtubeChannel } }
+      { youtubeChannel: { contains: youtubeChannel } },
+      { youtubeUrl: { contains: youtubeChannel } },
     )
-  }
+  },
   
   if (applicationData.email) {
     searchConditions.push({ email: applicationData.email })
-  }
+  },
   
   // Search in InfluencerDatabase (Layer 1)
   console.log('🔍 Search conditions:', JSON.stringify(searchConditions, null, 2))
   if (searchConditions.length > 0) {
     console.log('🗄️  Searching in InfluencerDatabase...')
     const databaseMatches = await prisma.influencerDatabase.findMany({
-      where: { OR: searchConditions }
+      where: { OR: searchConditions },
       select: {
         id: true
         name: true
@@ -53,7 +53,7 @@ async function findPossibleDuplicates(applicationData: any) {
         email: true
         totalFollowers: true
         country: true
-      }
+      },
     })
     console.log('📊 InfluencerDatabase matches:', databaseMatches.length, databaseMatches)
     
@@ -67,12 +67,12 @@ async function findPossibleDuplicates(applicationData: any) {
       followers: match.totalFollowers
       country: match.country
     })))
-  }
+  },
   
   // Search in InfluencerProspect (Layer 2)
   if (searchConditions.length > 0) {
     const prospectMatches = await prisma.influencerProspect.findMany({
-      where: { OR: searchConditions }
+      where: { OR: searchConditions },
       select: {
         id: true
         name: true
@@ -81,7 +81,7 @@ async function findPossibleDuplicates(applicationData: any) {
         totalFollowers: true
         country: true
         status: true
-      }
+      },
     })
     
     duplicates.push(...prospectMatches.map(match => ({
@@ -95,20 +95,20 @@ async function findPossibleDuplicates(applicationData: any) {
       country: match.country
       status: match.status
     })))
-  }
+  },
   
   // Search in existing InfluencerApplication (Layer 3)
   if (searchConditions.length > 0) {
     const applicationMatches = await prisma.influencerApplication.findMany({
       where: { 
         OR: [
-          { email: applicationData.email }
-          { instagram: applicationData.instagram }
-          { tiktok: applicationData.tiktok }
-          { youtube: applicationData.youtube }
-          { facebook: applicationData.facebook }
+          { email: applicationData.email },
+          { instagram: applicationData.instagram },
+          { tiktok: applicationData.tiktok },
+          { youtube: applicationData.youtube },
+          { facebook: applicationData.facebook },
         ].filter(condition => Object.values(condition)[0]) // Filter out empty conditions
-      }
+      },
       select: {
         id: true
         name: true
@@ -116,7 +116,7 @@ async function findPossibleDuplicates(applicationData: any) {
         instagram: true
         status: true
         createdAt: true
-      }
+      },
     })
     
     duplicates.push(...applicationMatches.map(match => ({
@@ -129,10 +129,10 @@ async function findPossibleDuplicates(applicationData: any) {
       status: match.status
       createdAt: match.createdAt
     })))
-  }
+  },
   
   return duplicates
-}
+},
 
 // Schema for creator form validation
 const creatorApplicationSchema = z.object({
@@ -165,15 +165,15 @@ export async function POST(request: NextRequest) {
     
     // Check if email already exists in database
     const existingApplication = await prisma.influencerApplication.findFirst({
-      where: { email: validatedData.email }
+      where: { email: validatedData.email },
     })
     
     if (existingApplication) {
       return NextResponse.json(
-        { error:  'An application with this email already exists.' }
-        { status:  409 }
+        { error: 'An application with this email already exists.' },
+        { status: 409 },
       )
-    }
+    },
     
     // Password hashing
     const hashedPassword = await bcrypt.hash(validatedData.password, 12)
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
         status: 'pending'
         createdAt: new Date()
         updatedAt: new Date()
-      }
+      },
     })
     
     // STEP 2: Detect possible duplicates after creation (safe approach)
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
         
         // Update application with duplicate detection results
         await prisma.influencerApplication.update({
-          where: { id: application.id }
+          where: { id: application.id },
           data: {
             possibleDuplicateIds: JSON.stringify(duplicates.map(d => d.id))
             mergeStatus: 'detected'
@@ -218,17 +218,17 @@ export async function POST(request: NextRequest) {
               duplicates: duplicates
               autoDetected: true
             })
-          }
+          },
         })
         
         console.log('✅ Duplicate detection completed and saved')
       } else {
         console.log('✅ No duplicates found')
-      }
+      },
     } catch (duplicateError) {
       console.error('❌ Error during duplicate detection:', duplicateError)
       // Continue without failing the application - duplicate detection is not critical
-    }
+    },
     
     // TODO: Send notification email to admins
     
@@ -236,8 +236,8 @@ export async function POST(request: NextRequest) {
       { 
         message: 'Application submitted successfully! We will review it and get back to you soon.'
         applicationId: application.id
-      }
-      { status:  201 }
+      },
+      { status: 201 },
     )
     
   } catch (error) {
@@ -246,17 +246,17 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       console.error('📋 Validation errors:', error.errors)
       return NextResponse.json(
-        { error:  'Invalid form data', details: error.errors }
-        { status:  400 }
+        { error: 'Invalid form data', details: error.errors },
+        { status: 400 },
       )
-    }
+    },
     
     console.error('💥 Unexpected error type:', typeof error)
     console.error('💥 Error details:', error)
     
     return NextResponse.json(
-      { error:  'Internal Server Error', debug: process.env.NODE_ENV === 'development' ? String(error) : undefined }
-      { status:  500 }
+      { error: 'Internal Server Error', debug: process.env.NODE_ENV === 'development' ? String(error) : undefined },
+      { status: 500 },
     )
-  }
+  },
 } 

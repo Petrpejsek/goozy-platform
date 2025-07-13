@@ -9,21 +9,21 @@ export async function GET() {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    },
 
     // Najít brand application - to je náš zdroj pravdy
     const brandApplication = await prisma.brandApplication.findUnique({
-      where: { id: user.brandId }
+      where: { id: user.brandId },
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+    },
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
     let brand = await prisma.brand.findFirst({
-      where: { email: brandApplication.email }
+      where: { email: brandApplication.email },
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
@@ -36,15 +36,15 @@ export async function GET() {
           phone: brandApplication.phone
           description: brandApplication.description
           website: brandApplication.website
-          isApproved: true
+          isApproved: true,
           isActive: true,
           targetCountries: '[]'
           createdAt: new Date()
           updatedAt: new Date()
-        }
+        },
       })
       console.log(`✅ [SETTINGS] Created new brand record for: ${brand.name}`)
-    }
+    },
 
     // Parsovat target countries z JSON stringu
     let targetCountries: string[] = []
@@ -53,7 +53,7 @@ export async function GET() {
     } catch (error) {
       console.log('❌ [PARTNER-SETTINGS] Error parsing target countries:', error)
       targetCountries = []
-    }
+    },
 
     console.log(`✅ [PARTNER-SETTINGS] Settings loaded for: ${brand.name}`)
     
@@ -71,17 +71,17 @@ export async function GET() {
         isApproved: brand.isApproved
         createdAt: brand.createdAt
         updatedAt: brand.updatedAt
-      }
+      },
     })
 
   } catch (error) {
     console.error('❌ [PARTNER-SETTINGS] GET error:', error)
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 // PUT - Aktualizovat nastavení partner company
 export async function PUT(request: NextRequest) {
@@ -90,8 +90,8 @@ export async function PUT(request: NextRequest) {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    },
 
     const body = await request.json()
     const { 
@@ -114,16 +114,16 @@ export async function PUT(request: NextRequest) {
 
     // Najít brand application - to je náš zdroj pravdy
     const brandApplication = await prisma.brandApplication.findUnique({
-      where: { id: user.brandId }
+      where: { id: user.brandId },
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+    },
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
     let brand = await prisma.brand.findFirst({
-      where: { email: brandApplication.email }
+      where: { email: brandApplication.email },
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
@@ -136,18 +136,18 @@ export async function PUT(request: NextRequest) {
           phone: brandApplication.phone
           description: brandApplication.description
           website: brandApplication.website
-          isApproved: true
+          isApproved: true,
           isActive: true,
           targetCountries: '[]'
           createdAt: new Date()
           updatedAt: new Date()
-        }
+        },
       })
       console.log(`✅ [SETTINGS] Created new brand record for: ${brand.name}`)
-    }
+    },
 
     // Připravit data pro update
-    const updateData: any = {}
+    const updateData: any = {},
     
     if (name !== undefined) updateData.name = name
     if (email !== undefined) updateData.email = email
@@ -159,13 +159,13 @@ export async function PUT(request: NextRequest) {
     if (targetCountries !== undefined) {
       updateData.targetCountries = JSON.stringify(targetCountries)
       console.log('🌍 [PARTNER-SETTINGS] Saving target countries:', targetCountries)
-    }
+    },
 
     updateData.updatedAt = new Date()
 
     // Aktualizovat brand v databázi pomocí správného ID
     const updatedBrand = await prisma.brand.update({
-      where: { id: brand.id }
+      where: { id: brand.id },
       data: updateData
     })
 
@@ -183,14 +183,14 @@ export async function PUT(request: NextRequest) {
         description: updatedBrand.description
         targetCountries: targetCountries || JSON.parse(updatedBrand.targetCountries || '[]')
         updatedAt: updatedBrand.updatedAt
-      }
+      },
     })
 
   } catch (error) {
     console.error('❌ [PARTNER-SETTINGS] PUT error:', error)
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
+  },
 } 

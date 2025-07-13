@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const influencersWithoutPassword = await prisma.influencer.findMany({
       where: {
         password: null
-      }
+      },
     })
 
     console.log(`🔍 Nalezeno ${influencersWithoutPassword.length} influencerů bez hesla`)
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         message: 'Všichni influenceři mají hesla',
         fixed: 0
       })
-    }
+    },
 
     const fixedInfluencers = []
 
@@ -34,27 +34,27 @@ export async function POST(request: NextRequest) {
           },
           orderBy: {
             createdAt: 'desc'
-          }
+          },
         })
 
         if (!originalApplication) {
           console.log(`⚠️  Nenalezena původní aplikace pro ${influencer.email}`)
           continue
-        }
+        },
 
         if (!originalApplication.password) {
           console.log(`⚠️  Původní aplikace pro ${influencer.email} nemá heslo`)
           continue
-        }
+        },
 
         // Aktualizuj influencer s heslem z aplikace
         await prisma.influencer.update({
           where: { id: influencer.id },
-          data: { password: originalApplication.password }
+          data: { password: originalApplication.password },
         })
 
         fixedInfluencers.push({
-          id: influencer.id
+          id: influencer.id,
           name: influencer.name
           email: influencer.email,
         })
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
 
       } catch (error) {
         console.error(`❌ Chyba při opravě hesla pro ${influencer.email}:`, error)
-      }
-    }
+      },
+    },
 
     console.log(`🎉 Opraveno heslo pro ${fixedInfluencers.length} influencerů`)
 
@@ -80,6 +80,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false
       error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status:  500 })
-  }
+    }, { status: 500 })
+  },
 } 

@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
       // Get token from Authorization header
       const authHeader = req.headers.get('authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error:  'No token provided' }, { status:  401 })
-      }
+        return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+      },
 
       const token = authHeader.substring(7)
       let decoded: any
@@ -25,20 +25,20 @@ export async function GET(req: NextRequest) {
       try {
         decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
       } catch (error) {
-        return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-      }
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      },
 
       influencerId = decoded.id
 
       // Get influencer to verify existence
       const influencer = await prisma.influencer.findUnique({
-        where: { id: influencerId }
+        where: { id: influencerId },
       })
 
       if (!influencer) {
-        return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
-      }
-    }
+        return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+      },
+    },
 
     // For now, return empty withdrawal history since table doesn't exist yet
     // In future, this will query: prisma.withdrawals.findMany({ where: { influencerId } })
@@ -48,19 +48,19 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Withdrawals API error:', error)
-    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   } finally {
     await prisma.$disconnect()
-  }
-}
+  },
+},
 
 export async function POST(req: NextRequest) {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error:  'No token provided' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+    },
 
     const token = authHeader.substring(7)
     let decoded: any
@@ -68,29 +68,29 @@ export async function POST(req: NextRequest) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
     } catch (error) {
-      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    },
 
     const influencerId = decoded.id
     const { amount, paymentMethodId } = await req.json()
 
     // Get influencer to verify existence
     const influencer = await prisma.influencer.findUnique({
-      where: { id: influencerId }
+      where: { id: influencerId },
     })
 
     if (!influencer) {
-      return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+    },
 
     // Validate amount
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error:  'Invalid amount' }, { status:  400 })
-    }
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+    },
 
     // Get current earnings to check availability
     const commissions = await prisma.commission.findMany({
-      where: { influencerId }
+      where: { influencerId },
     })
 
     const totalEarnings = commissions.reduce((sum, commission) => {
@@ -104,8 +104,8 @@ export async function POST(req: NextRequest) {
     const availableBalance = totalEarnings - totalSent
 
     if (amount > availableBalance) {
-      return NextResponse.json({ error:  'Insufficient balance' }, { status:  400 })
-    }
+      return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+    },
 
     // For now, just return success since table doesn't exist yet
     // In future, this will create: prisma.withdrawals.create()
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
       status: 'pending'
       transactionId: null
       createdAt: new Date().toISOString()
-    }
+    },
 
     return NextResponse.json({ 
       success: true, 
@@ -126,8 +126,8 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Withdrawals POST API error:', error)
-    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   } finally {
     await prisma.$disconnect()
-  }
+  },
 } 

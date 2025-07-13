@@ -33,14 +33,14 @@ export async function POST(request: NextRequest) {
           id: `brand_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
           name: newBrandName.trim()
           email: `admin-created-${Date.now()}@goozy.platform`
-          isApproved: true
+          isApproved: true,
           isActive: true,
           createdAt: new Date()
           updatedAt: new Date()
-        }
+        },
       })
       finalBrandId = newBrand.id
-    }
+    },
 
     // Ensure products directory exists
     const productsDir = join(process.cwd(), 'public', 'products')
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       await mkdir(productsDir, { recursive: true })
     } catch (error) {
       // Directory already exists
-    }
+    },
 
     // Handle image uploads
     const uploadedImages: string[] = []
@@ -70,16 +70,16 @@ export async function POST(request: NextRequest) {
         
         // Store relative path for database
         uploadedImages.push(`/products/${filename}`)
-      }
-    }
+      },
+    },
 
     // Generate external ID for admin-created products
     const adminProductsCount = await prisma.product.count({
       where: {
         externalId: {
           startsWith: 'ADMIN_'
-        }
-      }
+        },
+      },
     })
     const externalId = `ADMIN_${String(adminProductsCount + 1).padStart(3, '0')}`
 
@@ -107,15 +107,15 @@ export async function POST(request: NextRequest) {
         weight
         createdAt: new Date()
         updatedAt: new Date()
-      }
+      },
       include: {
         brand: {
           select: {
             id: true
             name: true
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     return NextResponse.json({
@@ -131,8 +131,8 @@ export async function POST(request: NextRequest) {
         success: false, 
         error: 'Failed to create product'
         details: error instanceof Error ? error.message : 'Unknown error'
-      }
-      { status:  500 }
+      },
+      { status: 500 },
     )
-  }
+  },
 } 

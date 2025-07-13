@@ -49,13 +49,13 @@ const SHIPPING_COSTS = {
     'supplier-2': 7.99
     'supplier-3': 4.99
     'default': 6.99
-  }
+  },
   NON_EU: {
     'supplier-1': 12.99
     'supplier-2': 15.99
     'supplier-3': 11.99
     'default': 14.99
-  }
+  },
 };
 
 function calculateShippingCost(cartItems: any[], shippingAddress: any): number {
@@ -78,7 +78,7 @@ function calculateShippingCost(cartItems: any[], shippingAddress: any): number {
   });
 
   return Math.round(totalShipping * 100) / 100; // Round to 2 decimals
-}
+},
 
 function calculateTaxAmount(cartItems: any[], shippingAddress: any): number {
   const isEU = EU_COUNTRIES.includes(shippingAddress.country);
@@ -93,7 +93,7 @@ function calculateTaxAmount(cartItems: any[], shippingAddress: any): number {
   }, 0);
   
   return Math.round(subtotal * VAT_RATE * 100) / 100;
-}
+},
 
 async function createOrderInDatabase(orderData: any) {
   // This would be implemented with your database
@@ -105,7 +105,7 @@ async function createOrderInDatabase(orderData: any) {
     createdAt: new Date().toISOString()
     ...orderData
   };
-}
+},
 
 async function sendOrderConfirmationEmail(order: any) {
   // This would send actual email
@@ -116,7 +116,7 @@ async function sendOrderConfirmationEmail(order: any) {
     sent: true
     messageId: `msg_${Date.now()}`
   };
-}
+},
 
 export async function POST(request: NextRequest) {
   // Apply security middleware
@@ -124,15 +124,15 @@ export async function POST(request: NextRequest) {
     rateLimits: {
       requests: 10
       windowMs: 60000, // 1 minute
-    }
+    },
   });
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error:  securityResult.reason }
-      { status:  securityResult.status }
+      { error: securityResult.reason },
+      { status: securityResult.status },
     );
-  }
+  },
 
   try {
     const body = await request.json();
@@ -168,10 +168,10 @@ export async function POST(request: NextRequest) {
           error: 'Total amount mismatch'
           expected: expectedTotal
           received: totalAmount 
-        }
-        { status:  400 }
+        },
+        { status: 400 },
       );
-    }
+    },
 
     // Group items by supplier for order processing
     const supplierGroups = cartItems.reduce((groups: any, item) => {
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
             EU_COUNTRIES.includes(shippingAddress.country) ? 'EU' : 'NON_EU'
           ]['default']
         };
-      }
+      },
       groups[supplier].items.push(item);
       groups[supplier].subtotal += item.price * item.quantity;
       return groups;
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
         userAgent: request.headers.get('user-agent')
         ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
         createdAt: new Date().toISOString()
-      }
+      },
     };
 
     // Create order in database
@@ -238,8 +238,8 @@ export async function POST(request: NextRequest) {
           min: 3
           max: 7
           unit: 'days'
-        }
-      }
+        },
+      },
     });
 
   } catch (error) {
@@ -253,17 +253,17 @@ export async function POST(request: NextRequest) {
             field: err.path.join('.')
             message: err.message
           }))
-        }
-        { status:  400 }
+        },
+        { status: 400 },
       );
-    }
+    },
 
     return NextResponse.json(
       { 
         error: 'Failed to create order'
         message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
-      }
-      { status:  500 }
+      },
+      { status: 500 },
     );
-  }
+  },
 } 

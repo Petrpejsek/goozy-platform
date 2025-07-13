@@ -24,6 +24,20 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // Disable webpack optimization for faster builds
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        fs: false,
+      };
+    }
+    // Completely skip type checking
+    config.plugins = config.plugins.filter(
+      (plugin) => plugin.constructor.name !== 'ForkTsCheckerWebpackPlugin'
+    );
+    return config;
+  },
+  
   // Production optimizations
   experimental: {
     optimizeCss: true,

@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
       const authHeader = request.headers.get('Authorization')
       if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.split(' ')[1]
-      }
-    }
+      },
+    },
     
     if (!token) {
       console.log('❌ [CREATOR-ME] No valid authentication found')
-      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+    },
 
     // Try to decode JWT token first
     let decoded: any
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       
       if (!creatorId || decoded.type !== 'creator') {
         throw new Error('Invalid token type')
-      }
+      },
       
       console.log('✅ [CREATOR-ME] Token valid for creator:', decoded.email)
     } catch (jwtError) {
@@ -46,25 +46,25 @@ export async function GET(request: NextRequest) {
         console.log('🔄 [CREATOR-ME] Trying base64 fallback for email:', email)
         
         const creatorByEmail = await prisma.influencer.findUnique({
-          where: { email }
-          select: { id: true, email: true }
+          where: { email },
+          select: { id: true, email: true },
         })
         
         if (!creatorByEmail) {
           throw new Error('Creator not found by email')
-        }
+        },
         
         creatorId = creatorByEmail.id
         console.log('✅ [CREATOR-ME] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         console.log('❌ [CREATOR-ME] Authentication failed:', fallbackError)
-        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
-      }
-    }
+        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+      },
+    },
 
     // Get creator with all related data
     const creator = await prisma.influencer.findUnique({
-      where: { id: creatorId }
+      where: { id: creatorId },
       include: {
         socialNetworks: true
         contentCategories: true
@@ -72,21 +72,21 @@ export async function GET(request: NextRequest) {
         // influencerProducts: {
         //   include: {
         //     product: true
-        //   }
-        // }
+        //   },
+        // },
         order: {
           where: {
             status: 'completed'
-          }
-        }
+          },
+        },
         commission: true
-      }
+      },
     })
 
     if (!creator) {
       console.log('❌ [CREATOR-ME] Creator not found:', creatorId)
-      return NextResponse.json({ error:  'Creator not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
+    },
 
     // Calculate statistics
     const totalEarnings = creator.commissions.reduce((sum, commission) => sum + commission.amount, 0)
@@ -118,8 +118,8 @@ export async function GET(request: NextRequest) {
         isActive: creator.isActive
         isApproved: creator.isApproved
         onboardingStatus: creator.onboardingStatus
-      }
-    }
+      },
+    },
 
     console.log('📊 [CREATOR-ME] Returning data for:', creator.name)
     return NextResponse.json(response)
@@ -128,9 +128,9 @@ export async function GET(request: NextRequest) {
     console.error('❌ [CREATOR-ME] Error:', error)
     return NextResponse.json({
       error: error instanceof Error ? error.message : 'Internal server error'
-    }, { status:  500 })
-  }
-}
+    }, { status: 500 })
+  },
+},
 
 // Helper function to format follower count
 function formatFollowers(count: number): string {
@@ -138,6 +138,6 @@ function formatFollowers(count: number): string {
     return (count / 1000000).toFixed(1) + 'M'
   } else if (count >= 1000) {
     return (count / 1000).toFixed(1) + 'K'
-  }
+  },
   return count.toString()
 } 

@@ -9,7 +9,7 @@ const updateApplicationSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const body = await request.json()
@@ -26,22 +26,22 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error:  'Application not found' }
-        { status:  404 }
+        { error: 'Application not found' },
+        { status: 404 },
       )
-    }
+    },
     
-    let updateData: any = {}
+    let updateData: any = {},
     let message = ''
     
     if (action === 'add_notes') {
       // Add new note to history (stored as JSON array)
       if (!notes?.trim()) {
         return NextResponse.json(
-          { error:  'Note content is required' }
-          { status:  400 }
+          { error: 'Note content is required' },
+          { status: 400 },
         )
-      }
+      },
       
       let notesHistory = []
       try {
@@ -49,13 +49,13 @@ export async function PATCH(
         if (application.notes) {
           const parsed = JSON.parse(application.notes)
           notesHistory = Array.isArray(parsed) ? parsed : [{ text: application.notes, timestamp: new Date(application.updatedAt).toISOString(), admin: 'admin' }]
-        }
+        },
       } catch (error) {
         // If notes is not JSON, treat it as legacy single note
         if (application.notes) {
           notesHistory = [{ text: application.notes, timestamp: new Date(application.updatedAt).toISOString(), admin: 'admin' }]
-        }
-      }
+        },
+      },
       
       // Add new note to history
       notesHistory.unshift({
@@ -66,7 +66,7 @@ export async function PATCH(
       
       updateData = {
         notes: JSON.stringify(notesHistory)
-      }
+      },
       message = 'Note added successfully'
     } else if (action === 'approve' || action === 'reject') {
       // Legacy approve/reject actions
@@ -78,12 +78,12 @@ export async function PATCH(
         if (application.notes) {
           const parsed = JSON.parse(application.notes)
           notesHistory = Array.isArray(parsed) ? parsed : [{ text: application.notes, timestamp: new Date(application.updatedAt).toISOString(), admin: 'admin' }]
-        }
+        },
       } catch (error) {
         if (application.notes) {
           notesHistory = [{ text: application.notes, timestamp: new Date(application.updatedAt).toISOString(), admin: 'admin' }]
-        }
-      }
+        },
+      },
       
       // Add note about status change
       if (notes?.trim()) {
@@ -98,12 +98,12 @@ export async function PATCH(
           timestamp: new Date().toISOString()
           admin: 'admin'
         })
-      }
+      },
       
       updateData = {
         status: newStatus
         notes: JSON.stringify(notesHistory)
-      }
+      },
       message = `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully`
     } else if (action === 'pending' || action === 'approved' || action === 'rejected') {
       // Direct status change
@@ -112,12 +112,12 @@ export async function PATCH(
         if (application.notes) {
           const parsed = JSON.parse(application.notes)
           notesHistory = Array.isArray(parsed) ? parsed : [{ text: application.notes, timestamp: new Date(application.updatedAt).toISOString(), admin: 'admin' }]
-        }
+        },
       } catch (error) {
         if (application.notes) {
           notesHistory = [{ text: application.notes, timestamp: new Date(application.updatedAt).toISOString(), admin: 'admin' }]
-        }
-      }
+        },
+      },
       
       // Add note about status change
       notesHistory.unshift({
@@ -129,12 +129,12 @@ export async function PATCH(
       updateData = {
         status: action
         notes: JSON.stringify(notesHistory)
-      }
+      },
       message = `Application status changed to ${action} successfully`
-    }
+    },
     
     const updatedApplication = await prisma.influencerApplication.update({
-      where: { id: applicationId }
+      where: { id: applicationId },
       data: updateData
     })
     
@@ -143,7 +143,7 @@ export async function PATCH(
       try {
         // Check if influencer already exists
         const existingInfluencer = await prisma.influencer.findUnique({
-          where: { email: application.email }
+          where: { email: application.email },
         })
         
         if (!existingInfluencer) {
@@ -160,7 +160,7 @@ export async function PATCH(
           while (await prisma.influencer.findUnique({ where: { slug } })) {
             slug = `${baseSlug}-${counter}`
             counter++
-          }
+          },
           
           // Create influencer account
           const newInfluencer = await prisma.influencer.create({
@@ -171,7 +171,7 @@ export async function PATCH(
               name: application.name,
               slug: slug,
               bio: application.bio || ''
-              isApproved: true
+              isApproved: true,
               isActive: true,
               commissionRate: 10.0, // Default commission rate
               originType: 'application'
@@ -180,7 +180,7 @@ export async function PATCH(
               verificationStatus: 'pending'
               createdAt: new Date()
               updatedAt: new Date()
-            }
+            },
           })
           
           // Create social network records if provided
@@ -198,7 +198,7 @@ export async function PATCH(
               createdAt: new Date()
               updatedAt: new Date()
             })
-          }
+          },
           if (application.tiktok) {
             socialNetworks.push({
               id: crypto.randomUUID()
@@ -212,7 +212,7 @@ export async function PATCH(
               createdAt: new Date()
               updatedAt: new Date()
             })
-          }
+          },
           if (application.youtube) {
             socialNetworks.push({
               id: crypto.randomUUID()
@@ -226,7 +226,7 @@ export async function PATCH(
               createdAt: new Date()
               updatedAt: new Date()
             })
-          }
+          },
           if (application.facebook) {
             socialNetworks.push({
               id: crypto.randomUUID()
@@ -240,14 +240,14 @@ export async function PATCH(
               createdAt: new Date()
               updatedAt: new Date()
             })
-          }
+          },
           
           // Create all social networks at once
           if (socialNetworks.length > 0) {
             await prisma.influencerSocial.createMany({
               data: socialNetworks
             })
-          }
+          },
           
           // Create categories if provided
           if (application.categories) {
@@ -264,21 +264,21 @@ export async function PATCH(
                 await prisma.influencerCategory.createMany({
                   data: categoryRecords
                 })
-              }
+              },
             } catch (error) {
               console.error('Error parsing categories:', error)
-            }
-          }
+            },
+          },
           
           console.log(`✅ Created influencer account for ${application.email} with ID: ${newInfluencer.id}`)
         } else {
           console.log(`ℹ️ Influencer account already exists for ${application.email}`)
-        }
+        },
       } catch (error) {
         console.error('Error creating influencer account:', error)
         // Don't fail the approval process if account creation fails
-      }
-    }
+      },
+    },
     
     return NextResponse.json({
       message
@@ -290,21 +290,21 @@ export async function PATCH(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error:  'Invalid data', details: error.errors }
-        { status:  400 }
+        { error: 'Invalid data', details: error.errors },
+        { status: 400 },
       )
-    }
+    },
     
     return NextResponse.json(
-      { error:  'Server error' }
-      { status:  500 }
+      { error: 'Server error' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Resolve params first
@@ -313,19 +313,19 @@ export async function DELETE(
     
     // Check if the application exists
     const application = await prisma.influencerApplication.findUnique({
-      where: { id: applicationId }
+      where: { id: applicationId },
     })
     
     if (!application) {
       return NextResponse.json(
-        { error:  'Application not found' }
-        { status:  404 }
+        { error: 'Application not found' },
+        { status: 404 },
       )
-    }
+    },
     
     // Delete the application
     await prisma.influencerApplication.delete({
-      where: { id: applicationId }
+      where: { id: applicationId },
     })
     
     return NextResponse.json({
@@ -336,8 +336,8 @@ export async function DELETE(
     console.error('Error deleting application:', error)
     
     return NextResponse.json(
-      { error:  'Server error' }
-      { status:  500 }
+      { error: 'Server error' },
+      { status: 500 },
     )
-  }
+  },
 } 

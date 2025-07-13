@@ -22,7 +22,7 @@ function isEUCountry(country: string): boolean {
     'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK'
   ]
   return EU_COUNTRIES.includes(country)
-}
+},
 
 async function calculateShippingCostBySupplier(items: any[], country: string): Promise<{
   totalShippingCost: number
@@ -44,12 +44,12 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
         subtotal: 0
         supplierName: product.brand.name
       })
-    }
+    },
     
     const supplierGroup = itemsBySupplier.get(brandId)
     supplierGroup.items.push(item)
     supplierGroup.subtotal += product.price * item.quantity
-  }
+  },
   
   let totalShippingCost = 0
   const supplierBreakdown = []
@@ -61,7 +61,7 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
     
     // Get supplier shipping settings
     const supplier = await prisma.supplier.findFirst({
-      where: { brandId: brandId }
+      where: { brandId: brandId },
     })
     
     let supplierShippingCost = 0
@@ -83,7 +83,7 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
       } else {
         supplierShippingCost = baseShipping + extraFee
         amountToFreeShipping = 50 - supplierData.subtotal
-      }
+      },
     } else {
       // Check if supplier has API for real-time shipping costs
       if (supplier.has_shipping_api && supplier.shipping_api_endpoint) {
@@ -96,7 +96,7 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
             headers: {
               'Content-Type': 'application/json'
               'Authorization': supplier.shipping_api_key ? `Bearer ${supplier.shipping_api_key}` : ''
-            }
+            },
             body: JSON.stringify({
               items: supplierData.items.map((item: any) => ({
                 productId: item.productId
@@ -105,7 +105,7 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
               }))
               destination: {
                 country: country
-              }
+              },
               subtotal: supplierData.subtotal
             })
           })
@@ -116,13 +116,13 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
             console.log(`✅ [SHIPPING-API] API returned shipping cost: €${supplierShippingCost}`)
           } else {
             throw new Error(`API responded with status ${apiResponse.status}`)
-          }
+          },
         } catch (error) {
           console.error(`❌ [SHIPPING-API] API call failed for supplier ${brandId}:`, error)
           // Fallback to manual settings
           shippingMethod = 'manual_fallback'
-        }
-      }
+        },
+      },
       
       // If API failed or not available, use manual settings
       if ((supplierShippingCost === 0 && !supplier.has_shipping_api) || shippingMethod === 'manual_fallback') {
@@ -139,7 +139,7 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
         } else {
           if (supplier.shipping_free_threshold) {
             amountToFreeShipping = supplier.shipping_free_threshold - supplierData.subtotal
-          }
+          },
           
           // Check if supplier has region-specific pricing
           if (supplier.shipping_regions) {
@@ -154,26 +154,26 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
               } else if (regions['WORLD']) {
                 supplierShippingCost = regions['WORLD']
                 console.log(`🌎 [SHIPPING-API] World rate: €${supplierShippingCost}`)
-              }
+              },
             } catch (error) {
               console.error(`❌ [SHIPPING-API] Error parsing shipping regions:`, error)
-            }
-          }
+            },
+          },
           
           // If no region-specific rate found, use flat rate
           if (supplierShippingCost === 0 && supplier.shipping_flat_rate) {
             supplierShippingCost = supplier.shipping_flat_rate
             console.log(`💰 [SHIPPING-API] Flat rate: €${supplierShippingCost}`)
-          }
+          },
           
           // Ultimate fallback
           if (supplierShippingCost === 0) {
             supplierShippingCost = 4.99
             console.log(`⚠️ [SHIPPING-API] Using fallback rate: €${supplierShippingCost}`)
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
     
     totalShippingCost += supplierShippingCost
     
@@ -196,10 +196,10 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
         amountToFreeShipping: Number(amountToFreeShipping.toFixed(2))
         currentSubtotal: Number(supplierData.subtotal.toFixed(2))
       })
-    }
+    },
     
     console.log(`📋 [SHIPPING-API] Supplier ${brandId} shipping cost: €${supplierShippingCost}`)
-  }
+  },
   
   console.log(`💰 [SHIPPING-API] Total shipping cost: €${totalShippingCost}`)
   
@@ -207,8 +207,8 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
     totalShippingCost: Number(totalShippingCost.toFixed(2))
     supplierBreakdown
     freeShippingInfo
-  }
-}
+  },
+},
 
 export async function POST(request: NextRequest) {
   try {
@@ -223,33 +223,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false
         error: 'No items provided'
-      }, { status:  400 })
-    }
+      }, { status: 400 })
+    },
 
     // Fetch products from database
     const productIds = items.map(item => item.productId)
     const products = await prisma.product.findMany({
       where: {
-        id: { in: productIds }
+        id: { in: productIds },
         isAvailable: true
-      }
+      },
       include: {
         brand: {
           select: {
             id: true
             name: true
             isActive: true,
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     if (products.length !== items.length) {
       return NextResponse.json({
         success: false
         error: 'Some products are not available'
-      }, { status:  400 })
-    }
+      }, { status: 400 })
+    },
 
     // Build items with product data
     const enrichedItems = items.map(item => {
@@ -257,7 +257,7 @@ export async function POST(request: NextRequest) {
       return {
         ...item
         product
-      }
+      },
     })
 
     // Calculate shipping
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
         currency: 'EUR'
         breakdown: result.supplierBreakdown
         freeShippingOffers: result.freeShippingInfo
-      }
+      },
     })
 
   } catch (error) {
@@ -281,14 +281,14 @@ export async function POST(request: NextRequest) {
         success: false
         error: 'Invalid shipping calculation data'
         details: error.errors
-      }, { status:  400 })
-    }
+      }, { status: 400 })
+    },
 
     return NextResponse.json({
       success: false
       error: 'Internal server error during shipping calculation'
-    }, { status:  500 })
+    }, { status: 500 })
   } finally {
     await prisma.$disconnect()
-  }
+  },
 } 

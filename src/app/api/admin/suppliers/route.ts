@@ -10,12 +10,12 @@ export async function GET(request: NextRequest) {
         brand: {
           select: {
             name: true
-          }
-        }
-      }
+          },
+        },
+      },
       orderBy: {
         name: 'asc'
-      }
+      },
     })
 
     // Transformace dat pro frontend
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       brandId: supplier.brandId
       brand: {
         name: supplier.brand.name
-      }
+      },
       // Shipping settings
       has_shipping_api: supplier.has_shipping_api
       shipping_free_threshold: supplier.shipping_free_threshold
@@ -50,10 +50,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error loading suppliers:', error)
     return NextResponse.json(
-      { error:  'Chyba při načítání dodavatelů' }
-      { status:  500 }
+      { error: 'Chyba při načítání dodavatelů' },
+      { status: 500 },
     )
   } finally {
     await prisma.$disconnect()
-  }
+  },
 } 

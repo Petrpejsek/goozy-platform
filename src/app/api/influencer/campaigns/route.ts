@@ -18,14 +18,14 @@ export async function POST(request: NextRequest) {
     } else {
       // Fallback to cookies
       token = request.cookies.get('influencer-auth')?.value
-    }
+    },
     
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' }
-        { status:  401 }
+        { success: false, error: 'Authentication required' },
+        { status: 401 },
       )
-    }
+    },
 
     let influencerId: string
     let influencerData: any
@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
       
       // Get full influencer data from database
       influencerData = await prisma.influencer.findUnique({
-        where: { id: influencerId }
+        where: { id: influencerId },
         select: {
           id: true
           name: true
           email: true
           slug: true
-        }
+        },
       })
       
       console.log('✅ [CAMPAIGNS-POST] Token authentication successful for:', influencerData?.email)
@@ -52,37 +52,37 @@ export async function POST(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         influencerData = await prisma.influencer.findUnique({
-          where: { email }
+          where: { email },
           select: {
             id: true
             name: true
             email: true
             slug: true
-          }
+          },
         })
         influencerId = influencerData?.id as string
         console.log('✅ [CAMPAIGNS-POST] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         console.error('❌ Authentication failed:', fallbackError)
         return NextResponse.json(
-          { success: false, error: 'Invalid authentication' }
-          { status:  401 }
+          { success: false, error: 'Invalid authentication' },
+          { status: 401 },
         )
-      }
-    }
+      },
+    },
 
     if (!influencerData) {
       return NextResponse.json(
-        { success: false, error: 'Influencer not found' }
-        { status:  404 }
+        { success: false, error: 'Influencer not found' },
+        { status: 404 },
       )
-    }
+    },
 
     console.log(`🔍 Creating campaign for influencer: ${influencerData.name} (${influencerData.email})`)
     
     // Get or create a mock brand for the campaign
     let mockBrand = await prisma.brand.findFirst({
-      where: { email: 'demo@goozy.com' }
+      where: { email: 'demo@goozy.com' },
     })
     
     if (!mockBrand) {
@@ -91,14 +91,14 @@ export async function POST(request: NextRequest) {
           id: `brand-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
           name: 'Goozy Demo Brand'
           email: 'demo@goozy.com'
-          isApproved: true
+          isApproved: true,
           isActive: true,
           targetCountries: '["CZ"]'
           createdAt: new Date()
           updatedAt: new Date()
-        }
+        },
       })
-    }
+    },
 
     // Use pre-generated slug from frontend or generate new one
     let campaignSlug = data.slug
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       console.log(`🔗 Generated fallback campaign slug: ${campaignSlug}`)
     } else {
       console.log(`🔗 Using pre-generated campaign slug: ${campaignSlug}`)
-    }
+    },
 
     // Create campaign in database
     const campaign = await prisma.campaign.create({
@@ -133,10 +133,10 @@ export async function POST(request: NextRequest) {
         isActive: true,
         createdAt: new Date()
         updatedAt: new Date()
-      }
+      },
       include: {
         brand: true
-      }
+      },
     })
 
     console.log('✅ Campaign created in database:', campaign.id)
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       campaign: {
-        id: campaign.id
+        id: campaign.id,
         name: campaign.name
         slug: campaignSlug
         url: campaignUrl
@@ -163,18 +163,18 @@ export async function POST(request: NextRequest) {
           id: influencerData.id
           name: influencerData.name
           slug: influencerData.slug
-        }
-      }
+        },
+      },
     })
 
   } catch (error) {
     console.error('❌ Error creating campaign:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to create campaign' }
-      { status:  500 }
+      { success: false, error: 'Failed to create campaign' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 // GET - Fetch influencer campaigns
 export async function GET(request: NextRequest) {
@@ -189,14 +189,14 @@ export async function GET(request: NextRequest) {
     } else {
       // Fallback to cookies
       token = request.cookies.get('influencer-auth')?.value
-    }
+    },
     
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' }
-        { status:  401 }
+        { success: false, error: 'Authentication required' },
+        { status: 401 },
       )
-    }
+    },
 
     let influencerId: string
 
@@ -210,38 +210,38 @@ export async function GET(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencerData = await prisma.influencer.findUnique({
-          where: { email }
-          select: { id: true }
+          where: { email },
+          select: { id: true },
         })
         influencerId = influencerData?.id as string
         console.log('✅ [CAMPAIGNS-GET] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         return NextResponse.json(
-          { success: false, error: 'Invalid authentication' }
-          { status:  401 }
+          { success: false, error: 'Invalid authentication' },
+          { status: 401 },
         )
-      }
-    }
+      },
+    },
 
     if (!influencerId) {
       return NextResponse.json(
-        { success: false, error: 'Influencer not found' }
-        { status:  404 }
+        { success: false, error: 'Influencer not found' },
+        { status: 404 },
       )
-    }
+    },
     
     console.log('🔍 Searching for campaigns with influencerIds:', influencerId)
     
     const campaigns = await prisma.campaign.findMany({
       where: {
         influencerIds: influencerId
-      }
+      },
       include: {
         brand: true
-      }
+      },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
     })
 
     console.log(`📊 Found ${campaigns.length} campaigns for influencer`)
@@ -254,7 +254,7 @@ export async function GET(request: NextRequest) {
           where: {
             influencerId: influencerId
             status: 'completed'
-          }
+          },
         })
 
         // Get influencer products count
@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
           where: {
             influencerId: influencerId
             isActive: true,
-          }
+          },
         })
 
         // Calculate stats
@@ -271,7 +271,7 @@ export async function GET(request: NextRequest) {
         const conversionRate = (campaign.expectedReach || 0) > 0 ? (totalOrders / (campaign.expectedReach || 1)) * 100 : 0
 
         return {
-          id: campaign.id
+          id: campaign.id,
           slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`
           name: campaign.name
           description: campaign.description
@@ -289,8 +289,8 @@ export async function GET(request: NextRequest) {
             totalOrders: totalOrders
             productCount: productCount
             conversionRate: conversionRate
-          }
-        }
+          },
+        },
       })
     )
 
@@ -302,8 +302,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error fetching campaigns:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch campaigns' }
-      { status:  500 }
+      { success: false, error: 'Failed to fetch campaigns' },
+      { status: 500 },
     )
-  }
+  },
 } 

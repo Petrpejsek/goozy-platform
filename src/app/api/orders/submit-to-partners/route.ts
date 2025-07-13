@@ -32,15 +32,15 @@ export async function POST(request: NextRequest) {
     rateLimits: {
       requests: 5
       windowMs: 60000, // 1 minute
-    }
+    },
   });
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error:  securityResult.reason }
-      { status:  securityResult.status }
+      { error: securityResult.reason },
+      { status: securityResult.status },
     );
-  }
+  },
 
   try {
     const body = await request.json();
@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
           error: error.message
           retryable: true
         });
-      }
-    }
+      },
+    },
 
     const successCount = submissions.filter(s => s.status === 'success').length;
     const failureCount = submissions.filter(s => s.status === 'failed').length;
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         totalSuppliers: supplierGroups.length
         successful: successCount
         failed: failureCount
-      }
+      },
       submissions
       submittedAt: new Date().toISOString()
     });
@@ -95,17 +95,17 @@ export async function POST(request: NextRequest) {
         { 
           error: 'Neplatná data'
           details: error.errors
-        }
-        { status:  400 }
+        },
+        { status: 400 },
       );
-    }
+    },
 
     return NextResponse.json(
-      { error:  'Chyba při odesílání objednávky partnerům' }
-      { status:  500 }
+      { error: 'Chyba při odesílání objednávky partnerům' },
+      { status: 500 },
     );
-  }
-}
+  },
+},
 
 async function submitToSupplier(supplierGroup: any, shippingAddress: any, orderId: string) {
   const { supplier, items, subtotal, shippingCost } = supplierGroup;
@@ -118,17 +118,17 @@ async function submitToSupplier(supplierGroup: any, shippingAddress: any, orderI
       apiUrl: 'https://api.supplier1.com/orders'
       apiKey: process.env.SUPPLIER_1_API_KEY || 'mock_key_1'
       format: 'standard'
-    }
+    },
     'supplier-2': {
       apiUrl: 'https://api.supplier2.com/v2/create-order'
       apiKey: process.env.SUPPLIER_2_API_KEY || 'mock_key_2'
       format: 'custom'
-    }
+    },
     'supplier-3': {
       apiUrl: 'https://supplier3.dropship.com/api/orders'
       apiKey: process.env.SUPPLIER_3_API_KEY || 'mock_key_3'
       format: 'dropship'
-    }
+    },
   };
 
   const config = supplierConfigs[supplier] || supplierConfigs['supplier-1'];
@@ -151,16 +151,16 @@ async function submitToSupplier(supplierGroup: any, shippingAddress: any, orderI
       country: shippingAddress.country
       email: shippingAddress.email
       phone: shippingAddress.phone
-    }
+    },
     totals: {
       subtotal: subtotal
       shipping: shippingCost
       total: subtotal + shippingCost
-    }
+    },
     metadata: {
       source: 'goozy'
       submittedAt: new Date().toISOString()
-    }
+    },
   };
 
   // Mock API submission (in production, replace with actual HTTP requests)
@@ -180,19 +180,19 @@ async function submitToSupplier(supplierGroup: any, shippingAddress: any, orderI
       trackingNumber: `TRK1${Math.random().toString(36).substr(2, 8).toUpperCase()}`
       estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days
       status: 'confirmed'
-    }
+    },
     'supplier-2': {
       id: `S2_${Date.now()}`
       trackingNumber: `TRK2${Math.random().toString(36).substr(2, 8).toUpperCase()}`
       estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days
       status: 'processing'
-    }
+    },
     'supplier-3': {
       id: `S3_${Date.now()}`
       trackingNumber: `TRK3${Math.random().toString(36).substr(2, 8).toUpperCase()}`
       estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
       status: 'received'
-    }
+    },
   };
 
   const response = mockResponses[supplier] || mockResponses['supplier-1'];
@@ -200,12 +200,12 @@ async function submitToSupplier(supplierGroup: any, shippingAddress: any, orderI
   // Randomly simulate some failures for testing
   if (Math.random() < 0.1) { // 10% chance of failure
     throw new Error(`API Error: ${supplier} service temporarily unavailable`);
-  }
+  },
 
   console.log(`✅ Successfully submitted to ${supplier}:`, response.id);
   
   return response;
-}
+},
 
 // GET endpoint for checking submission status
 export async function GET(request: NextRequest) {
@@ -214,10 +214,10 @@ export async function GET(request: NextRequest) {
   
   if (!orderId) {
     return NextResponse.json(
-      { error:  'Order ID is required' }
-      { status:  400 }
+      { error: 'Order ID is required' },
+      { status: 400 },
     );
-  }
+  },
 
   // Mock status check (replace with actual database query)
   const mockStatus = {
@@ -228,12 +228,12 @@ export async function GET(request: NextRequest) {
         status: 'shipped'
         trackingNumber: 'TRK1ABC123'
         submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-      }
+      },
       {
         supplier: 'supplier-2', 
         status: 'processing'
         submittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-      }
+      },
     ]
     lastUpdated: new Date().toISOString()
   };

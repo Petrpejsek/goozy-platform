@@ -9,11 +9,11 @@ export async function GET() {
         isAvailable: true
         stockQuantity: {
           gt: 0
-        }
-      }
+        },
+      },
       select: {
         category: true
-      }
+      },
       distinct: ['category']
     })
 
@@ -26,14 +26,14 @@ export async function GET() {
             isAvailable: true
             stockQuantity: {
               gt: 0
-            }
-          }
+            },
+          },
         })
         
         return {
           name: cat.category
           count
-        }
+        },
       })
     )
 
@@ -44,7 +44,7 @@ export async function GET() {
       success: true,
       data: {
         categories: categoriesWithCount
-      }
+      },
     })
 
   } catch (error) {
@@ -53,8 +53,8 @@ export async function GET() {
       { 
         success: false, 
         error: 'Failed to load categories' 
-      }
-      { status:  500 }
+      },
+      { status: 500 },
     )
-  }
+  },
 } 

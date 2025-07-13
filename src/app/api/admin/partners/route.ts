@@ -14,17 +14,17 @@ export async function GET(request: NextRequest) {
           select: {
             products: true,
             campaigns: true,
-          }
-        }
+          },
+        },
         product: {
           select: {
             id: true
             price: true
             currency: true
-          }
-        }
-      }
-      orderBy: { createdAt: 'desc' }
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     })
 
     // Statistiky pro každého partnera
@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
             monthlyRevenue
             totalOrders
             commissionRate
-          }
-        }
+          },
+        },
       })
     )
 
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       totalRevenue: 0, // Mock data
       totalOrders: 0,  // Mock data
       avgCommissionRate: 15
-    }
+    },
 
     return NextResponse.json({
       partners: partnersWithStats
@@ -80,8 +80,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching partners:', error)
     return NextResponse.json(
-      { error:  'Internal server error' }
-      { status:  500 }
+      { error: 'Internal server error' },
+      { status: 500 },
     )
-  }
+  },
 } 

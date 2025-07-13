@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
     })
 
     // Calculate statistics
@@ -21,14 +21,14 @@ export async function GET(request: NextRequest) {
       completed: campaigns.filter(c => c.status === 'completed').length,
       totalBudget: campaigns.reduce((sum, c) => sum + (c.budgetAllocated || 0), 0),
       totalReach: campaigns.reduce((sum, c) => sum + (c.expectedReach || 0), 0),
-    }
+    },
 
     console.log(`📊 Admin: Found ${campaigns.length} campaigns`)
 
     return NextResponse.json({
       success: true,
       campaigns: campaigns.map(campaign => ({
-        id: campaign.id
+        id: campaign.id,
         slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`, // Fallback pro starší kampaně
         name: campaign.name
         description: campaign.description
@@ -50,11 +50,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error fetching admin campaigns:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch campaigns' }
-      { status:  500 }
+      { success: false, error: 'Failed to fetch campaigns' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 // PUT - Update campaign status (admin only)
 export async function PUT(request: NextRequest) {
@@ -63,15 +63,15 @@ export async function PUT(request: NextRequest) {
 
     if (!campaignId || !status) {
       return NextResponse.json(
-        { success: false, error: 'Campaign ID and status are required' }
-        { status:  400 }
+        { success: false, error: 'Campaign ID and status are required' },
+        { status: 400 },
       )
-    }
+    },
 
     const updatedCampaign = await prisma.campaign.update({
-      where: { id: campaignId }
-      data: { status }
-      include: { brand: true }
+      where: { id: campaignId },
+      data: { status },
+      include: { brand: true },
     })
 
     console.log(`✅ Admin: Updated campaign ${campaignId} status to ${status}`)
@@ -83,14 +83,14 @@ export async function PUT(request: NextRequest) {
         name: updatedCampaign.name
         status: updatedCampaign.status
         brand: updatedCampaign.brand
-      }
+      },
     })
 
   } catch (error) {
     console.error('❌ Error updating campaign:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to update campaign' }
-      { status:  500 }
+      { success: false, error: 'Failed to update campaign' },
+      { status: 500 },
     )
-  }
+  },
 } 

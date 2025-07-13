@@ -5,27 +5,27 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
     const supplier = await prisma.supplier.findUnique({
-      where: { id }
+      where: { id },
       include: {
         brand: {
           select: {
             name: true
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     if (!supplier) {
       return NextResponse.json(
-        { error:  'Dodavatel nenalezen' }
-        { status:  404 }
+        { error: 'Dodavatel nenalezen' },
+        { status: 404 },
       )
-    }
+    },
 
     const supplierData = {
       id: supplier.id
@@ -37,7 +37,7 @@ export async function GET(
       brandId: supplier.brandId
       brand: {
         name: supplier.brand.name
-      }
+      },
       // Shipping settings
       shipping_api_endpoint: supplier.shipping_api_endpoint
       shipping_api_key: supplier.shipping_api_key
@@ -57,16 +57,16 @@ export async function GET(
       vat_included: supplier.vat_included
       createdAt: supplier.createdAt
       updatedAt: supplier.updatedAt
-    }
+    },
 
     return NextResponse.json(supplierData)
   } catch (error) {
     console.error('Error loading supplier:', error)
     return NextResponse.json(
-      { error:  'Chyba při načítání dodavatele' }
-      { status:  500 }
+      { error: 'Chyba při načítání dodavatele' },
+      { status: 500 },
     )
   } finally {
     await prisma.$disconnect()
-  }
+  },
 } 

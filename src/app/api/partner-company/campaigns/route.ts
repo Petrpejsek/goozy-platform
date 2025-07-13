@@ -9,21 +9,21 @@ export async function GET() {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    },
 
     // Najít brand application - to je náš zdroj pravdy
     const brandApplication = await prisma.brandApplication.findUnique({
-      where: { id: user.brandId }
+      where: { id: user.brandId },
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+    },
 
     // Najít asociovaný brand v brands tabulce
     let brand = await prisma.brand.findFirst({
-      where: { email: brandApplication.email }
+      where: { email: brandApplication.email },
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
@@ -36,28 +36,28 @@ export async function GET() {
           phone: brandApplication.phone
           description: brandApplication.description
           website: brandApplication.website
-          isApproved: true
+          isApproved: true,
           isActive: true,
           targetCountries: '[]'
           createdAt: new Date()
           updatedAt: new Date()
-        }
+        },
       })
       console.log(`✅ [CAMPAIGNS] Created new brand record for: ${brand.name}`)
-    }
+    },
 
     // Načíst kampaně pro tento brand
     const campaigns = await prisma.campaign.findMany({
       where: {
         brandId: brand.id
         isActive: true,
-      }
+      },
       include: {
         brand: true
-      }
+      },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
     })
 
     console.log(`📊 [CAMPAIGNS] Found ${campaigns.length} campaigns for brand: ${brand.name}`)
@@ -69,7 +69,7 @@ export async function GET() {
         let influencer = null
         if (campaign.influencerIds) {
           influencer = await prisma.influencer.findFirst({
-            where: { id: campaign.influencerIds }
+            where: { id: campaign.influencerIds },
             select: {
               id: true
               name: true
@@ -77,16 +77,16 @@ export async function GET() {
               avatar: true
               slug: true
               commissionRate: true
-            }
+            },
           })
-        }
+        },
 
         // Počet produktů v kampani (zatím přes všechny produkty brandu)
         const productCount = await prisma.product.count({
           where: {
             brandId: brand.id
             isAvailable: true
-          }
+          },
         })
 
         // Statistiky objednávek (zatím mock data - až budeme mít Order systém)
@@ -100,10 +100,10 @@ export async function GET() {
           targetCountries = campaign.targetCountries ? JSON.parse(campaign.targetCountries) : []
         } catch (error) {
           targetCountries = []
-        }
+        },
 
         return {
-          id: campaign.id
+          id: campaign.id,
           slug: campaign.slug
           name: campaign.name
           description: campaign.description
@@ -121,8 +121,8 @@ export async function GET() {
             totalOrders
             totalRevenue
             conversionRate
-          }
-        }
+          },
+        },
       })
     )
 
@@ -137,7 +137,7 @@ export async function GET() {
       activeCampaigns: totalActiveCampaigns
       totalReach
       totalCommissionPaid
-    }
+    },
 
     console.log(`✅ [CAMPAIGNS] Loaded campaigns for: ${brand.name}`)
     
@@ -149,14 +149,14 @@ export async function GET() {
         id: brand.id
         name: brand.name
         email: brand.email
-      }
+      },
     })
 
   } catch (error) {
     console.error('❌ [CAMPAIGNS] Error loading campaigns:', error)
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
+  },
 } 

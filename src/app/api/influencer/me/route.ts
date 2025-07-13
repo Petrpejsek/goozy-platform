@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
       const authHeader = request.headers.get('Authorization')
       if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.split(' ')[1]
-      }
-    }
+      },
+    },
     
     if (!token) {
       console.log('❌ [INFLUENCER-ME] No valid authentication found')
-      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+    },
 
     // Try to decode JWT token first
     let decoded: any
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       
       if (!influencerId || decoded.type !== 'influencer') {
         throw new Error('Invalid token type')
-      }
+      },
       
       console.log('✅ [INFLUENCER-ME] Token valid for influencer:', decoded.email)
     } catch (jwtError) {
@@ -46,25 +46,25 @@ export async function GET(request: NextRequest) {
         console.log('🔄 [INFLUENCER-ME] Trying base64 fallback for email:', email)
         
         const influencerByEmail = await prisma.influencer.findUnique({
-          where: { email }
-          select: { id: true, email: true }
+          where: { email },
+          select: { id: true, email: true },
         })
         
         if (!influencerByEmail) {
           throw new Error('Influencer not found by email')
-        }
+        },
         
         influencerId = influencerByEmail.id
         console.log('✅ [INFLUENCER-ME] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         console.log('❌ [INFLUENCER-ME] Authentication failed:', fallbackError)
-        return NextResponse.json({ error:  'Invalid authentication' }, { status:  401 })
-      }
-    }
+        return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+      },
+    },
 
     // Get influencer with all related data
     const influencer = await prisma.influencer.findUnique({
-      where: { id: influencerId }
+      where: { id: influencerId },
       include: {
         socialNetworks: true
         contentCategories: true
@@ -72,21 +72,21 @@ export async function GET(request: NextRequest) {
         selectedProducts: {
           include: {
             product: true
-          }
-        }
+          },
+        },
         order: {
           where: {
             status: 'completed'
-          }
-        }
+          },
+        },
         commission: true
-      }
+      },
     })
 
     if (!influencer) {
       console.log('❌ [INFLUENCER-ME] Influencer not found:', influencerId)
-      return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+    },
 
     // Calculate statistics
     const totalEarnings = influencer.commissions.reduce((sum, commission) => sum + commission.amount, 0)
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
 
     const response = {
       influencer: {
-        id: influencer.id
+        id: influencer.id,
         name: influencer.name
         email: influencer.email,
         phone: influencer.phone
@@ -118,8 +118,8 @@ export async function GET(request: NextRequest) {
         isActive: influencer.isActive
         isApproved: influencer.isApproved
         onboardingStatus: influencer.onboardingStatus
-      }
-    }
+      },
+    },
 
     console.log('📊 [INFLUENCER-ME] Returning data for:', influencer.name)
     return NextResponse.json(response)
@@ -128,9 +128,9 @@ export async function GET(request: NextRequest) {
     console.error('❌ [INFLUENCER-ME] Error:', error)
     return NextResponse.json({
       error: error instanceof Error ? error.message : 'Internal server error'
-    }, { status:  500 })
-  }
-}
+    }, { status: 500 })
+  },
+},
 
 // Helper function to format follower count
 function formatFollowers(count: number): string {
@@ -138,6 +138,6 @@ function formatFollowers(count: number): string {
     return (count / 1000000).toFixed(1) + 'M'
   } else if (count >= 1000) {
     return (count / 1000).toFixed(1) + 'K'
-  }
+  },
   return count.toString()
 } 

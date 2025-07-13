@@ -29,8 +29,8 @@ export async function POST() {
     
     // I v případě chyby je dobré vymazat cookies
     const response = NextResponse.json(
-      { success: false, error: 'Logout failed' }
-      { status:  500 }
+      { success: false, error: 'Logout failed' },
+      { status: 500 },
     )
     
     // Pokusit se smazat cookie i při chybě
@@ -43,5 +43,5 @@ export async function POST() {
     })
     
     return response
-  }
+  },
 } 

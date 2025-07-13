@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+    },
 
     const token = authHeader.split(' ')[1]
     
@@ -21,16 +21,16 @@ export async function GET(request: NextRequest) {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key')
     } catch (error) {
       console.log('❌ [CUSTOMIZATION] Invalid token:', error)
-      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    },
 
     if (!decoded.id || decoded.type !== 'influencer') {
-      return NextResponse.json({ error:  'Invalid token type' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token type' }, { status: 401 })
+    },
 
     // Get customization from database
     const customization = await prisma.influencer.findFirst({
-      where: { id: decoded.id }
+      where: { id: decoded.id },
     })
 
     // Return default customization if none exists
@@ -38,20 +38,20 @@ export async function GET(request: NextRequest) {
       theme: 'modern'
       background: 'white'
       heroLayout: 'horizontal'
-    }
+    },
 
     return NextResponse.json({
       customization: customization || defaultCustomization
-    }, { status:  200 })
+    }, { status: 200 })
 
   } catch (error) {
     console.error('❌ [CUSTOMIZATION] Get error:', error)
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 // POST - Uložit customization nastavení
 export async function POST(request: NextRequest) {
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+    },
 
     const token = authHeader.split(' ')[1]
     
@@ -72,12 +72,12 @@ export async function POST(request: NextRequest) {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key')
     } catch (error) {
       console.log('❌ [CUSTOMIZATION] Invalid token:', error)
-      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    },
 
     if (!decoded.id || decoded.type !== 'influencer') {
-      return NextResponse.json({ error:  'Invalid token type' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token type' }, { status: 401 })
+    },
 
     // Get customization data from request
     const { theme, background, heroLayout, customSettings } = await request.json()
@@ -87,20 +87,20 @@ export async function POST(request: NextRequest) {
 
     // Check if influencer has existing customization
     const existingCustomization = await prisma.influencer.findFirst({
-      where: { id: decoded.id }
+      where: { id: decoded.id },
     })
 
     // TODO: InfluencerCustomization model not implemented yet
     // if (existingCustomization) {
     //   // Update existing customization
     //   await prisma.influencer.update({
-    //     where: { id: existingCustomization.id }
+    //     where: { id: existingCustomization.id },
     //     data: {
     //       theme: theme || existingCustomization.theme
     //       background: background || existingCustomization.background
     //       heroLayout: heroLayout || existingCustomization.heroLayout
     //       customSettings: customSettings || existingCustomization.customSettings
-    //     }
+    //     },
     //   })
     // } else {
     //   // Create new customization
@@ -111,20 +111,20 @@ export async function POST(request: NextRequest) {
     //       background: background || '#ffffff'
     //       heroLayout: heroLayout || 'standard'
     //       customSettings: customSettings || '{}'
-    //     }
+    //     },
     //   })
-    // }
+    // },
 
     return NextResponse.json({
       message: 'Customization saved successfully'
-      customization: { theme, background, heroLayout, customSettings }
-    }, { status:  200 })
+      customization: { theme, background, heroLayout, customSettings },
+    }, { status: 200 })
 
   } catch (error) {
     console.error('❌ [CUSTOMIZATION] Save error:', error)
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
+  },
 } 

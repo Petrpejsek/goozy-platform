@@ -9,33 +9,33 @@ export async function GET() {
     
     const user = await verifyBrandAuth()
     if (!user) {
-      return NextResponse.json({ error:  'Not authenticated' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    },
 
     // Najít brand application - to je náš zdroj pravdy
     const brandApplication = await prisma.brandApplication.findUnique({
-      where: { id: user.brandId }
+      where: { id: user.brandId },
     })
 
     if (!brandApplication) {
-      return NextResponse.json({ error:  'Partner company not found' }, { status:  404 })
-    }
+      return NextResponse.json({ error: 'Partner company not found' }, { status: 404 })
+    },
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
     let brand = await prisma.brand.findFirst({
-      where: { email: brandApplication.email }
+      where: { email: brandApplication.email },
       include: {
         campaigns: {
-          where: { isActive: true }
-        }
+          where: { isActive: true },
+        },
         product: true
         _count: {
           select: {
             campaigns: true,
             product: true
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     // Pokud brand v brands tabulce neexistuje, vytvořme jeho záznam
@@ -48,27 +48,27 @@ export async function GET() {
           phone: brandApplication.phone
           description: brandApplication.description
           website: brandApplication.website
-          isApproved: true
+          isApproved: true,
           isActive: true,
           targetCountries: '[]', // Zatím prázdné, nastavit se dá v settings
           createdAt: new Date()
           updatedAt: new Date()
-        }
+        },
         include: {
           campaigns: {
-            where: { isActive: true }
-          }
+            where: { isActive: true },
+          },
           product: true
           _count: {
             select: {
               campaigns: true,
               product: true
-            }
-          }
-        }
+            },
+          },
+        },
       })
       console.log(`✅ [DASHBOARD] Created new brand record for: ${brand.name}`)
-    }
+    },
 
     // Parsovat target countries z JSON stringu
     let activeCountries: string[] = []
@@ -77,7 +77,7 @@ export async function GET() {
     } catch (error) {
       console.log('❌ [DASHBOARD] Error parsing target countries:', error)
       activeCountries = []
-    }
+    },
 
     // Vypočítat metriky
     const activeCampaigns = brand.campaign.filter(c => c.status === 'active').length
@@ -97,13 +97,13 @@ export async function GET() {
       todaysRevenue
       totalOrders
       activeCountries
-    }
+    },
 
     // Zatím prázdná data pro charts - až budeme mít Order systém
     const salesData: Array<{date: string, sales: number, order: number}> = []
     const topProducts: Array<{name: string, sales: number, order: number, revenue: string}> = []
     const recentCampaigns = brand.campaign.slice(0, 5).map(campaign => ({
-      id: campaign.id
+      id: campaign.id,
       name: campaign.name
       startDate: campaign.startDate.toISOString()
       endDate: campaign.endDate.toISOString()
@@ -127,14 +127,14 @@ export async function GET() {
         email: brand.email
         totalProducts: brand._count.products
         totalCampaigns: brand._count.campaigns
-      }
+      },
     })
 
   } catch (error) {
     console.error('❌ [DASHBOARD] Error loading metrics:', error)
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
+  },
 } 

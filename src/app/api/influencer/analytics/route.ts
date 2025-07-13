@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
       // Get token from Authorization header
       const authHeader = req.headers.get('authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error:  'No token provided' }, { status:  401 })
-      }
+        return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+      },
 
       const token = authHeader.substring(7)
       let decoded: any
@@ -25,36 +25,36 @@ export async function GET(req: NextRequest) {
       try {
         decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
       } catch (error) {
-        return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-      }
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      },
 
       influencerId = decoded.id
 
       // Get influencer to verify existence
       const influencer = await prisma.influencer.findUnique({
-        where: { id: influencerId }
+        where: { id: influencerId },
       })
 
       if (!influencer) {
-        return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
-      }
-    }
+        return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+      },
+    },
 
     // Get all orders related to this influencer through discount codes
     const discountCodes = await prisma.discountCode.findMany({
-      where: { influencerId }
+      where: { influencerId },
       include: {
         order: {
           include: {
             items: {
               include: {
                 product: true
-              }
-            }
+              },
+            },
             commission: true
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     // Calculate analytics data
@@ -87,16 +87,16 @@ export async function GET(req: NextRequest) {
         thisMonthRevenue += orderTotal
         thisMonthCommission += parseFloat(commission.toString())
         thisMonthReturns += returnAmount
-      }
-    }
+      },
+    },
 
     // Get campaigns data
     const campaigns = await prisma.campaign.findMany({
       where: {
         influencerIds: {
           contains: influencerId
-        }
-      }
+        },
+      },
     })
 
     // Calculate campaign performance (simplified)
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
       const campaignReturns = campaignOrders.filter(order => order.status === 'returned').reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
 
       campaignPerformance.push({
-        id: campaign.id
+        id: campaign.id,
         name: campaign.name
         totalRevenue: campaignRevenue
         commission: campaignCommission
@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
         commissionRate: 12.5
         returnRate: campaignRevenue > 0 ? (campaignReturns / campaignRevenue) * 100 : 0
       })
-    }
+    },
 
     // Get product performance
     const products = await prisma.product.findMany({
@@ -134,11 +134,11 @@ export async function GET(req: NextRequest) {
               include: {
                 discountCode: true
                 commission: true
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     })
 
     for (const product of products) {
@@ -163,8 +163,8 @@ export async function GET(req: NextRequest) {
           netEarnings: productCommission - (productReturns * 0.125)
           returnRate: (productReturns / productRevenue) * 100
         })
-      }
-    }
+      },
+    },
 
     // Sort by revenue
     campaignPerformance.sort((a, b) => b.totalRevenue - a.totalRevenue)
@@ -182,7 +182,7 @@ export async function GET(req: NextRequest) {
       thisMonthRevenue
       thisMonthCommission
       thisMonthReturns
-    }
+    },
 
     return NextResponse.json({
       analytics
@@ -192,8 +192,8 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Analytics API error:', error)
-    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   } finally {
     await prisma.$disconnect()
-  }
+  },
 } 

@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     // Verify JWT token
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ message: 'Missing or invalid authorization header' }, { status:  401 })
-    }
+      return NextResponse.json({ message: 'Missing or invalid authorization header' }, { status: 401 })
+    },
 
     const token = authHeader.split(' ')[1]
     let decoded: any
@@ -18,22 +18,22 @@ export async function POST(request: NextRequest) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key')
     } catch (error) {
-      return NextResponse.json({ message: 'Invalid token' }, { status:  401 })
-    }
+      return NextResponse.json({ message: 'Invalid token' }, { status: 401 })
+    },
 
     // Validate token
     if (!decoded.id || decoded.type !== 'influencer') {
-      return NextResponse.json({ message: 'Invalid token' }, { status:  401 })
-    }
+      return NextResponse.json({ message: 'Invalid token' }, { status: 401 })
+    },
 
     // Get influencer
     const influencer = await prisma.influencer.findUnique({
-      where: { id: decoded.id }
+      where: { id: decoded.id },
     })
 
     if (!influencer) {
-      return NextResponse.json({ message: 'Influencer not found' }, { status:  404 })
-    }
+      return NextResponse.json({ message: 'Influencer not found' }, { status: 404 })
+    },
 
     // Parse form data
     const formData = await request.formData()
@@ -41,18 +41,18 @@ export async function POST(request: NextRequest) {
     const uploadType = formData.get('type') as string || 'avatar'
 
     if (!file) {
-      return NextResponse.json({ message: 'No file provided' }, { status:  400 })
-    }
+      return NextResponse.json({ message: 'No file provided' }, { status: 400 })
+    },
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ message: 'File must be an image' }, { status:  400 })
-    }
+      return NextResponse.json({ message: 'File must be an image' }, { status: 400 })
+    },
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ message: 'File size must be less than 5MB' }, { status:  400 })
-    }
+      return NextResponse.json({ message: 'File size must be less than 5MB' }, { status: 400 })
+    },
 
     // Generate unique filename
     const timestamp = Date.now()
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       await mkdir(fileDir, { recursive: true })
     } catch (error) {
       // Directory might already exist
-    }
+    },
 
     // Save file
     const bytes = await file.arrayBuffer()
@@ -81,9 +81,9 @@ export async function POST(request: NextRequest) {
     if (uploadType === 'avatar') {
       await prisma.influencer.update({
         where: { id: influencer.id },
-        data: { avatar: fileUrl }
+        data: { avatar: fileUrl },
       })
-    }
+    },
 
     console.log(`✅ [${uploadType.toUpperCase()}-UPLOAD] ${uploadType} uploaded for ${influencer.email}: ${fileUrl}`)
 
@@ -95,6 +95,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ [AVATAR-UPLOAD] Error:', error)
-    return NextResponse.json({ message: 'Internal server error' }, { status:  500 })
-  }
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+  },
 } 

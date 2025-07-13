@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
     if (!signature || !webhookSecret) {
       console.error('Missing Stripe signature or webhook secret');
       return NextResponse.json(
-        { error:  'Webhook signature missing' }
-        { status:  400 }
+        { error: 'Webhook signature missing' },
+        { status: 400 },
       );
-    }
+    },
 
     let event: Stripe.Event;
 
@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
       return NextResponse.json(
-        { error:  'Invalid signature' }
-        { status:  400 }
+        { error: 'Invalid signature' },
+        { status: 400 },
       );
-    }
+    },
 
     console.log('Received webhook event:', event.type, event.id);
 
@@ -58,18 +58,18 @@ export async function POST(request: NextRequest) {
 
       default:
         console.log(`Unhandled event type: ${event.type}`);
-    }
+    },
 
     return NextResponse.json({ received: true });
 
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json(
-      { error:  'Webhook handler failed' }
-      { status:  500 }
+      { error: 'Webhook handler failed' },
+      { status: 500 },
     );
-  }
-}
+  },
+},
 
 async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   console.log('💰 Payment succeeded:', paymentIntent.id);
@@ -93,8 +93,8 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   } catch (error) {
     console.error('Error handling payment success:', error);
     // In production, you might want to queue this for retry
-  }
-}
+  },
+},
 
 async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
   console.log('❌ Payment failed:', paymentIntent.id);
@@ -108,8 +108,8 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
     
   } catch (error) {
     console.error('Error handling payment failure:', error);
-  }
-}
+  },
+},
 
 async function handlePaymentProcessing(paymentIntent: Stripe.PaymentIntent) {
   console.log('⏳ Payment processing:', paymentIntent.id);
@@ -118,8 +118,8 @@ async function handlePaymentProcessing(paymentIntent: Stripe.PaymentIntent) {
     await mockOrderProcessing(paymentIntent.id, 'processing');
   } catch (error) {
     console.error('Error handling payment processing:', error);
-  }
-}
+  },
+},
 
 async function handlePaymentRequiresAction(paymentIntent: Stripe.PaymentIntent) {
   console.log('🔄 Payment requires action:', paymentIntent.id);
@@ -128,8 +128,8 @@ async function handlePaymentRequiresAction(paymentIntent: Stripe.PaymentIntent) 
     await mockOrderProcessing(paymentIntent.id, 'requires_action');
   } catch (error) {
     console.error('Error handling payment requires action:', error);
-  }
-}
+  },
+},
 
 // Mock function for order processing (replace with real database operations)
 async function mockOrderProcessing(paymentIntentId: string, status: string) {
@@ -138,11 +138,11 @@ async function mockOrderProcessing(paymentIntentId: string, status: string) {
   // This would be replaced with actual database operations
   // Example:
   // await prisma.order.update({
-  //   where: { paymentIntentId }
+  //   where: { paymentIntentId },
   //   data: { 
   //     paymentStatus: status
   //     updatedAt: new Date()
-  //   }
+  //   },
   // });
   
   return Promise.resolve();

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       },
       orderBy: {
         createdAt: 'asc'
-      }
+      },
     })
 
     console.log(`📋 Nalezeno ${approvedApplications.length} schválených aplikací`)
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         message: 'Žádné schválené aplikace k převodu',
         converted: 0
       })
-    }
+    },
 
     const convertedInfluencers = []
 
@@ -32,13 +32,13 @@ export async function POST(request: NextRequest) {
       try {
         // Zkontroluj, jestli už influencer s tímto emailem neexistuje
         const existingInfluencer = await prisma.influencer.findUnique({
-          where: { email: application.email }
+          where: { email: application.email },
         })
 
         if (existingInfluencer) {
           console.log(`⚠️  Influencer s emailem ${application.email} už existuje`)
           continue
-        }
+        },
 
         console.log(`👤 Převádím aplikaci: ${application.name} (${application.email})`)
 
@@ -57,13 +57,13 @@ export async function POST(request: NextRequest) {
             password: application.password, // CRITICAL: Přenos hesla z aplikace!
             slug: slug,
             isActive: true,
-            isApproved: true
+            isApproved: true,
             onboardingStatus: 'completed'
             commissionRate: 0.1, // 10% základní komise
             avatar: null
             bio: application.bio || null
             updatedAt: new Date()
-          }
+          },
         })
 
         // Vytvoř sociální sítě pro influencera  
@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
               username: application.instagram.replace('@', '')
               url: `https://instagram.com/${application.instagram.replace('@', '')}`
               followers: 10000, // Výchozí hodnota, bude aktualizována později
-            }
+            },
           })
-        }
+        },
 
         if (application.tiktok) {
           await prisma.influencerSocial.create({
@@ -89,9 +89,9 @@ export async function POST(request: NextRequest) {
               username: application.tiktok.replace('@', '')
               url: `https://tiktok.com/@${application.tiktok.replace('@', '')}`
               followers: 10000, // Výchozí hodnota, bude aktualizována později
-            }
+            },
           })
-        }
+        },
 
         if (application.youtube) {
           await prisma.influencerSocial.create({
@@ -102,9 +102,9 @@ export async function POST(request: NextRequest) {
               username: application.youtube
               url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/${application.youtube}`
               followers: 5000, // Výchozí hodnota, bude aktualizována později
-            }
+            },
           })
-        }
+        },
 
         if (application.facebook) {
           await prisma.influencerSocial.create({
@@ -115,9 +115,9 @@ export async function POST(request: NextRequest) {
               username: application.facebook
               url: application.facebook.includes('facebook.com') ? application.facebook : `https://facebook.com/${application.facebook}`
               followers: 5000, // Výchozí hodnota, bude aktualizována později
-            }
+            },
           })
-        }
+        },
 
         // Přidej content kategorie
         if (application.categories) {
@@ -129,9 +129,9 @@ export async function POST(request: NextRequest) {
                   id: Date.now().toString() + Math.random().toString(),
                   influencerId: newInfluencer.id
                   category: category
-                }
+                },
               })
-            }
+            },
           } catch (parseError) {
             console.log(`⚠️  Chyba při parsování kategorií pro ${application.email}:`, parseError)
             // Pokud parsing selže, přidáme alespoň jednu kategorii
@@ -140,15 +140,15 @@ export async function POST(request: NextRequest) {
                 id: Date.now().toString() + Math.random().toString(),
                 influencerId: newInfluencer.id
                 category: 'lifestyle'
-              }
+              },
             })
-          }
-        }
+          },
+        },
 
         // Změň status aplikace na 'converted'
         await prisma.influencerApplication.update({
-          where: { id: application.id }
-          data: { status:  'converted' }
+          where: { id: application.id },
+          data: { status: 'converted' },
         })
 
         convertedInfluencers.push({
@@ -162,8 +162,8 @@ export async function POST(request: NextRequest) {
 
       } catch (error) {
         console.error(`❌ Chyba při převodu aplikace ${application.email}:`, error)
-      }
-    }
+      },
+    },
 
     console.log(`🎉 Převedeno ${convertedInfluencers.length} influencerů`)
 
@@ -179,6 +179,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false
       error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status:  500 })
-  }
+    }, { status: 500 })
+  },
 } 

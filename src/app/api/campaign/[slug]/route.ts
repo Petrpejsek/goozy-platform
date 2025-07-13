@@ -5,7 +5,7 @@ import { validateCampaignSlug } from '@/lib/campaign-utils'
 // GET - Fetch campaign by slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const { slug } = await params
@@ -16,26 +16,26 @@ export async function GET(
     if (!validateCampaignSlug(slug)) {
       console.log('❌ Invalid slug format:', slug)
       return NextResponse.json(
-        { success: false, error: 'Invalid campaign slug format' }
-        { status:  400 }
+        { success: false, error: 'Invalid campaign slug format' },
+        { status: 400 },
       )
-    }
+    },
     
     // Find campaign by slug
     const campaign = await prisma.campaign.findUnique({
-      where: { slug }
+      where: { slug },
       include: {
         brand: true
-      }
+      },
     })
     
     if (!campaign) {
       console.log('❌ Campaign not found for slug:', slug)
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' }
-        { status:  404 }
+        { success: false, error: 'Campaign not found' },
+        { status: 404 },
       )
-    }
+    },
 
     // Get influencer data from influencerIds
     let influencer = null
@@ -48,7 +48,7 @@ export async function GET(
       console.log('🔍 Looking for influencer with ID:', influencerId)
       
       const influencerData = await prisma.influencer.findUnique({
-        where: { id: influencerId }
+        where: { id: influencerId },
       })
       
       if (influencerData) {
@@ -63,12 +63,12 @@ export async function GET(
           tiktok: null
           youtube: null
           slug: influencerData.slug
-        }
+        },
         console.log('✅ Found influencer:', influencerData.name)
       } else {
         console.log('❌ Influencer not found for ID:', influencerId)
-      }
-    }
+      },
+    },
     
     // Get products that the influencer has actually selected
     let products = []
@@ -80,10 +80,10 @@ export async function GET(
         where: {
           influencerId: influencer.id
           isActive: true,
-        }
+        },
         include: {
           product: true
-        }
+        },
       })
       
       if (influencerProducts.length > 0) {
@@ -98,7 +98,7 @@ export async function GET(
         influencerProducts.forEach(ip => {
           if (ip.product && ip.recommendation) {
             (productRecommendations as any)[ip.product.id] = ip.recommendation
-          }
+          },
         })
         
         console.log('📝 Found recommendations for product:', Object.keys(productRecommendations).length)
@@ -109,20 +109,20 @@ export async function GET(
           where: {
             brandId: campaign.brandId
             isAvailable: true
-          }
+          },
           take: 10
         })
-      }
+      },
     } else {
       // No influencer, get brand products
       products = await prisma.product.findMany({
         where: {
           brandId: campaign.brandId
           isAvailable: true
-        }
+        },
         take: 10
       })
-    }
+    },
     
     // Helper function to parse sizes/colors safely
     const parseArrayField = (field: string | null) => {
@@ -137,8 +137,8 @@ export async function GET(
       } catch {
         // If JSON parsing fails, treat as comma-separated string
         return field.split(',').map(item => item.trim()).filter(item => item.length > 0)
-      }
-    }
+      },
+    },
 
     console.log('✅ Campaign found:', campaign.id)
     console.log('✅ Found product:', products.length)
@@ -147,7 +147,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       campaign: {
-        id: campaign.id
+        id: campaign.id,
         slug: campaign.slug
         name: campaign.name
         description: campaign.description
@@ -177,14 +177,14 @@ export async function GET(
           colors: parseArrayField(product.colors)
           recommendation: (productRecommendations as any)[product.id] || null // Přidáno recommendation
         }))
-      }
+      },
     })
     
   } catch (error) {
     console.error('❌ Error fetching campaign by slug:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch campaign' }
-      { status:  500 }
+      { success: false, error: 'Failed to fetch campaign' },
+      { status: 500 },
     )
-  }
+  },
 } 

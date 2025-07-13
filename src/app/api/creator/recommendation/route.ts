@@ -4,14 +4,14 @@ import { randomUUID } from 'crypto'
 import jwt from 'jsonwebtoken'
 
 // POST   /api/influencer/recommendation
-// Body: { productId: string, recommendation: string }
+// Body: { productId: string, recommendation: string },
 export async function POST(request: NextRequest) {
   try {
     const { productId, recommendation } = await request.json()
 
     if (!productId || typeof recommendation !== 'string') {
-      return NextResponse.json({ success: false, error: 'Invalid input' }, { status:  400 })
-    }
+      return NextResponse.json({ success: false, error: 'Invalid input' }, { status: 400 })
+    },
 
     // Extract token – first try cookie, then Authorization header
     let token: string | undefined
@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
       const authHeader = request.headers.get('Authorization')
       if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.split(' ')[1]
-      }
-    }
+      },
+    },
 
     if (!token) {
-      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status:  401 })
-    }
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
+    },
 
     // Decode JWT – try token first, then fallback to base64-encoded email (same logic as other influencer endpoints)
     let influencerId: string
@@ -40,16 +40,16 @@ export async function POST(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencer = await prisma.influencer.findUnique({
-          where: { email }
-          select: { id: true }
+          where: { email },
+          select: { id: true },
         })
         if (!influencer) throw new Error('Influencer not found by email')
         influencerId = influencer.id
         console.log('✅ [RECOMMENDATION] Fallback auth successful for', email)
       } catch (fallbackError) {
-        return NextResponse.json({ success: false, error: 'Invalid token' }, { status:  401 })
-      }
-    }
+        return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 })
+      },
+    },
 
     // Upsert influencerProduct record
     await prisma.influencerProduct.upsert({
@@ -57,24 +57,24 @@ export async function POST(request: NextRequest) {
         influencerId_productId: {
           influencerId
           productId
-        }
-      }
+        },
+      },
       update: {
         recommendation: recommendation.trim()
         isActive: true,
-      }
+      },
       create: {
         id: randomUUID()
         influencerId
         productId
         recommendation: recommendation.trim()
         isActive: true,
-      }
+      },
     })
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('❌ Error saving recommendation:', error)
-    return NextResponse.json({ success: false, error: 'Server error' }, { status:  500 })
-  }
+    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 })
+  },
 } 

@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     const creator = await prisma.influencer.findFirst({
       where: { 
         email: validatedData.email, 
-        isApproved: true
+        isApproved: true,
         isActive: true,
-      }
+      },
     })
 
     if (!creator) {
@@ -31,28 +31,28 @@ export async function POST(request: NextRequest) {
       
       // Check if there is a pending or rejected application
       const application = await prisma.influencerApplication.findFirst({
-        where: { email: validatedData.email }
-        orderBy: { createdAt: 'desc' }
+        where: { email: validatedData.email },
+        orderBy: { createdAt: 'desc' },
       })
       if (application) {
         if (application.status === 'pending') {
-          return NextResponse.json({ error:  'Your application is still being reviewed.' }, { status:  403 })
-        }
+          return NextResponse.json({ error: 'Your application is still being reviewed.' }, { status: 403 })
+        },
         if (application.status === 'rejected') {
-          return NextResponse.json({ error:  'Your application has been rejected.' }, { status:  403 })
-        }
+          return NextResponse.json({ error: 'Your application has been rejected.' }, { status: 403 })
+        },
         if (application.status === 'converted') {
-          return NextResponse.json({ error:  'Please contact support for account activation.' }, { status:  403 })
-        }
-      }
-      return NextResponse.json({ error:  'Invalid credentials or unapproved account.' }, { status:  401 })
-    }
+          return NextResponse.json({ error: 'Please contact support for account activation.' }, { status: 403 })
+        },
+      },
+      return NextResponse.json({ error: 'Invalid credentials or unapproved account.' }, { status: 401 })
+    },
 
     // Check if creator has a password (converted from application should have one)
     if (!creator.password) {
       console.log('❌ [CREATOR-LOGIN] Creator has no password:', validatedData.email)
-      return NextResponse.json({ error:  'Account setup incomplete. Please contact support.' }, { status:  403 })
-    }
+      return NextResponse.json({ error: 'Account setup incomplete. Please contact support.' }, { status: 403 })
+    },
 
     console.log('🔍 [CREATOR-LOGIN] Found creator, verifying password...')
 
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     
     if (!isPasswordValid) {
       console.log('❌ [CREATOR-LOGIN] Invalid password for:', validatedData.email)
-      return NextResponse.json({ error:  'Invalid credentials.' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 })
+    },
 
     console.log('✅ [CREATOR-LOGIN] Login successful for:', validatedData.email)
 
@@ -73,9 +73,9 @@ export async function POST(request: NextRequest) {
         email: creator.email
         name: creator.name
         type: 'creator'
-      }
+      },
       process.env.JWT_SECRET || 'fallback-secret-key'
-      { expiresIn: '7d' }
+      { expiresIn: '7d' },
     )
 
     return NextResponse.json({
@@ -85,22 +85,22 @@ export async function POST(request: NextRequest) {
         id: creator.id
         name: creator.name
         email: creator.email
-      }
-    }, { status:  200 })
+      },
+    }, { status: 200 })
 
   } catch (error) {
     console.error('❌ [CREATOR-LOGIN] Login error:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error:  error.errors[0].message }
-        { status:  400 }
+        { error: error.errors[0].message },
+        { status: 400 },
       )
-    }
+    },
 
     return NextResponse.json(
-      { error:  'Internal Server Error' }
-      { status:  500 }
+      { error: 'Internal Server Error' },
+      { status: 500 },
     )
-  }
+  },
 } 

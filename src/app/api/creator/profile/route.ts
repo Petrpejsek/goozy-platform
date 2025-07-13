@@ -11,8 +11,8 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       console.log('❌ [PROFILE-UPDATE] No valid auth header')
-      return NextResponse.json({ error:  'No valid authentication token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'No valid authentication token' }, { status: 401 })
+    },
 
     const token = authHeader.split(' ')[1]
     
@@ -23,13 +23,13 @@ export async function PUT(request: NextRequest) {
       console.log('✅ [PROFILE-UPDATE] Token verified for:', decoded.email)
     } catch (error) {
       console.log('❌ [PROFILE-UPDATE] Invalid token:', error)
-      return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    },
 
     if (!decoded.id || decoded.type !== 'influencer') {
       console.log('❌ [PROFILE-UPDATE] Invalid token type')
-      return NextResponse.json({ error:  'Invalid token type' }, { status:  401 })
-    }
+      return NextResponse.json({ error: 'Invalid token type' }, { status: 401 })
+    },
 
     const body = await request.json()
     console.log('📋 [PROFILE-UPDATE] Received data:', JSON.stringify(body, null, 2))
@@ -49,13 +49,13 @@ export async function PUT(request: NextRequest) {
     // Aktualizovat základní údaje influencera
     console.log('🔄 [PROFILE-UPDATE] Updating basic influencer data...')
     const updatedInfluencer = await prisma.influencer.update({
-      where: { id: influencerId }
+      where: { id: influencerId },
       data: {
         name: name || undefined
         phone: phone || undefined
         bio: bio || undefined
         avatar: avatar || undefined
-      }
+      },
     })
     console.log('✅ [PROFILE-UPDATE] Basic data updated')
 
@@ -63,12 +63,12 @@ export async function PUT(request: NextRequest) {
     if (profile && (profile.age || profile.gender || profile.location)) {
       console.log('🔄 [PROFILE-UPDATE] Updating profile data...')
       await prisma.influencerProfile.upsert({
-        where: { influencerId }
+        where: { influencerId },
         update: {
           age: profile.age || null
           gender: profile.gender || null
           location: profile.location || null
-        }
+        },
         create: {
           id: randomUUID()
           influencerId
@@ -76,17 +76,17 @@ export async function PUT(request: NextRequest) {
           gender: profile.gender || null
           location: profile.location || null
           updatedAt: new Date()
-        }
+        },
       })
       console.log('✅ [PROFILE-UPDATE] Profile data updated')
-    }
+    },
 
     // Aktualizovat sociální sítě
     if (socialNetworks && Array.isArray(socialNetworks)) {
       console.log('🔄 [PROFILE-UPDATE] Updating social networks...')
       // Smazat existující sociální sítě
       await prisma.influencerSocial.deleteMany({
-        where: { influencerId }
+        where: { influencerId },
       })
 
       // Přidat nové sociální sítě
@@ -108,8 +108,8 @@ export async function PUT(request: NextRequest) {
               return `https://x.com/${username}`
             default:
               return `https://${platform}.com/${username}`
-          }
-        }
+          },
+        },
 
         await prisma.influencerSocial.createMany({
           data: socialNetworks.map(social => ({
@@ -121,16 +121,16 @@ export async function PUT(request: NextRequest) {
             followers: social.followers || 0 // Default hodnota
           }))
         })
-      }
+      },
       console.log('✅ [PROFILE-UPDATE] Social networks updated')
-    }
+    },
 
     // Aktualizovat kategorie obsahu
     if (contentCategories && Array.isArray(contentCategories)) {
       console.log('🔄 [PROFILE-UPDATE] Updating content categories...')
       // Smazat existující kategorie
       await prisma.influencerCategory.deleteMany({
-        where: { influencerId }
+        where: { influencerId },
       })
 
       // Přidat nové kategorie
@@ -142,9 +142,9 @@ export async function PUT(request: NextRequest) {
             category
           }))
         })
-      }
+      },
       console.log('✅ [PROFILE-UPDATE] Content categories updated')
-    }
+    },
 
     console.log(`✅ [PROFILE-UPDATE] Profile updated successfully for: ${updatedInfluencer.name}`)
 
@@ -157,8 +157,8 @@ export async function PUT(request: NextRequest) {
     console.error('❌ [PROFILE-UPDATE] Error:', error)
     console.error('❌ [PROFILE-UPDATE] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error:  'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' }
-      { status:  500 }
+      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 },
     )
-  }
+  },
 } 

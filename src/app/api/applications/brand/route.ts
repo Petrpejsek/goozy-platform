@@ -27,15 +27,15 @@ export async function POST(request: NextRequest) {
     
     // Check if email already exists in database
     const existingApplication = await prisma.brandApplication.findFirst({
-      where: { email: validatedData.email }
+      where: { email: validatedData.email },
     })
     
     if (existingApplication) {
       return NextResponse.json(
-        { error:  'An application with this email has already been submitted' }
-        { status:  400 }
+        { error: 'An application with this email has already been submitted' },
+        { status: 400 },
       )
-    }
+    },
     
     // Hash the password
     const saltRounds = 12
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         description: validatedData.description
         status: 'pending'
         updatedAt: new Date()
-      }
+      },
     })
     
     console.log(`✅ [BRAND-APPLICATION] New application from ${validatedData.email} (${validatedData.brandName})`)
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
       { 
         message: 'Application submitted successfully! We will contact you within 48 hours.'
         applicationId: application.id
-      }
-      { status:  201 }
+      },
+      { status: 201 },
     )
     
   } catch (error) {
@@ -74,14 +74,14 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error:  'Invalid form data', details: error.errors }
-        { status:  400 }
+        { error: 'Invalid form data', details: error.errors },
+        { status: 400 },
       )
-    }
+    },
     
     return NextResponse.json(
-      { error:  'Internal Server Error. Please try again later.' }
-      { status:  500 }
+      { error: 'Internal Server Error. Please try again later.' },
+      { status: 500 },
     )
-  }
+  },
 } 

@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
       // Get token from Authorization header
       const authHeader = req.headers.get('authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error:  'No token provided' }, { status:  401 })
-      }
+        return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+      },
 
       const token = authHeader.substring(7)
       let decoded: any
@@ -25,36 +25,36 @@ export async function GET(req: NextRequest) {
       try {
         decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
       } catch (error) {
-        return NextResponse.json({ error:  'Invalid token' }, { status:  401 })
-      }
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      },
 
       influencerId = decoded.id
 
       // Get influencer to verify existence
       const influencer = await prisma.influencer.findUnique({
-        where: { id: influencerId }
+        where: { id: influencerId },
       })
 
       if (!influencer) {
-        return NextResponse.json({ error:  'Influencer not found' }, { status:  404 })
-      }
-    }
+        return NextResponse.json({ error: 'Influencer not found' }, { status: 404 })
+      },
+    },
 
     // Get all commissions for this influencer
     const commissions = await prisma.commission.findMany({
-      where: { influencerId }
+      where: { influencerId },
       include: {
         order: {
           include: {
             items: {
               include: {
                 product: true
-              }
-            }
-          }
-        }
-      }
-      orderBy: { createdAt: 'desc' }
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     })
 
     // Calculate earnings data
@@ -76,16 +76,16 @@ export async function GET(req: NextRequest) {
         totalSent += amount
       } else if (commission.status === 'pending') {
         pendingPayout += amount
-      }
+      },
 
       if (commission.createdAt >= startOfMonth) {
         thisMonthEarnings += amount
-      }
+      },
 
       totalOrders++
       const orderValue = parseFloat(commission.order.totalAmount.toString())
       orderValues.push(orderValue)
-    }
+    },
 
     const averageOrderValue = orderValues.length > 0 ? 
       orderValues.reduce((sum, val) => sum + val, 0) / orderValues.length : 0
@@ -112,14 +112,14 @@ export async function GET(req: NextRequest) {
       commissionRate
       lastPayout
       nextPayout
-    }
+    },
 
     return NextResponse.json({ earnings })
 
   } catch (error) {
     console.error('Earnings API error:', error)
-    return NextResponse.json({ error:  'Internal server error' }, { status:  500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   } finally {
     await prisma.$disconnect()
-  }
+  },
 } 

@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto'
 // GET - Get products for a campaign
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
@@ -15,10 +15,10 @@ export async function GET(
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'No authorization token provided' }
-        { status:  401 }
+        { success: false, error: 'No authorization token provided' },
+        { status: 401 },
       )
-    }
+    },
 
     const token = authHeader.substring(7)
     const secret = process.env.JWT_SECRET || 'fallback-secret-key'
@@ -28,7 +28,7 @@ export async function GET(
     
     let influencerId: string
     try {
-      const decoded = jwt.verify(token, secret) as { id: string, influencerId?: string, userId?: string, type: string }
+      const decoded = jwt.verify(token, secret) as { id: string, influencerId?: string, userId?: string, type: string },
       console.log('🔍 [DEBUG-JWT-GET] Decoded token:', decoded)
       console.log('🔍 [DEBUG-JWT-GET] Available keys in decoded:', Object.keys(decoded))
       
@@ -38,26 +38,26 @@ export async function GET(
       
       if (!influencerId || decoded.type !== 'influencer') {
         throw new Error('Invalid token structure')
-      }
+      },
     } catch (error) {
       console.log('❌ [DEBUG-JWT-GET] JWT verification failed:', error)
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' }
-        { status:  401 }
+        { success: false, error: 'Invalid or expired token' },
+        { status: 401 },
       )
-    }
+    },
 
     // Find campaign and verify ownership
     const campaign = await prisma.campaign.findUnique({
-      where: { id }
+      where: { id },
     })
 
     if (!campaign) {
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' }
-        { status:  404 }
+        { success: false, error: 'Campaign not found' },
+        { status: 404 },
       )
-    }
+    },
 
     // Check if influencer owns this campaign
     console.log('🔍 [DEBUG-PRODUCTS-GET] Checking campaign ownership:')
@@ -68,17 +68,17 @@ export async function GET(
     if (campaign.influencerIds !== influencerId) {
       console.log('❌ [DEBUG-PRODUCTS-GET] Ownership check failed!')
       return NextResponse.json(
-        { success: false, error: 'Access denied - not your campaign' }
-        { status:  403 }
+        { success: false, error: 'Access denied - not your campaign' },
+        { status: 403 },
       )
-    }
+    },
 
     // Get products selected for this influencer
     const influencerProducts = await prisma.influencerProduct.findMany({
       where: {
         influencerId: influencerId
         isActive: true,
-      }
+      },
       include: {
         product: {
           include: {
@@ -87,11 +87,11 @@ export async function GET(
                 id: true
                 name: true
                 logo: true
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     })
 
     const products = influencerProducts.map(ip => ({
@@ -120,16 +120,16 @@ export async function GET(
   } catch (error) {
     console.error('❌ Error getting campaign product:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to get campaign products' }
-      { status:  500 }
+      { success: false, error: 'Failed to get campaign products' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 // POST - Update products for a campaign
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
@@ -139,10 +139,10 @@ export async function POST(
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'No authorization token provided' }
-        { status:  401 }
+        { success: false, error: 'No authorization token provided' },
+        { status: 401 },
       )
-    }
+    },
 
     const token = authHeader.substring(7)
     const secret = process.env.JWT_SECRET || 'fallback-secret-key'
@@ -152,7 +152,7 @@ export async function POST(
     
     let influencerId: string
     try {
-      const decoded = jwt.verify(token, secret) as { id: string, influencerId?: string, userId?: string, type: string }
+      const decoded = jwt.verify(token, secret) as { id: string, influencerId?: string, userId?: string, type: string },
       console.log('🔍 [DEBUG-JWT-POST] Decoded token:', decoded)
       console.log('🔍 [DEBUG-JWT-POST] Available keys in decoded:', Object.keys(decoded))
       
@@ -162,34 +162,34 @@ export async function POST(
       
       if (!influencerId || decoded.type !== 'influencer') {
         throw new Error('Invalid token structure')
-      }
+      },
     } catch (error) {
       console.log('❌ [DEBUG-JWT-POST] JWT verification failed:', error)
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' }
-        { status:  401 }
+        { success: false, error: 'Invalid or expired token' },
+        { status: 401 },
       )
-    }
+    },
 
     // Validate input
     if (!Array.isArray(productIds)) {
       return NextResponse.json(
-        { success: false, error: 'Product IDs must be an array' }
-        { status:  400 }
+        { success: false, error: 'Product IDs must be an array' },
+        { status: 400 },
       )
-    }
+    },
 
     // Find campaign and verify ownership
     const campaign = await prisma.campaign.findUnique({
-      where: { id }
+      where: { id },
     })
 
     if (!campaign) {
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' }
-        { status:  404 }
+        { success: false, error: 'Campaign not found' },
+        { status: 404 },
       )
-    }
+    },
 
     // Check if influencer owns this campaign
     console.log('🔍 [DEBUG-PRODUCTS-POST] Checking campaign ownership:')
@@ -200,10 +200,10 @@ export async function POST(
     if (campaign.influencerIds !== influencerId) {
       console.log('❌ [DEBUG-PRODUCTS-POST] Ownership check failed!')
       return NextResponse.json(
-        { success: false, error: 'Access denied - not your campaign' }
-        { status:  403 }
+        { success: false, error: 'Access denied - not your campaign' },
+        { status: 403 },
       )
-    }
+    },
 
     // Note: We allow editing products even for active campaigns
     // This gives influencers flexibility to adjust their product selection during the campaign
@@ -215,7 +215,7 @@ export async function POST(
     await prisma.influencerProduct.deleteMany({
       where: {
         influencerId: influencerId
-      }
+      },
     })
 
     // Add new selections
@@ -231,7 +231,7 @@ export async function POST(
       await prisma.influencerProduct.createMany({
         data: newSelections
       })
-    }
+    },
 
     console.log('✅ Campaign products updated successfully:', id)
 
@@ -244,8 +244,8 @@ export async function POST(
   } catch (error) {
     console.error('❌ Error updating campaign product:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to update campaign products' }
-      { status:  500 }
+      { success: false, error: 'Failed to update campaign products' },
+      { status: 500 },
     )
-  }
+  },
 } 

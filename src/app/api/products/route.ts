@@ -13,12 +13,12 @@ export async function GET(request: NextRequest) {
       isAvailable: true
       stockQuantity: {
         gt: 0
-      }
-    }
+      },
+    },
 
     if (category) {
       where.category = category
-    }
+    },
 
     // Load products with brand information
     const products = await prisma.product.findMany({
@@ -29,12 +29,12 @@ export async function GET(request: NextRequest) {
             id: true
             name: true
             logo: true
-          }
-        }
-      }
+          },
+        },
+      },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
       take: limit
       skip: offset
     })
@@ -68,8 +68,8 @@ export async function GET(request: NextRequest) {
           limit
           offset
           hasMore: offset + limit < totalCount
-        }
-      }
+        },
+      },
     })
 
   } catch (error) {
@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to load products' 
-      }
-      { status:  500 }
+      },
+      { status: 500 },
     )
-  }
+  },
 } 

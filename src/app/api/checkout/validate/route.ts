@@ -21,15 +21,15 @@ export async function POST(request: NextRequest) {
     rateLimits: {
       requests: 30
       windowMs: 60000, // 1 minute
-    }
+    },
   });
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error:  securityResult.reason }
-      { status:  securityResult.status }
+      { error: securityResult.reason },
+      { status: securityResult.status },
     );
-  }
+  },
 
   try {
     const body = await request.json();
@@ -42,17 +42,17 @@ export async function POST(request: NextRequest) {
       // Mock product validation (replace with real database check)
       if (item.price <= 0) {
         issues.push('Neplatná cena produktu');
-      }
+      },
       
       if (item.quantity <= 0 || item.quantity > 99) {
         issues.push('Neplatné množství (1-99)');
-      }
+      },
 
       // Mock stock check
       const mockStock = Math.floor(Math.random() * 50) + 10;
       if (item.quantity > mockStock) {
         issues.push(`Nedostatečné množství na skladě (dostupné: ${mockStock})`);
-      }
+      },
 
       return {
         id: item.id
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         subtotal: subtotal
         currency: 'EUR'
         hasErrors: hasErrors
-      }
+      },
       items: validationResults
       campaign: campaignSlug ? {
         slug: campaignSlug
@@ -96,14 +96,14 @@ export async function POST(request: NextRequest) {
         { 
           error: 'Neplatná data'
           details: error.errors
-        }
-        { status:  400 }
+        },
+        { status: 400 },
       );
-    }
+    },
 
     return NextResponse.json(
-      { error:  'Chyba při validaci košíku' }
-      { status:  500 }
+      { error: 'Chyba při validaci košíku' },
+      { status: 500 },
     );
-  }
+  },
 } 

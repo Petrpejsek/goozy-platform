@@ -9,7 +9,7 @@ const updateApplicationSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const body = await request.json()
@@ -26,19 +26,19 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error:  'Application not found' },
-        { status:  404 },
+        { error: 'Application not found' },
+        { status: 404 },
       )
-    }
+    },
     
-    let updateData: any = {}
+    let updateData: any = {},
     let message = ''
     
     if (action === 'add_notes') {
       // Just add notes without changing status
       updateData = {
         notes: notes || application.notes
-      }
+      },
       message = 'Notes updated successfully'
     } else {
       // Update status and optionally notes
@@ -46,9 +46,9 @@ export async function PATCH(
       updateData = {
         status: newStatus,
         notes: notes || application.notes,
-      }
+      },
       message = `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully`
-    }
+    },
     
     const updatedApplication = await prisma.brandApplication.update({
       where: { id: applicationId },
@@ -68,21 +68,21 @@ export async function PATCH(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error:  'Invalid data', details: error.errors },
-        { status:  400 },
+        { error: 'Invalid data', details: error.errors },
+        { status: 400 },
       )
-    }
+    },
     
     return NextResponse.json(
-      { error:  'Server error' },
-      { status:  500 },
+      { error: 'Server error' },
+      { status: 500 },
     )
-  }
-}
+  },
+},
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Resolve params first
@@ -91,19 +91,19 @@ export async function DELETE(
     
     // Check if the application exists
     const application = await prisma.brandApplication.findUnique({
-      where: { id: applicationId }
+      where: { id: applicationId },
     })
     
     if (!application) {
       return NextResponse.json(
-        { error:  'Application not found' },
-        { status:  404 },
+        { error: 'Application not found' },
+        { status: 404 },
       )
-    }
+    },
     
     // Delete the application
     await prisma.brandApplication.delete({
-      where: { id: applicationId }
+      where: { id: applicationId },
     })
     
     return NextResponse.json({
@@ -114,8 +114,8 @@ export async function DELETE(
     console.error('Error deleting application:', error)
     
     return NextResponse.json(
-      { error:  'Server error' },
-      { status:  500 },
+      { error: 'Server error' },
+      { status: 500 },
     )
-  }
+  },
 } 
