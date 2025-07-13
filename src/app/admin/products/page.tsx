@@ -95,7 +95,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         }
       }
     }),
-    prisma.products.count({
+    prisma.product.count({
       where: {
         ...whereClause,
         OR: [
