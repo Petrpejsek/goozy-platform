@@ -69,11 +69,11 @@ export async function GET(request: NextRequest) {
         socialNetworks: true,
         contentCategories: true,
         profile: true,
-        influencerProducts: {
-          include: {
-            product: true
-          }
-        },
+        // influencerProducts: {
+        //   include: {
+        //     product: true
+        //   }
+        // },
         orders: {
           where: {
             status: 'completed'
