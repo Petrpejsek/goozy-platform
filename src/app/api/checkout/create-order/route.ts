@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to create order',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
       },
       { status: 500 }
     );
