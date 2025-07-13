@@ -52,10 +52,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   // Načti data
   const [products, totalCount, brands, categories, totalProducts, totalBrands, outOfStock, totalValue] = await Promise.all([
-    prisma.products.findMany({
+    prisma.product.findMany({
       where: whereClause,
       include: {
-        brands: {
+        brand: {
           select: { 
             name: true, 
             id: true,
@@ -81,7 +81,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       select: { id: true, name: true },
       orderBy: { name: 'asc' }
     }),
-    prisma.products.findMany({
+    prisma.product.findMany({
       select: { category: true },
       distinct: ['category'],
       orderBy: { category: 'asc' }
