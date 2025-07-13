@@ -90,13 +90,13 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const totalEarnings = creator.commissions.reduce((sum, commission) => sum + commission.amount, 0)
-    const activeProducts = creator.influencerProducts.length
+    const activeProducts = 0 // creator.influencerProducts?.length || 0
     const totalOrders = creator.orders.length
-    const totalFollowers = creator.influencerSocial.reduce((sum, social) => sum + (social.followers || 0), 0)
+    const totalFollowers = creator.socialNetworks.reduce((sum, social) => sum + (social.followers || 0), 0)
 
     // Get main social network for followers display
-    const mainSocial = creator.influencerSocial.find(s => s.platform === 'instagram') 
-      || creator.influencerSocial[0]
+    const mainSocial = creator.socialNetworks.find(s => s.platform === 'instagram') 
+      || creator.socialNetworks[0]
 
     const response = {
       creator: {
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         activeProducts: activeProducts,
         totalOrders: totalOrders,
         commissionRate: Math.round(creator.commissionRate * 100), // Convert to percentage
-        socialNetworks: creator.influencerSocial,
+        socialNetworks: creator.socialNetworks,
         contentCategories: creator.influencerCategory,
         profile: creator.influencer_profiles,
         isActive: creator.isActive,
