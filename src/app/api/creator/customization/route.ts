@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     if (existingCustomization) {
       // Update existing customization
-      await prisma.influencercustomization.update({
+      await prisma.influencer.update({
         where: { id: existingCustomization.id },
         data: {
           theme: theme || existingCustomization.theme,
