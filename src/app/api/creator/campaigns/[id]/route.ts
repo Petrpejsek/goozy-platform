@@ -50,7 +50,7 @@ export async function GET(
     const campaign = await prisma.campaign.findUnique({
       where: { id },
       include: {
-        brands: {
+        brand: {
           select: {
             id: true,
             name: true,
@@ -94,7 +94,7 @@ export async function GET(
         status: campaign.status,
         isActive: campaign.isActive,
         slug: campaign.slug,
-        brand: campaign.brands,
+        brand: campaign.brand,
         expectedReach: campaign.expectedReach,
         budgetAllocated: campaign.budgetAllocated,
         currency: campaign.currency,
