@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get customization from database
-    const customization = await prisma.influencerCustomization.findFirst({
-      where: { influencerId: decoded.id }
+    const customization = await prisma.influencer.findFirst({
+      where: { id: decoded.id }
     })
 
     // Return default customization if none exists
