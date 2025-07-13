@@ -743,19 +743,19 @@ export default function Home() {
                 <div className="infinite-scroll">
                   {/* První sada obrázků */}
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&auto=format" alt="Nike sneakers" className="w-full h-full object-cover" />
+                    <img src="/brands/sneakers.jpg" alt="Nike sneakers" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&auto=format" alt="Fashion hoodie" className="w-full h-full object-cover" />
+                    <img src="/brands/hoodie.jpg" alt="Fashion hoodie" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&auto=format" alt="Pink sweatpants" className="w-full h-full object-cover" />
+                    <img src="/brands/sweatpants.jpg" alt="Pink sweatpants" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&auto=format" alt="Beauty cosmetics" className="w-full h-full object-cover" />
+                    <img src="/brands/cosmetics.jpg" alt="Beauty cosmetics" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop&auto=format" alt="Luxury handbag" className="w-full h-full object-cover" />
+                    <img src="/brands/handbag.jpg" alt="Luxury handbag" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
                     <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=400&fit=crop&auto=format" alt="Athletic shoes" className="w-full h-full object-cover" />
@@ -878,19 +878,19 @@ export default function Home() {
                 <div className="infinite-scroll-reverse">
                   {/* První sada obrázků */}
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop&auto=format" alt="Designer sunglasses" className="w-full h-full object-cover" />
+                    <img src="/brands/sunglasses.jpg" alt="Designer sunglasses" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&auto=format" alt="Fashion store" className="w-full h-full object-cover" />
+                    <img src="/brands/fashion-store.jpg" alt="Fashion store" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59d32?w=400&h=400&fit=crop&auto=format" alt="Luxury perfume" className="w-full h-full object-cover" />
+                    <img src="/brands/perfume.jpg" alt="Luxury perfume" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=400&fit=crop&auto=format" alt="Pearl jewelry" className="w-full h-full object-cover" />
+                    <img src="/brands/jewelry.jpg" alt="Pearl jewelry" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&auto=format" alt="Leather jacket" className="w-full h-full object-cover" />
+                    <img src="/brands/jacket.jpg" alt="Leather jacket" className="w-full h-full object-cover" />
                   </div>
                   <div className="scroll-item rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-sm">
                     <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop&auto=format" alt="Luxury watch" className="w-full h-full object-cover" />
