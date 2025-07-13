@@ -10,15 +10,15 @@ export async function GET() {
     if (!user) {
       console.log('❌ [BRAND-VERIFY] No valid authentication found')
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    },
+    }
     
     console.log(`✅ [BRAND-VERIFY] Authentication verified for: ${user.email} (${user.brandName})`)
     
     return NextResponse.json({ 
       success: true, 
       user: {
-        brandId: user.brandId
-        email: user.email
+        brandId: user.brandId,
+        email: user.email,
         brandName: user.brandName
       },
     })
@@ -26,5 +26,5 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [BRAND-VERIFY] Verification error:', error)
     return NextResponse.json({ error: 'Authentication verification failed' }, { status: 500 })
-  },
+  }
 } 
