@@ -356,7 +356,7 @@ export default async function InfluencerDetail({ params }: PageProps) {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h2>
                 <div className="space-y-3">
-                  {influencer.order.slice(0, 5).map((order) => (
+                  {influencer.orders.slice(0, 5).map((order) => (
                     <div key={order.id} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-start">
                         <div>
