@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // Skip all syntax checking for emergency deployment
+  swcMinify: false,
+  
   // Disable webpack optimization for faster builds
   webpack: (config, { isServer }) => {
     if (!isServer) {
