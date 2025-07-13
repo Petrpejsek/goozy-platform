@@ -181,9 +181,9 @@ export async function POST(request: NextRequest) {
           supplier,
           items: [],
           subtotal: 0,
-          shippingCost: SHIPPING_COSTS[
+          shippingCost: (SHIPPING_COSTS as any)[
             EU_COUNTRIES.includes(shippingAddress.country) ? 'EU' : 'NON_EU'
-          ][supplier] || SHIPPING_COSTS[
+          ][supplier] || (SHIPPING_COSTS as any)[
             EU_COUNTRIES.includes(shippingAddress.country) ? 'EU' : 'NON_EU'
           ]['default']
         };
