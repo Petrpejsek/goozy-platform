@@ -25,7 +25,7 @@ export async function GET(
     const campaign = await prisma.campaign.findUnique({
       where: { slug },
       include: {
-        brands: true
+        brand: true
       }
     })
     
@@ -155,7 +155,7 @@ export async function GET(
         endDate: campaign.endDate.toISOString(),
         status: campaign.status,
         isActive: campaign.isActive,
-        brand: campaign.brands,
+        brand: campaign.brand,
         expectedReach: campaign.expectedReach,
         budgetAllocated: campaign.budgetAllocated,
         currency: campaign.currency,
