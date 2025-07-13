@@ -12,10 +12,10 @@ export default async function AdminProductDetail({ params }: PageProps) {
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
-        brands: true,
-        product_mappings: {
+        brand: true,
+        productMappings: {
           include: {
-            suppliers: true
+            supplier: true
           }
         }
       },
@@ -151,9 +151,9 @@ export default async function AdminProductDetail({ params }: PageProps) {
                     Supplier Information
                   </h3>
                   
-                  {product.product_mappings.length > 0 ? (
+                  {product.productMappings.length > 0 ? (
                     <div className="space-y-4">
-                      {product.product_mappings.map((mapping) => (
+                                              {product.productMappings.map((mapping) => (
                         <div key={mapping.id} className="bg-white rounded-lg p-4 border border-blue-100">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
