@@ -628,7 +628,7 @@ export default async function InfluencerApplicationDetail({ params }: PageProps)
                     <div>
                       <h3 className="font-medium text-gray-900 mb-2">Recent Orders</h3>
                       <div className="space-y-2">
-                        {revenueStats.order.map((order) => (
+                        {revenueStats.orders.map((order) => (
                           <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div>
                               <div className="font-medium text-sm">#{order.orderNumber}</div>
