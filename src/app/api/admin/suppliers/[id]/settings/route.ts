@@ -91,7 +91,7 @@ export async function PATCH(
         updatedAt: new Date()
       },
       include: {
-        brands: {
+        brand: {
           select: {
             name: true
           }
