@@ -95,7 +95,7 @@ export default async function InfluencersPage() {
   const activeInfluencers = influencers.filter(inf => inf.isActive && inf.isApproved).length
   const pendingInfluencers = influencers.filter(inf => inf.onboardingStatus === 'pending').length
   const totalRevenue = influencers.reduce((sum, inf) => 
-    sum + inf.order.reduce((orderSum, order) => orderSum + order.totalAmount, 0), 0
+    sum + inf.orders.reduce((orderSum, order) => orderSum + order.totalAmount, 0), 0
   )
 
   return (
