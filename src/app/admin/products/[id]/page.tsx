@@ -158,7 +158,7 @@ export default async function AdminProductDetail({ params }: PageProps) {
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <span className="text-sm text-gray-600">Supplier Name:</span>
-                              <div className="font-medium text-black">{mapping.suppliers.name}</div>
+                              <div className="font-medium text-black">{mapping.supplier.name}</div>
                             </div>
                             <div>
                               <span className="text-sm text-gray-600">Contact Email:</span>
