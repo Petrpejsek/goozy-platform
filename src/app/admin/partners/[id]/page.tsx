@@ -250,7 +250,7 @@ export default async function PartnerDetailPage({ params }: Props) {
                 </tbody>
               </table>
               
-              {partner.product.length > 10 && (
+              {partner.products.length > 10 && (
                 <div className="mt-4 text-center">
                   <Link
                     href={`/admin/products?brand=${partner.id}`}
