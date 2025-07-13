@@ -128,9 +128,9 @@ export async function GET(req: NextRequest) {
     // Get product performance
     const products = await prisma.product.findMany({
       include: {
-        orderItem: {
+        orderItems: {
           include: {
-            orders: {
+            order: {
               include: {
                 discountCode: true,
                 commissions: true
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
     })
 
     for (const product of products) {
-      const productOrders = product.orderItem.filter(item => 
+      const productOrders = product.orderItems.filter(item => 
         item.order.discountCode?.influencerId === influencerId
       )
 
