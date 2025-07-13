@@ -13,7 +13,7 @@ export default async function AdminProductDetail({ params }: PageProps) {
       where: { id },
       include: {
         brand: true,
-        productMappings: {
+        mappings: {
           include: {
             supplier: true
           }
@@ -151,9 +151,9 @@ export default async function AdminProductDetail({ params }: PageProps) {
                     Supplier Information
                   </h3>
                   
-                  {product.productMappings.length > 0 ? (
+                                      {product.mappings.length > 0 ? (
                     <div className="space-y-4">
-                                              {product.productMappings.map((mapping) => (
+                                                                      {product.mappings.map((mapping) => (
                         <div key={mapping.id} className="bg-white rounded-lg p-4 border border-blue-100">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
