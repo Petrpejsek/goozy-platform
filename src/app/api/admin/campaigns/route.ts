@@ -68,10 +68,10 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const campaign = await prisma.campaign.update({
+    const updatedCampaign = await prisma.campaign.update({
       where: { id: campaignId },
       data: { status },
-      include: { brands: true }
+      include: { brand: true }
     })
 
     console.log(`✅ Admin: Updated campaign ${campaignId} status to ${status}`)
@@ -79,10 +79,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       campaign: {
-        id: campaign.id,
-        name: campaign.name,
-        status: campaign.status,
-        brand: campaign.brands
+        id: updatedCampaign.id,
+        name: updatedCampaign.name,
+        status: updatedCampaign.status,
+        brand: updatedCampaign.brand
       }
     })
 
