@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencer = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true }
         })
         if (!influencer) throw new Error('Influencer not found by email')
@@ -52,22 +52,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert influencerProduct record
-    await prisma.influencerproducts.upsert({
+    await prisma.influencerProduct.upsert({
       where: {
         influencerId_productId: {
-          influencerId,
+          influencerId
           productId
         }
-      },
+      }
       update: {
-        recommendation: recommendation.trim(),
+        recommendation: recommendation.trim()
         isActive: true
-      },
+      }
       create: {
-        id: randomUUID(),
-        influencerId,
-        productId,
-        recommendation: recommendation.trim(),
+        id: randomUUID()
+        influencerId
+        productId
+        recommendation: recommendation.trim()
         isActive: true
       }
     })

@@ -3,30 +3,30 @@ import { z } from 'zod';
 import { applySecurityMiddleware } from '@/lib/security';
 
 const CartItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  price: z.number().positive(),
-  quantity: z.number().positive(),
-  supplier: z.string(),
-  image: z.string().optional(),
+  id: z.string()
+  name: z.string()
+  price: z.number().positive()
+  quantity: z.number().positive()
+  supplier: z.string()
+  image: z.string().optional()
 });
 
 const ValidateCartSchema = z.object({
-  cartItems: z.array(CartItemSchema).min(1, 'Košík nemůže být prázdný'),
-  campaignSlug: z.string().optional(),
+  cartItems: z.array(CartItemSchema).min(1, 'Košík nemůže být prázdný')
+  campaignSlug: z.string().optional()
 });
 
 export async function POST(request: NextRequest) {
   const securityResult = await applySecurityMiddleware(request, {
     rateLimits: {
-      requests: 30,
+      requests: 30
       windowMs: 60000, // 1 minute
     }
   });
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error: securityResult.reason },
+      { error: securityResult.reason }
       { status: securityResult.status }
     );
   }
@@ -55,11 +55,11 @@ export async function POST(request: NextRequest) {
       }
 
       return {
-        id: item.id,
-        available: issues.length === 0,
-        stock: mockStock,
-        issues: issues,
-        price: item.price,
+        id: item.id
+        available: issues.length === 0
+        stock: mockStock
+        issues: issues
+        price: item.price
         validatedAt: new Date().toISOString()
       };
     });
@@ -70,21 +70,21 @@ export async function POST(request: NextRequest) {
     const hasErrors = validationResults.some(item => !item.available);
 
     return NextResponse.json({
-      success: true,
-      valid: !hasErrors,
+      success: true
+      valid: !hasErrors
       summary: {
-        totalItems: cartItems.length,
-        availableItems: availableItems.length,
-        subtotal: subtotal,
-        currency: 'EUR',
+        totalItems: cartItems.length
+        availableItems: availableItems.length
+        subtotal: subtotal
+        currency: 'EUR'
         hasErrors: hasErrors
-      },
-      items: validationResults,
+      }
+      items: validationResults
       campaign: campaignSlug ? {
-        slug: campaignSlug,
+        slug: campaignSlug
         active: true, // Mock campaign validation
         discount: 0.1 // 10% discount
-      } : null,
+      } : null
       validatedAt: new Date().toISOString()
     });
 
@@ -94,15 +94,15 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { 
-          error: 'Neplatná data',
+          error: 'Neplatná data'
           details: error.errors
-        },
+        }
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Chyba při validaci košíku' },
+      { error: 'Chyba při validaci košíku' }
       { status: 500 }
     );
   }

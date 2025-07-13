@@ -3,12 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const updateApplicationSchema = z.object({
-  action: z.enum(['approve', 'reject', 'add_notes', 'pending', 'approved', 'rejected']),
+  action: z.enum(['approve', 'reject', 'add_notes', 'pending', 'approved', 'rejected'])
   notes: z.string().optional()
 })
 
 export async function PATCH(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -26,7 +26,7 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' },
+        { error: 'Application not found' }
         { status: 404 }
       )
     }
@@ -38,7 +38,7 @@ export async function PATCH(
       // Add new note to history (stored as JSON array)
       if (!notes?.trim()) {
         return NextResponse.json(
-          { error: 'Note content is required' },
+          { error: 'Note content is required' }
           { status: 400 }
         )
       }
@@ -59,8 +59,8 @@ export async function PATCH(
       
       // Add new note to history
       notesHistory.unshift({
-        text: notes.trim(),
-        timestamp: new Date().toISOString(),
+        text: notes.trim()
+        timestamp: new Date().toISOString()
         admin: 'admin' // TODO: Use actual admin user when auth is implemented
       })
       
@@ -88,20 +88,20 @@ export async function PATCH(
       // Add note about status change
       if (notes?.trim()) {
         notesHistory.unshift({
-          text: `${action === 'approve' ? 'APPROVED' : 'REJECTED'}: ${notes.trim()}`,
-          timestamp: new Date().toISOString(),
+          text: `${action === 'approve' ? 'APPROVED' : 'REJECTED'}: ${notes.trim()}`
+          timestamp: new Date().toISOString()
           admin: 'admin'
         })
       } else {
         notesHistory.unshift({
-          text: `Application ${action === 'approve' ? 'approved' : 'rejected'}`,
-          timestamp: new Date().toISOString(),
+          text: `Application ${action === 'approve' ? 'approved' : 'rejected'}`
+          timestamp: new Date().toISOString()
           admin: 'admin'
         })
       }
       
       updateData = {
-        status: newStatus,
+        status: newStatus
         notes: JSON.stringify(notesHistory)
       }
       message = `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully`
@@ -121,20 +121,20 @@ export async function PATCH(
       
       // Add note about status change
       notesHistory.unshift({
-        text: `Status changed to ${action}`,
-        timestamp: new Date().toISOString(),
+        text: `Status changed to ${action}`
+        timestamp: new Date().toISOString()
         admin: 'admin'
       })
       
       updateData = {
-        status: action,
+        status: action
         notes: JSON.stringify(notesHistory)
       }
       message = `Application status changed to ${action} successfully`
     }
     
     const updatedApplication = await prisma.influencerApplication.update({
-      where: { id: applicationId },
+      where: { id: applicationId }
       data: updateData
     })
     
@@ -165,20 +165,20 @@ export async function PATCH(
           // Create influencer account
           const newInfluencer = await prisma.influencer.create({
             data: {
-              id: crypto.randomUUID(),
-              email: application.email,
+              id: crypto.randomUUID()
+              email: application.email
               password: application.password, // Password is already hashed from application
-              name: application.name,
-              slug: slug,
-              bio: application.bio || '',
-              isApproved: true,
-              isActive: true,
+              name: application.name
+              slug: slug
+              bio: application.bio || ''
+              isApproved: true
+              isActive: true
               commissionRate: 10.0, // Default commission rate
-              originType: 'application',
-              originApplicationId: application.id,
-              onboardingStatus: 'pending',
-              verificationStatus: 'pending',
-              createdAt: new Date(),
+              originType: 'application'
+              originApplicationId: application.id
+              onboardingStatus: 'pending'
+              verificationStatus: 'pending'
+              createdAt: new Date()
               updatedAt: new Date()
             }
           })
@@ -187,57 +187,57 @@ export async function PATCH(
           const socialNetworks = []
           if (application.instagram) {
             socialNetworks.push({
-              id: crypto.randomUUID(),
-              influencerId: newInfluencer.id,
-              platform: 'instagram',
-              username: application.instagram,
-              url: `https://instagram.com/${application.instagram}`,
-              followers: 0,
-              isVerified: false,
-              isActive: true,
-              createdAt: new Date(),
+              id: crypto.randomUUID()
+              influencerId: newInfluencer.id
+              platform: 'instagram'
+              username: application.instagram
+              url: `https://instagram.com/${application.instagram}`
+              followers: 0
+              isVerified: false
+              isActive: true
+              createdAt: new Date()
               updatedAt: new Date()
             })
           }
           if (application.tiktok) {
             socialNetworks.push({
-              id: crypto.randomUUID(),
-              influencerId: newInfluencer.id,
-              platform: 'tiktok',
-              username: application.tiktok,
-              url: `https://tiktok.com/@${application.tiktok}`,
-              followers: 0,
-              isVerified: false,
-              isActive: true,
-              createdAt: new Date(),
+              id: crypto.randomUUID()
+              influencerId: newInfluencer.id
+              platform: 'tiktok'
+              username: application.tiktok
+              url: `https://tiktok.com/@${application.tiktok}`
+              followers: 0
+              isVerified: false
+              isActive: true
+              createdAt: new Date()
               updatedAt: new Date()
             })
           }
           if (application.youtube) {
             socialNetworks.push({
-              id: crypto.randomUUID(),
-              influencerId: newInfluencer.id,
-              platform: 'youtube',
-              username: application.youtube,
-              url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/@${application.youtube}`,
-              followers: 0,
-              isVerified: false,
-              isActive: true,
-              createdAt: new Date(),
+              id: crypto.randomUUID()
+              influencerId: newInfluencer.id
+              platform: 'youtube'
+              username: application.youtube
+              url: application.youtube.includes('youtube.com') ? application.youtube : `https://youtube.com/@${application.youtube}`
+              followers: 0
+              isVerified: false
+              isActive: true
+              createdAt: new Date()
               updatedAt: new Date()
             })
           }
           if (application.facebook) {
             socialNetworks.push({
-              id: crypto.randomUUID(),
-              influencerId: newInfluencer.id,
-              platform: 'facebook',
-              username: application.facebook,
-              url: application.facebook.includes('facebook.com') ? application.facebook : `https://facebook.com/${application.facebook}`,
-              followers: 0,
-              isVerified: false,
-              isActive: true,
-              createdAt: new Date(),
+              id: crypto.randomUUID()
+              influencerId: newInfluencer.id
+              platform: 'facebook'
+              username: application.facebook
+              url: application.facebook.includes('facebook.com') ? application.facebook : `https://facebook.com/${application.facebook}`
+              followers: 0
+              isVerified: false
+              isActive: true
+              createdAt: new Date()
               updatedAt: new Date()
             })
           }
@@ -254,9 +254,9 @@ export async function PATCH(
             try {
               const categories = JSON.parse(application.categories)
               const categoryRecords = categories.map((category: string) => ({
-                id: crypto.randomUUID(),
-                influencerId: newInfluencer.id,
-                category: category.toLowerCase(),
+                id: crypto.randomUUID()
+                influencerId: newInfluencer.id
+                category: category.toLowerCase()
                 createdAt: new Date()
               }))
               
@@ -281,7 +281,7 @@ export async function PATCH(
     }
     
     return NextResponse.json({
-      message,
+      message
       application: updatedApplication
     })
     
@@ -290,20 +290,20 @@ export async function PATCH(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid data', details: error.errors },
+        { error: 'Invalid data', details: error.errors }
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: 'Server error' }
       { status: 500 }
     )
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -318,7 +318,7 @@ export async function DELETE(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' },
+        { error: 'Application not found' }
         { status: 404 }
       )
     }
@@ -336,7 +336,7 @@ export async function DELETE(
     console.error('Error deleting application:', error)
     
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: 'Server error' }
       { status: 500 }
     )
   }

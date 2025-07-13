@@ -41,17 +41,17 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all orders related to this influencer through discount codes
-    const discountCodes = await prisma.discountcodes.findMany({
-      where: { influencerId },
+    const discountCodes = await prisma.discountCode.findMany({
+      where: { influencerId }
       include: {
-        orders: {
+        order: {
           include: {
-            orderItem: {
+            items: {
               include: {
-                products: true
+                product: true
               }
-            },
-            commissions: true
+            }
+            commission: true
           }
         }
       }
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     
     for (const order of allOrders) {
       const orderTotal = parseFloat(order.totalAmount.toString())
-      const commission = (order.commissions as any)?.[0]?.amount || 0
+      const commission = order.commission?.amount || 0
       const returnAmount = order.status === 'returned' ? orderTotal : 0
 
       totalRevenue += orderTotal
@@ -108,19 +108,19 @@ export async function GET(req: NextRequest) {
 
       const campaignRevenue = campaignOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
       const campaignCommission = campaignOrders.reduce((sum, order) => {
-        const commission = (order.commissions as any)?.[0]?.amount || 0
+        const commission = order.commission?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
       const campaignReturns = campaignOrders.filter(order => order.status === 'returned').reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0)
 
       campaignPerformance.push({
-        id: campaign.id,
-        name: campaign.name,
-        totalRevenue: campaignRevenue,
-        commission: campaignCommission,
-        returns: campaignReturns,
+        id: campaign.id
+        name: campaign.name
+        totalRevenue: campaignRevenue
+        commission: campaignCommission
+        returns: campaignReturns
         netEarnings: campaignCommission - (campaignReturns * 0.125), // Assuming 12.5% commission rate
-        commissionRate: 12.5,
+        commissionRate: 12.5
         returnRate: campaignRevenue > 0 ? (campaignReturns / campaignRevenue) * 100 : 0
       })
     }
@@ -128,12 +128,12 @@ export async function GET(req: NextRequest) {
     // Get product performance
     const products = await prisma.product.findMany({
       include: {
-        orderItem: {
+        orderItems: {
           include: {
-            orders: {
+            order: {
               include: {
-                discountCode: true,
-                commissions: true
+                discountCode: true
+                commission: true
               }
             }
           }
@@ -142,25 +142,25 @@ export async function GET(req: NextRequest) {
     })
 
     for (const product of products) {
-      const productOrders = product.orderItem.filter(item => 
+      const productOrders = product.orderItems.filter(item => 
         item.order.discountCode?.influencerId === influencerId
       )
 
       const productRevenue = productOrders.reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
       const productCommission = productOrders.reduce((sum, item) => {
-        const commission = (item.order.commissions as any)?.[0]?.amount || 0
+        const commission = item.order.commission?.amount || 0
         return sum + parseFloat(commission.toString())
       }, 0)
       const productReturns = productOrders.filter(item => item.order.status === 'returned').reduce((sum, item) => sum + (parseFloat(item.price.toString()) * item.quantity), 0)
 
       if (productRevenue > 0) {
         productPerformance.push({
-          id: product.id,
-          name: product.name,
-          totalRevenue: productRevenue,
-          commission: productCommission,
-          returns: productReturns,
-          netEarnings: productCommission - (productReturns * 0.125),
+          id: product.id
+          name: product.name
+          totalRevenue: productRevenue
+          commission: productCommission
+          returns: productReturns
+          netEarnings: productCommission - (productReturns * 0.125)
           returnRate: (productReturns / productRevenue) * 100
         })
       }
@@ -171,23 +171,23 @@ export async function GET(req: NextRequest) {
     productPerformance.sort((a, b) => b.totalRevenue - a.totalRevenue)
 
     const analytics = {
-      totalRevenue,
-      totalCommission,
-      totalReturns,
-      netEarnings: totalCommission - (totalReturns * 0.125),
-      averageCommissionRate: 12.5,
-      returnRate: totalRevenue > 0 ? (totalReturns / totalRevenue) * 100 : 0,
-      topPerformingCampaign: campaignPerformance[0]?.name || 'No campaigns',
-      topPerformingProduct: productPerformance[0]?.name || 'No products',
-      thisMonthRevenue,
-      thisMonthCommission,
+      totalRevenue
+      totalCommission
+      totalReturns
+      netEarnings: totalCommission - (totalReturns * 0.125)
+      averageCommissionRate: 12.5
+      returnRate: totalRevenue > 0 ? (totalReturns / totalRevenue) * 100 : 0
+      topPerformingCampaign: campaignPerformance[0]?.name || 'No campaigns'
+      topPerformingProduct: productPerformance[0]?.name || 'No products'
+      thisMonthRevenue
+      thisMonthCommission
       thisMonthReturns
     }
 
     return NextResponse.json({
-      analytics,
-      campaigns: campaignPerformance.slice(0, 10),
-      products: productPerformance.slice(0, 10)
+      analytics
+      campaigns: campaignPerformance.slice(0, 10)
+      product: productPerformance.slice(0, 10)
     })
 
   } catch (error) {

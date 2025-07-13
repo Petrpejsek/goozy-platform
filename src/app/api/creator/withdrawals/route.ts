@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get current earnings to check availability
-    const commissions = await prisma.commissions.findMany({
+    const commissions = await prisma.commission.findMany({
       where: { influencerId }
     })
 
@@ -110,17 +110,17 @@ export async function POST(req: NextRequest) {
     // For now, just return success since table doesn't exist yet
     // In future, this will create: prisma.withdrawals.create()
     const newWithdrawal = {
-      id: Date.now().toString(),
-      amount,
-      paymentMethodId,
-      status: 'pending',
-      transactionId: null,
+      id: Date.now().toString()
+      amount
+      paymentMethodId
+      status: 'pending'
+      transactionId: null
       createdAt: new Date().toISOString()
     }
 
     return NextResponse.json({ 
       success: true, 
-      withdrawal: newWithdrawal,
+      withdrawal: newWithdrawal
       message: 'Withdrawal request submitted successfully'
     })
 

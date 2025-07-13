@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         console.log('🔄 [CREATOR-ME] Trying base64 fallback for email:', email)
         
         const creatorByEmail = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true, email: true }
         })
         
@@ -64,22 +64,22 @@ export async function GET(request: NextRequest) {
 
     // Get creator with all related data
     const creator = await prisma.influencer.findUnique({
-      where: { id: creatorId },
+      where: { id: creatorId }
       include: {
-        socialNetworks: true,
-        contentCategories: true,
-        profile: true,
+        socialNetworks: true
+        contentCategories: true
+        profile: true
         // influencerProducts: {
         //   include: {
         //     product: true
         //   }
-        // },
-        orders: {
+        // }
+        order: {
           where: {
             status: 'completed'
           }
-        },
-        commissions: true
+        }
+        commission: true
       }
     })
 
@@ -100,23 +100,23 @@ export async function GET(request: NextRequest) {
 
     const response = {
       creator: {
-        id: creator.id,
-        name: creator.name,
-        email: creator.email,
-        phone: creator.phone,
-        slug: creator.slug,
-        avatar: creator.avatar,
-        bio: creator.bio,
-        followers: mainSocial ? formatFollowers(mainSocial.followers) : '0',
-        totalEarnings: totalEarnings,
-        activeProducts: activeProducts,
-        totalOrders: totalOrders,
+        id: creator.id
+        name: creator.name
+        email: creator.email
+        phone: creator.phone
+        slug: creator.slug
+        avatar: creator.avatar
+        bio: creator.bio
+        followers: mainSocial ? formatFollowers(mainSocial.followers) : '0'
+        totalEarnings: totalEarnings
+        activeProducts: activeProducts
+        totalOrders: totalOrders
         commissionRate: Math.round(creator.commissionRate * 100), // Convert to percentage
-        socialNetworks: creator.socialNetworks,
-        contentCategories: creator.contentCategories,
-        profile: creator.profile,
-        isActive: creator.isActive,
-        isApproved: creator.isApproved,
+        socialNetworks: creator.socialNetworks
+        contentCategories: creator.contentCategories
+        profile: creator.profile
+        isActive: creator.isActive
+        isApproved: creator.isApproved
         onboardingStatus: creator.onboardingStatus
       }
     }

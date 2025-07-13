@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
+        { success: false, error: 'Authentication required' }
         { status: 401 }
       )
     }
@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
       
       // Get full influencer data from database
       influencerData = await prisma.influencer.findUnique({
-        where: { id: influencerId },
+        where: { id: influencerId }
         select: {
-          id: true,
-          name: true,
-          email: true,
+          id: true
+          name: true
+          email: true
           slug: true
         }
       })
@@ -52,11 +52,11 @@ export async function POST(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         influencerData = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: {
-            id: true,
-            name: true,
-            email: true,
+            id: true
+            name: true
+            email: true
             slug: true
           }
         })
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       } catch (fallbackError) {
         console.error('❌ Authentication failed:', fallbackError)
         return NextResponse.json(
-          { success: false, error: 'Invalid authentication' },
+          { success: false, error: 'Invalid authentication' }
           { status: 401 }
         )
       }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     if (!influencerData) {
       return NextResponse.json(
-        { success: false, error: 'Influencer not found' },
+        { success: false, error: 'Influencer not found' }
         { status: 404 }
       )
     }
@@ -88,13 +88,13 @@ export async function POST(request: NextRequest) {
     if (!mockBrand) {
       mockBrand = await prisma.brand.create({
         data: {
-          id: `brand-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
-          name: 'Goozy Demo Brand',
-          email: 'demo@goozy.com',
-          isApproved: true,
-          isActive: true,
-          targetCountries: '["CZ"]',
-          createdAt: new Date(),
+          id: `brand-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
+          name: 'Goozy Demo Brand'
+          email: 'demo@goozy.com'
+          isApproved: true
+          isActive: true
+          targetCountries: '["CZ"]'
+          createdAt: new Date()
           updatedAt: new Date()
         }
       })
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     if (!campaignSlug) {
       // Fallback: generate unique campaign slug using REAL influencer name
       campaignSlug = await generateUniqueCampaignSlug(
-        influencerData.name,
+        influencerData.name
         mockBrand.name
       )
       console.log(`🔗 Generated fallback campaign slug: ${campaignSlug}`)
@@ -117,23 +117,23 @@ export async function POST(request: NextRequest) {
     // Create campaign in database
     const campaign = await prisma.campaign.create({
       data: {
-        id: `campaign-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
-        slug: campaignSlug,
-        brandId: mockBrand.id,
-        name: data.name || `${influencerData.name}'s Campaign ${new Date().toISOString().slice(0, 10)}`,
-        description: data.description || `Influencer campaign created by ${influencerData.name}`,
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
-        targetCountries: JSON.stringify(['CZ']),
-        influencerIds: influencerId,
-        status: 'active',
-        currency: 'EUR',
-        expectedReach: data.expectedReach || 10000,
-        budgetAllocated: data.budgetAllocated || 1000,
-        isActive: true,
-        createdAt: new Date(),
+        id: `campaign-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
+        slug: campaignSlug
+        brandId: mockBrand.id
+        name: data.name || `${influencerData.name}'s Campaign ${new Date().toISOString().slice(0, 10)}`
+        description: data.description || `Influencer campaign created by ${influencerData.name}`
+        startDate: new Date(data.startDate)
+        endDate: new Date(data.endDate)
+        targetCountries: JSON.stringify(['CZ'])
+        influencerIds: influencerId
+        status: 'active'
+        currency: 'EUR'
+        expectedReach: data.expectedReach || 10000
+        budgetAllocated: data.budgetAllocated || 1000
+        isActive: true
+        createdAt: new Date()
         updatedAt: new Date()
-      },
+      }
       include: {
         brand: true
       }
@@ -149,19 +149,19 @@ export async function POST(request: NextRequest) {
     const campaignUrl = `${origin}/campaign/${campaignSlug}`
 
     return NextResponse.json({
-      success: true,
+      success: true
       campaign: {
-        id: campaign.id,
-        name: campaign.name,
-        slug: campaignSlug,
-        url: campaignUrl,
-        startDate: campaign.startDate.toISOString(),
-        endDate: campaign.endDate.toISOString(),
-        status: campaign.status,
-        brand: campaign.brand,
+        id: campaign.id
+        name: campaign.name
+        slug: campaignSlug
+        url: campaignUrl
+        startDate: campaign.startDate.toISOString()
+        endDate: campaign.endDate.toISOString()
+        status: campaign.status
+        brand: campaign.brand
         influencer: {
-          id: influencerData.id,
-          name: influencerData.name,
+          id: influencerData.id
+          name: influencerData.name
           slug: influencerData.slug
         }
       }
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error creating campaign:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to create campaign' },
+      { success: false, error: 'Failed to create campaign' }
       { status: 500 }
     )
   }
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
     
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
+        { success: false, error: 'Authentication required' }
         { status: 401 }
       )
     }
@@ -210,14 +210,14 @@ export async function GET(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencerData = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true }
         })
         influencerId = influencerData?.id as string
         console.log('✅ [CAMPAIGNS-GET] Fallback authentication successful for:', email)
       } catch (fallbackError) {
         return NextResponse.json(
-          { success: false, error: 'Invalid authentication' },
+          { success: false, error: 'Invalid authentication' }
           { status: 401 }
         )
       }
@@ -225,7 +225,7 @@ export async function GET(request: NextRequest) {
 
     if (!influencerId) {
       return NextResponse.json(
-        { success: false, error: 'Influencer not found' },
+        { success: false, error: 'Influencer not found' }
         { status: 404 }
       )
     }
@@ -235,10 +235,10 @@ export async function GET(request: NextRequest) {
     const campaigns = await prisma.campaign.findMany({
       where: {
         influencerIds: influencerId
-      },
+      }
       include: {
         brand: true
-      },
+      }
       orderBy: {
         createdAt: 'desc'
       }
@@ -252,7 +252,7 @@ export async function GET(request: NextRequest) {
         // Get orders for this campaign (mock data for now)
         const orders = await prisma.order.findMany({
           where: {
-            influencerId: influencerId,
+            influencerId: influencerId
             status: 'completed'
           }
         })
@@ -260,7 +260,7 @@ export async function GET(request: NextRequest) {
         // Get influencer products count
         const productCount = await prisma.influencerProduct.count({
           where: {
-            influencerId: influencerId,
+            influencerId: influencerId
             isActive: true
           }
         })
@@ -271,23 +271,23 @@ export async function GET(request: NextRequest) {
         const conversionRate = (campaign.expectedReach || 0) > 0 ? (totalOrders / (campaign.expectedReach || 1)) * 100 : 0
 
         return {
-          id: campaign.id,
-          slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`,
-          name: campaign.name,
-          description: campaign.description,
-          startDate: campaign.startDate.toISOString(),
-          endDate: campaign.endDate.toISOString(),
-          status: campaign.status,
-          brand: campaign.brand,
-          expectedReach: campaign.expectedReach,
-          budgetAllocated: campaign.budgetAllocated,
-          currency: campaign.currency,
-          createdAt: campaign.createdAt.toISOString(),
+          id: campaign.id
+          slug: campaign.slug || `legacy-${campaign.id.slice(-8)}`
+          name: campaign.name
+          description: campaign.description
+          startDate: campaign.startDate.toISOString()
+          endDate: campaign.endDate.toISOString()
+          status: campaign.status
+          brand: campaign.brand
+          expectedReach: campaign.expectedReach
+          budgetAllocated: campaign.budgetAllocated
+          currency: campaign.currency
+          createdAt: campaign.createdAt.toISOString()
           stats: {
-            totalSales: totalOrders,
-            totalRevenue: totalRevenue,
-            totalOrders: totalOrders,
-            productCount: productCount,
+            totalSales: totalOrders
+            totalRevenue: totalRevenue
+            totalOrders: totalOrders
+            productCount: productCount
             conversionRate: conversionRate
           }
         }
@@ -295,14 +295,14 @@ export async function GET(request: NextRequest) {
     )
 
     return NextResponse.json({
-      success: true,
+      success: true
       campaigns: campaignsWithStats
     })
 
   } catch (error) {
     console.error('❌ Error fetching campaigns:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch campaigns' },
+      { success: false, error: 'Failed to fetch campaigns' }
       { status: 500 }
     )
   }

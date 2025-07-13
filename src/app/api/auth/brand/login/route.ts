@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Zkontroluj, jestli je aplikace schválená
     if (brandApplication.status !== 'approved') {
       return NextResponse.json({ 
-        error: `Application status is "${brandApplication.status}". Please wait for approval or contact support.`,
+        error: `Application status is "${brandApplication.status}". Please wait for approval or contact support.`
         status: brandApplication.status
       }, { status: 401 })
     }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Zkontroluj heslo
     if (!brandApplication.password) {
       return NextResponse.json({ 
-        error: 'No password set for this account. Please contact support.',
+        error: 'No password set for this account. Please contact support.'
       }, { status: 401 })
     }
 
@@ -49,11 +49,11 @@ export async function POST(request: NextRequest) {
     // Úspěšné přihlášení - vytvoř JWT token pro session
     const token = jwt.sign(
       { 
-        brandId: brandApplication.id,
-        email: brandApplication.email,
+        brandId: brandApplication.id
+        email: brandApplication.email
         brandName: brandApplication.brandName
-      },
-      process.env.JWT_SECRET || 'fallback-secret-key',
+      }
+      process.env.JWT_SECRET || 'fallback-secret-key'
       { expiresIn: '24h' }
     )
     
@@ -62,22 +62,22 @@ export async function POST(request: NextRequest) {
     // Vytvoř response s user daty
     const response = NextResponse.json({ 
       success: true, 
-      message: 'Login successful',
+      message: 'Login successful'
       brand: {
-        id: brandApplication.id,
-        name: brandApplication.brandName,
-        email: brandApplication.email,
+        id: brandApplication.id
+        name: brandApplication.brandName
+        email: brandApplication.email
         contactName: brandApplication.contactName
-      },
+      }
       redirect: '/partner-company'
     }, { status: 200 })
 
     // Nastav authentication cookie
     response.cookies.set('brand-auth', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
+      httpOnly: true
+      secure: process.env.NODE_ENV === 'production'
+      sameSite: 'lax'
+      path: '/'
       maxAge: 24 * 60 * 60 // 24 hodin v sekundách
     })
 

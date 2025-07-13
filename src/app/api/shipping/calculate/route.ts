@@ -7,11 +7,11 @@ const prisma = new PrismaClient()
 // Schema pro validaci requestu
 const ShippingCalculationSchema = z.object({
   items: z.array(z.object({
-    productId: z.string(),
-    quantity: z.number().int().min(1).max(99),
-  })),
+    productId: z.string()
+    quantity: z.number().int().min(1).max(99)
+  }))
   country: z.string().length(2), // ISO country code
-  campaignSlug: z.string().optional(),
+  campaignSlug: z.string().optional()
 })
 
 // Helper function to check if country is in EU
@@ -25,8 +25,8 @@ function isEUCountry(country: string): boolean {
 }
 
 async function calculateShippingCostBySupplier(items: any[], country: string): Promise<{
-  totalShippingCost: number,
-  supplierBreakdown: any[],
+  totalShippingCost: number
+  supplierBreakdown: any[]
   freeShippingInfo: any[]
 }> {
   console.log(`🚚 [SHIPPING-API] Calculating shipping for ${items.length} items to ${country}`)
@@ -40,8 +40,8 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
     
     if (!itemsBySupplier.has(brandId)) {
       itemsBySupplier.set(brandId, {
-        items: [],
-        subtotal: 0,
+        items: []
+        subtotal: 0
         supplierName: product.brand.name
       })
     }
@@ -92,20 +92,20 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
         
         try {
           const apiResponse = await fetch(supplier.shipping_api_endpoint, {
-            method: 'POST',
+            method: 'POST'
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': supplier.shipping_api_key ? `Bearer ${supplier.shipping_api_key}` : '',
-            },
+              'Content-Type': 'application/json'
+              'Authorization': supplier.shipping_api_key ? `Bearer ${supplier.shipping_api_key}` : ''
+            }
             body: JSON.stringify({
               items: supplierData.items.map((item: any) => ({
-                productId: item.productId,
-                quantity: item.quantity,
+                productId: item.productId
+                quantity: item.quantity
                 price: item.product.price
-              })),
+              }))
               destination: {
                 country: country
-              },
+              }
               subtotal: supplierData.subtotal
             })
           })
@@ -179,21 +179,21 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
     
     // Store breakdown info
     supplierBreakdown.push({
-      supplierId: brandId,
-      supplierName: supplierData.supplierName,
-      subtotal: Number(supplierData.subtotal.toFixed(2)),
-      shippingCost: Number(supplierShippingCost.toFixed(2)),
-      shippingMethod,
+      supplierId: brandId
+      supplierName: supplierData.supplierName
+      subtotal: Number(supplierData.subtotal.toFixed(2))
+      shippingCost: Number(supplierShippingCost.toFixed(2))
+      shippingMethod
       currency: supplier?.currency || 'EUR'
     })
     
     // Store free shipping info if applicable
     if (freeShippingThreshold && amountToFreeShipping && amountToFreeShipping > 0) {
       freeShippingInfo.push({
-        supplierId: brandId,
-        supplierName: supplierData.supplierName,
-        freeShippingThreshold,
-        amountToFreeShipping: Number(amountToFreeShipping.toFixed(2)),
+        supplierId: brandId
+        supplierName: supplierData.supplierName
+        freeShippingThreshold
+        amountToFreeShipping: Number(amountToFreeShipping.toFixed(2))
         currentSubtotal: Number(supplierData.subtotal.toFixed(2))
       })
     }
@@ -204,8 +204,8 @@ async function calculateShippingCostBySupplier(items: any[], country: string): P
   console.log(`💰 [SHIPPING-API] Total shipping cost: €${totalShippingCost}`)
   
   return {
-    totalShippingCost: Number(totalShippingCost.toFixed(2)),
-    supplierBreakdown,
+    totalShippingCost: Number(totalShippingCost.toFixed(2))
+    supplierBreakdown
     freeShippingInfo
   }
 }
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
     
     if (items.length === 0) {
       return NextResponse.json({
-        success: false,
+        success: false
         error: 'No items provided'
       }, { status: 400 })
     }
@@ -230,14 +230,14 @@ export async function POST(request: NextRequest) {
     const productIds = items.map(item => item.productId)
     const products = await prisma.product.findMany({
       where: {
-        id: { in: productIds },
+        id: { in: productIds }
         isAvailable: true
-      },
+      }
       include: {
-        brands: {
+        brand: {
           select: {
-            id: true,
-            name: true,
+            id: true
+            name: true
             isActive: true
           }
         }
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
 
     if (products.length !== items.length) {
       return NextResponse.json({
-        success: false,
+        success: false
         error: 'Some products are not available'
       }, { status: 400 })
     }
@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
     const enrichedItems = items.map(item => {
       const product = products.find(p => p.id === item.productId)
       return {
-        ...item,
+        ...item
         product
       }
     })
@@ -264,11 +264,11 @@ export async function POST(request: NextRequest) {
     const result = await calculateShippingCostBySupplier(enrichedItems, country)
     
     return NextResponse.json({
-      success: true,
+      success: true
       shipping: {
-        totalCost: result.totalShippingCost,
-        currency: 'EUR',
-        breakdown: result.supplierBreakdown,
+        totalCost: result.totalShippingCost
+        currency: 'EUR'
+        breakdown: result.supplierBreakdown
         freeShippingOffers: result.freeShippingInfo
       }
     })
@@ -278,14 +278,14 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json({
-        success: false,
-        error: 'Invalid shipping calculation data',
+        success: false
+        error: 'Invalid shipping calculation data'
         details: error.errors
       }, { status: 400 })
     }
 
     return NextResponse.json({
-      success: false,
+      success: false
       error: 'Internal server error during shipping calculation'
     }, { status: 500 })
   } finally {

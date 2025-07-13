@@ -30,12 +30,12 @@ export async function POST(request: NextRequest) {
       // Create new brand
       const newBrand = await prisma.brand.create({
         data: {
-          id: `brand_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-          name: newBrandName.trim(),
-          email: `admin-created-${Date.now()}@goozy.platform`,
-          isApproved: true,
-          isActive: true,
-          createdAt: new Date(),
+          id: `brand_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+          name: newBrandName.trim()
+          email: `admin-created-${Date.now()}@goozy.platform`
+          isApproved: true
+          isActive: true
+          createdAt: new Date()
           updatedAt: new Date()
         }
       })
@@ -86,32 +86,32 @@ export async function POST(request: NextRequest) {
     // Create product
     const product = await prisma.product.create({
       data: {
-        id: `product_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-        brandId: finalBrandId,
-        externalId,
-        name,
-        description: description || '',
-        price,
-        currency,
-        images: JSON.stringify(uploadedImages),
-        category,
-        sizes: sizes ? JSON.stringify(sizes.split(',').map(s => s.trim()).filter(s => s)) : '[]',
-        colors: colors ? JSON.stringify(colors.split(',').map(s => s.trim()).filter(s => s)) : '[]',
-        sku,
-        stockQuantity,
-        isAvailable: true,
-        brand_name: newBrandName || undefined,
-        dimensions: dimensions || undefined,
-        gender: gender || undefined,
-        material: material || undefined,
-        weight,
-        createdAt: new Date(),
+        id: `product_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+        brandId: finalBrandId
+        externalId
+        name
+        description: description || ''
+        price
+        currency
+        images: JSON.stringify(uploadedImages)
+        category
+        sizes: sizes ? JSON.stringify(sizes.split(',').map(s => s.trim()).filter(s => s)) : '[]'
+        colors: colors ? JSON.stringify(colors.split(',').map(s => s.trim()).filter(s => s)) : '[]'
+        sku
+        stockQuantity
+        isAvailable: true
+        brand_name: newBrandName || undefined
+        dimensions: dimensions || undefined
+        gender: gender || undefined
+        material: material || undefined
+        weight
+        createdAt: new Date()
         updatedAt: new Date()
-      },
+      }
       include: {
         brand: {
           select: {
-            id: true,
+            id: true
             name: true
           }
         }
@@ -119,8 +119,8 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      success: true,
-      data: product,
+      success: true
+      data: product
       message: 'Product created successfully'
     })
 
@@ -129,9 +129,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to create product',
+        error: 'Failed to create product'
         details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      }
       { status: 500 }
     )
   }

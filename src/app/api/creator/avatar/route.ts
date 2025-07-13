@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     // Update database only for avatar uploads
     if (uploadType === 'avatar') {
       await prisma.influencer.update({
-        where: { id: influencer.id },
+        where: { id: influencer.id }
         data: { avatar: fileUrl }
       })
     }
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     console.log(`✅ [${uploadType.toUpperCase()}-UPLOAD] ${uploadType} uploaded for ${influencer.email}: ${fileUrl}`)
 
     return NextResponse.json({ 
-      message: `${uploadType} uploaded successfully`,
+      message: `${uploadType} uploaded successfully`
       avatarUrl: fileUrl,  // Keep same property name for compatibility
       fileUrl: fileUrl
     })

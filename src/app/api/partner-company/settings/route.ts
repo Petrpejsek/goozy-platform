@@ -30,16 +30,16 @@ export async function GET() {
     if (!brand) {
       brand = await prisma.brand.create({
         data: {
-          id: `brand-${brandApplication.id}`,
-          name: brandApplication.brandName,
-          email: brandApplication.email,
-          phone: brandApplication.phone,
-          description: brandApplication.description,
-          website: brandApplication.website,
-          isApproved: true,
-          isActive: true,
-          targetCountries: '[]',
-          createdAt: new Date(),
+          id: `brand-${brandApplication.id}`
+          name: brandApplication.brandName
+          email: brandApplication.email
+          phone: brandApplication.phone
+          description: brandApplication.description
+          website: brandApplication.website
+          isApproved: true
+          isActive: true
+          targetCountries: '[]'
+          createdAt: new Date()
           updatedAt: new Date()
         }
       })
@@ -58,18 +58,18 @@ export async function GET() {
     console.log(`✅ [PARTNER-SETTINGS] Settings loaded for: ${brand.name}`)
     
     return NextResponse.json({
-      success: true,
+      success: true
       settings: {
-        id: brand.id,
-        name: brand.name,
-        email: brand.email,
-        phone: brand.phone,
-        website: brand.website,
-        description: brand.description,
-        targetCountries: targetCountries,
-        isActive: brand.isActive,
-        isApproved: brand.isApproved,
-        createdAt: brand.createdAt,
+        id: brand.id
+        name: brand.name
+        email: brand.email
+        phone: brand.phone
+        website: brand.website
+        description: brand.description
+        targetCountries: targetCountries
+        isActive: brand.isActive
+        isApproved: brand.isApproved
+        createdAt: brand.createdAt
         updatedAt: brand.updatedAt
       }
     })
@@ -77,7 +77,7 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [PARTNER-SETTINGS] GET error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }
@@ -130,16 +130,16 @@ export async function PUT(request: NextRequest) {
     if (!brand) {
       brand = await prisma.brand.create({
         data: {
-          id: `brand-${brandApplication.id}`,
-          name: brandApplication.brandName,
-          email: brandApplication.email,
-          phone: brandApplication.phone,
-          description: brandApplication.description,
-          website: brandApplication.website,
-          isApproved: true,
-          isActive: true,
-          targetCountries: '[]',
-          createdAt: new Date(),
+          id: `brand-${brandApplication.id}`
+          name: brandApplication.brandName
+          email: brandApplication.email
+          phone: brandApplication.phone
+          description: brandApplication.description
+          website: brandApplication.website
+          isApproved: true
+          isActive: true
+          targetCountries: '[]'
+          createdAt: new Date()
           updatedAt: new Date()
         }
       })
@@ -165,23 +165,23 @@ export async function PUT(request: NextRequest) {
 
     // Aktualizovat brand v databázi pomocí správného ID
     const updatedBrand = await prisma.brand.update({
-      where: { id: brand.id },
+      where: { id: brand.id }
       data: updateData
     })
 
     console.log(`✅ [PARTNER-SETTINGS] Settings updated for: ${updatedBrand.name}`)
 
     return NextResponse.json({
-      success: true,
-      message: 'Settings updated successfully',
+      success: true
+      message: 'Settings updated successfully'
       settings: {
-        id: updatedBrand.id,
-        name: updatedBrand.name,
-        email: updatedBrand.email,
-        phone: updatedBrand.phone,
-        website: updatedBrand.website,
-        description: updatedBrand.description,
-        targetCountries: targetCountries || JSON.parse(updatedBrand.targetCountries || '[]'),
+        id: updatedBrand.id
+        name: updatedBrand.name
+        email: updatedBrand.email
+        phone: updatedBrand.phone
+        website: updatedBrand.website
+        description: updatedBrand.description
+        targetCountries: targetCountries || JSON.parse(updatedBrand.targetCountries || '[]')
         updatedAt: updatedBrand.updatedAt
       }
     })
@@ -189,7 +189,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('❌ [PARTNER-SETTINGS] PUT error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }

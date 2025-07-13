@@ -13,10 +13,10 @@ export async function POST() {
     // Smazat authentication cookie
     // Nastavím cookie na prázdnou hodnotu a expirace v minulosti
     response.cookies.set('brand-auth', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
+      httpOnly: true
+      secure: process.env.NODE_ENV === 'production'
+      sameSite: 'lax'
+      path: '/'
       expires: new Date(0) // Expirace v minulosti = smazání
     })
 
@@ -29,16 +29,16 @@ export async function POST() {
     
     // I v případě chyby je dobré vymazat cookies
     const response = NextResponse.json(
-      { success: false, error: 'Logout failed' },
+      { success: false, error: 'Logout failed' }
       { status: 500 }
     )
     
     // Pokusit se smazat cookie i při chybě
     response.cookies.set('brand-auth', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
+      httpOnly: true
+      secure: process.env.NODE_ENV === 'production'
+      sameSite: 'lax'
+      path: '/'
       expires: new Date(0)
     })
     

@@ -6,24 +6,24 @@ export async function GET(request: NextRequest) {
     // Získání schválených brandů (partners)
     const partners = await prisma.brand.findMany({
       where: { 
-        isActive: true,
+        isActive: true
         isApproved: true 
-      },
+      }
       include: {
         _count: {
           select: {
-            products: true,
+            products: true
             campaigns: true
           }
-        },
-        products: {
+        }
+        product: {
           select: {
-            id: true,
-            price: true,
+            id: true
+            price: true
             currency: true
           }
         }
-      },
+      }
       orderBy: { createdAt: 'desc' }
     })
 
@@ -41,22 +41,22 @@ export async function GET(request: NextRequest) {
         const commissionRate = 15
 
         return {
-          id: partner.id,
-          name: partner.name,
-          email: partner.email,
-          logo: partner.logo,
-          website: partner.website,
-          description: partner.description,
-          isActive: partner.isActive,
-          isApproved: partner.isApproved,
-          targetCountries: partner.targetCountries,
-          createdAt: partner.createdAt,
+          id: partner.id
+          name: partner.name
+          email: partner.email
+          logo: partner.logo
+          website: partner.website
+          description: partner.description
+          isActive: partner.isActive
+          isApproved: partner.isApproved
+          targetCountries: partner.targetCountries
+          createdAt: partner.createdAt
           stats: {
-            productsCount: partner._count.products,
-            campaignsCount: partner._count.campaigns,
-            totalProductValue,
-            monthlyRevenue,
-            totalOrders,
+            productsCount: partner._count.products
+            campaignsCount: partner._count.campaigns
+            totalProductValue
+            monthlyRevenue
+            totalOrders
             commissionRate
           }
         }
@@ -65,22 +65,22 @@ export async function GET(request: NextRequest) {
 
     // Celkové statistiky
     const totalStats = {
-      totalPartners: partners.length,
-      totalProducts: partners.reduce((sum, p) => sum + p._count.products, 0),
+      totalPartners: partners.length
+      totalProducts: partners.reduce((sum, p) => sum + p._count.products, 0)
       totalRevenue: 0, // Mock data
       totalOrders: 0,  // Mock data
       avgCommissionRate: 15
     }
 
     return NextResponse.json({
-      partners: partnersWithStats,
+      partners: partnersWithStats
       stats: totalStats
     })
 
   } catch (error) {
     console.error('Error fetching partners:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error' }
       { status: 500 }
     )
   }

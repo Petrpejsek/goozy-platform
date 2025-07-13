@@ -23,16 +23,16 @@ export async function GET() {
 
     // Najít asociovaný brand v brands tabulce (pokud existuje)
     let brand = await prisma.brand.findFirst({
-      where: { email: brandApplication.email },
+      where: { email: brandApplication.email }
       include: {
         campaigns: {
           where: { isActive: true }
-        },
-        products: true,
+        }
+        product: true
         _count: {
           select: {
-            campaigns: true,
-            products: true
+            campaigns: true
+            product: true
           }
         }
       }
@@ -42,27 +42,27 @@ export async function GET() {
     if (!brand) {
       brand = await prisma.brand.create({
         data: {
-          id: `brand-${brandApplication.id}`,
-          name: brandApplication.brandName,
-          email: brandApplication.email,
-          phone: brandApplication.phone,
-          description: brandApplication.description,
-          website: brandApplication.website,
-          isApproved: true,
-          isActive: true,
+          id: `brand-${brandApplication.id}`
+          name: brandApplication.brandName
+          email: brandApplication.email
+          phone: brandApplication.phone
+          description: brandApplication.description
+          website: brandApplication.website
+          isApproved: true
+          isActive: true
           targetCountries: '[]', // Zatím prázdné, nastavit se dá v settings
-          createdAt: new Date(),
+          createdAt: new Date()
           updatedAt: new Date()
-        },
+        }
         include: {
           campaigns: {
             where: { isActive: true }
-          },
-          products: true,
+          }
+          product: true
           _count: {
             select: {
-              campaigns: true,
-              products: true
+              campaigns: true
+              product: true
             }
           }
         }
@@ -92,23 +92,23 @@ export async function GET() {
     const totalOrders = 0
 
     const metrics = {
-      activeCampaigns,
-      upcomingCampaigns,
-      todaysRevenue,
-      totalOrders,
+      activeCampaigns
+      upcomingCampaigns
+      todaysRevenue
+      totalOrders
       activeCountries
     }
 
     // Zatím prázdná data pro charts - až budeme mít Order systém
-    const salesData: Array<{date: string, sales: number, orders: number}> = []
-    const topProducts: Array<{name: string, sales: number, orders: number, revenue: string}> = []
+    const salesData: Array<{date: string, sales: number, order: number}> = []
+    const topProducts: Array<{name: string, sales: number, order: number, revenue: string}> = []
     const recentCampaigns = brand.campaign.slice(0, 5).map(campaign => ({
-      id: campaign.id,
-      name: campaign.name,
-      startDate: campaign.startDate.toISOString(),
-      endDate: campaign.endDate.toISOString(),
-      status: campaign.status,
-      expectedReach: campaign.expectedReach || 0,
+      id: campaign.id
+      name: campaign.name
+      startDate: campaign.startDate.toISOString()
+      endDate: campaign.endDate.toISOString()
+      status: campaign.status
+      expectedReach: campaign.expectedReach || 0
       influencerIds: campaign.influencerIds ? [campaign.influencerIds] : []
     }))
 
@@ -116,16 +116,16 @@ export async function GET() {
     console.log('📊 [DASHBOARD] Active countries:', activeCountries)
     
     return NextResponse.json({
-      success: true,
-      metrics,
-      salesData,
-      topProducts,
-      recentCampaigns,
+      success: true
+      metrics
+      salesData
+      topProducts
+      recentCampaigns
       brand: {
-        id: brand.id,
-        name: brand.name,
-        email: brand.email,
-        totalProducts: brand._count.products,
+        id: brand.id
+        name: brand.name
+        email: brand.email
+        totalProducts: brand._count.products
         totalCampaigns: brand._count.campaigns
       }
     })
@@ -133,7 +133,7 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [DASHBOARD] Error loading metrics:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }

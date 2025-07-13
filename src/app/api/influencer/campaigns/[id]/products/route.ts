@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto'
 
 // GET - Get products for a campaign
 export async function GET(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,7 +15,7 @@ export async function GET(
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'No authorization token provided' },
+        { success: false, error: 'No authorization token provided' }
         { status: 401 }
       )
     }
@@ -42,7 +42,7 @@ export async function GET(
     } catch (error) {
       console.log('❌ [DEBUG-JWT-GET] JWT verification failed:', error)
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
+        { success: false, error: 'Invalid or expired token' }
         { status: 401 }
       )
     }
@@ -54,7 +54,7 @@ export async function GET(
 
     if (!campaign) {
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' },
+        { success: false, error: 'Campaign not found' }
         { status: 404 }
       )
     }
@@ -68,24 +68,24 @@ export async function GET(
     if (campaign.influencerIds !== influencerId) {
       console.log('❌ [DEBUG-PRODUCTS-GET] Ownership check failed!')
       return NextResponse.json(
-        { success: false, error: 'Access denied - not your campaign' },
+        { success: false, error: 'Access denied - not your campaign' }
         { status: 403 }
       )
     }
 
     // Get products selected for this influencer
-    const influencerProducts = await prisma.influencerproducts.findMany({
+    const influencerProducts = await prisma.influencerProduct.findMany({
       where: {
-        influencerId: influencerId,
+        influencerId: influencerId
         isActive: true
-      },
+      }
       include: {
-        products: {
+        product: {
           include: {
-            brands: {
+            brand: {
               select: {
-                id: true,
-                name: true,
+                id: true
+                name: true
                 logo: true
               }
             }
@@ -95,32 +95,32 @@ export async function GET(
     })
 
     const products = influencerProducts.map(ip => ({
-      id: ip.product.id,
-      name: ip.product.name,
-      description: ip.product.description,
-      price: ip.product.price,
-      currency: ip.product.currency,
-      images: ip.product.images,
-      category: ip.product.category,
-      sizes: ip.product.sizes,
-      colors: ip.product.colors,
-      sku: ip.product.sku,
-      stockQuantity: ip.product.stockQuantity,
-      brand: ip.product.brands,
+      id: ip.product.id
+      name: ip.product.name
+      description: ip.product.description
+      price: ip.product.price
+      currency: ip.product.currency
+      images: ip.product.images
+      category: ip.product.category
+      sizes: ip.product.sizes
+      colors: ip.product.colors
+      sku: ip.product.sku
+      stockQuantity: ip.product.stockQuantity
+      brand: ip.product.brand
       recommendation: ip.recommendation
     }))
 
     console.log('✅ Campaign products retrieved:', id, products.length)
 
     return NextResponse.json({
-      success: true,
-      products: products
+      success: true
+      product: products
     })
 
   } catch (error) {
-    console.error('❌ Error getting campaign products:', error)
+    console.error('❌ Error getting campaign product:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to get campaign products' },
+      { success: false, error: 'Failed to get campaign products' }
       { status: 500 }
     )
   }
@@ -128,7 +128,7 @@ export async function GET(
 
 // POST - Update products for a campaign
 export async function POST(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -139,7 +139,7 @@ export async function POST(
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'No authorization token provided' },
+        { success: false, error: 'No authorization token provided' }
         { status: 401 }
       )
     }
@@ -166,7 +166,7 @@ export async function POST(
     } catch (error) {
       console.log('❌ [DEBUG-JWT-POST] JWT verification failed:', error)
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
+        { success: false, error: 'Invalid or expired token' }
         { status: 401 }
       )
     }
@@ -174,7 +174,7 @@ export async function POST(
     // Validate input
     if (!Array.isArray(productIds)) {
       return NextResponse.json(
-        { success: false, error: 'Product IDs must be an array' },
+        { success: false, error: 'Product IDs must be an array' }
         { status: 400 }
       )
     }
@@ -186,7 +186,7 @@ export async function POST(
 
     if (!campaign) {
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' },
+        { success: false, error: 'Campaign not found' }
         { status: 404 }
       )
     }
@@ -200,7 +200,7 @@ export async function POST(
     if (campaign.influencerIds !== influencerId) {
       console.log('❌ [DEBUG-PRODUCTS-POST] Ownership check failed!')
       return NextResponse.json(
-        { success: false, error: 'Access denied - not your campaign' },
+        { success: false, error: 'Access denied - not your campaign' }
         { status: 403 }
       )
     }
@@ -209,10 +209,10 @@ export async function POST(
     // This gives influencers flexibility to adjust their product selection during the campaign
     console.log('✅ [DEBUG-PRODUCTS-POST] Campaign ownership verified, proceeding with update')
 
-    console.log('🔄 Updating campaign products:', id, productIds.length)
+    console.log('🔄 Updating campaign product:', id, productIds.length)
 
     // Remove all current selections for this influencer
-    await prisma.influencerproducts.deleteMany({
+    await prisma.influencerProduct.deleteMany({
       where: {
         influencerId: influencerId
       }
@@ -221,14 +221,14 @@ export async function POST(
     // Add new selections
     if (productIds.length > 0) {
       const newSelections = productIds.map((productId: string) => ({
-        id: randomUUID(),
-        influencerId: influencerId,
-        productId: productId,
-        isActive: true,
+        id: randomUUID()
+        influencerId: influencerId
+        productId: productId
+        isActive: true
         addedAt: new Date()
       }))
 
-      await prisma.influencerproducts.createMany({
+      await prisma.influencerProduct.createMany({
         data: newSelections
       })
     }
@@ -236,15 +236,15 @@ export async function POST(
     console.log('✅ Campaign products updated successfully:', id)
 
     return NextResponse.json({
-      success: true,
-      message: 'Campaign products updated successfully',
+      success: true
+      message: 'Campaign products updated successfully'
       productCount: productIds.length
     })
 
   } catch (error) {
-    console.error('❌ Error updating campaign products:', error)
+    console.error('❌ Error updating campaign product:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to update campaign products' },
+      { success: false, error: 'Failed to update campaign products' }
       { status: 500 }
     )
   }

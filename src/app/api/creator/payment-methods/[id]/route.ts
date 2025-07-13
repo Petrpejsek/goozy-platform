@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 
 // PUT endpoint for updating payment methods
 export async function PUT(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -38,31 +38,31 @@ export async function PUT(
     // Simulate default payment methods (same as GET API)
     const defaultPaymentMethods = [
       {
-        id: '1',
-        type: 'paypal',
-        name: 'PayPal',
-        details: 'test@example.com',
+        id: '1'
+        type: 'paypal'
+        name: 'PayPal'
+        details: 'test@example.com'
         isDefault: true
-      },
+      }
       {
-        id: '2',
-        type: 'bank',
-        name: 'Bank Transfer',
-        details: 'Not configured',
+        id: '2'
+        type: 'bank'
+        name: 'Bank Transfer'
+        details: 'Not configured'
         isDefault: false
-      },
+      }
       {
-        id: '3',
-        type: 'wise',
-        name: 'Wise',
-        details: 'Not configured',
+        id: '3'
+        type: 'wise'
+        name: 'Wise'
+        details: 'Not configured'
         isDefault: false
-      },
+      }
       {
-        id: '4',
-        type: 'revolut',
-        name: 'Revolut',
-        details: 'Not configured',
+        id: '4'
+        type: 'revolut'
+        name: 'Revolut'
+        details: 'Not configured'
         isDefault: false
       }
     ]
@@ -76,13 +76,13 @@ export async function PUT(
 
     // For hardcoded data, simulate successful update
     const updatedPaymentMethod = {
-      ...paymentMethod,
-      details: details || paymentMethod.details,
+      ...paymentMethod
+      details: details || paymentMethod.details
       isDefault: isDefault !== undefined ? isDefault : paymentMethod.isDefault
     }
 
     return NextResponse.json({ 
-      message: 'Payment method updated successfully',
+      message: 'Payment method updated successfully'
       paymentMethod: updatedPaymentMethod
     }, { status: 200 })
 
@@ -93,7 +93,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -126,31 +126,31 @@ export async function DELETE(
     // Simulate default payment methods (same as GET API)
     const defaultPaymentMethods = [
       {
-        id: '1',
-        type: 'paypal',
-        name: 'PayPal',
-        details: 'test@example.com',
+        id: '1'
+        type: 'paypal'
+        name: 'PayPal'
+        details: 'test@example.com'
         isDefault: true
-      },
+      }
       {
-        id: '2',
-        type: 'bank',
-        name: 'Bank Transfer',
-        details: 'Not configured',
+        id: '2'
+        type: 'bank'
+        name: 'Bank Transfer'
+        details: 'Not configured'
         isDefault: false
-      },
+      }
       {
-        id: '3',
-        type: 'wise',
-        name: 'Wise',
-        details: 'Not configured',
+        id: '3'
+        type: 'wise'
+        name: 'Wise'
+        details: 'Not configured'
         isDefault: false
-      },
+      }
       {
-        id: '4',
-        type: 'revolut',
-        name: 'Revolut',
-        details: 'Not configured',
+        id: '4'
+        type: 'revolut'
+        name: 'Revolut'
+        details: 'Not configured'
         isDefault: false
       }
     ]

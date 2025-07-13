@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     // Validace vstupních dat
     if (!influencerId || !productId) {
       return NextResponse.json(
-        { success: false, error: 'Missing influencerId or productId' },
+        { success: false, error: 'Missing influencerId or productId' }
         { status: 400 }
       )
     }
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Validace délky doporučení
     if (recommendation && recommendation.length > 300) {
       return NextResponse.json(
-        { success: false, error: 'Recommendation must be 300 characters or less' },
+        { success: false, error: 'Recommendation must be 300 characters or less' }
         { status: 400 }
       )
     }
@@ -26,31 +26,31 @@ export async function POST(request: NextRequest) {
     const influencerProduct = await prisma.influencerProduct.upsert({
       where: {
         influencerId_productId: {
-          influencerId,
+          influencerId
           productId
         }
-      },
+      }
       update: {
         recommendation: recommendation || null
-      },
+      }
       create: {
-        id: randomUUID(),
-        influencerId,
-        productId,
-        recommendation: recommendation || null,
+        id: randomUUID()
+        influencerId
+        productId
+        recommendation: recommendation || null
         isActive: true
       }
     })
 
     return NextResponse.json({
-      success: true,
+      success: true
       data: influencerProduct
     })
 
   } catch (error) {
     console.error('Error saving recommendation:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to save recommendation' },
+      { success: false, error: 'Failed to save recommendation' }
       { status: 500 }
     )
   }
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     if (!influencerId || !productId) {
       return NextResponse.json(
-        { success: false, error: 'Missing influencerId or productId' },
+        { success: false, error: 'Missing influencerId or productId' }
         { status: 400 }
       )
     }
@@ -72,14 +72,14 @@ export async function GET(request: NextRequest) {
     const influencerProduct = await prisma.influencerProduct.findUnique({
       where: {
         influencerId_productId: {
-          influencerId,
+          influencerId
           productId
         }
       }
     })
 
     return NextResponse.json({
-      success: true,
+      success: true
       data: {
         recommendation: influencerProduct?.recommendation || null
       }
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching recommendation:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch recommendation' },
+      { success: false, error: 'Failed to fetch recommendation' }
       { status: 500 }
     )
   }

@@ -4,7 +4,7 @@ import { validateCampaignSlug } from '@/lib/campaign-utils'
 
 // GET - Fetch campaign by slug
 export async function GET(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
@@ -16,14 +16,14 @@ export async function GET(
     if (!validateCampaignSlug(slug)) {
       console.log('❌ Invalid slug format:', slug)
       return NextResponse.json(
-        { success: false, error: 'Invalid campaign slug format' },
+        { success: false, error: 'Invalid campaign slug format' }
         { status: 400 }
       )
     }
     
     // Find campaign by slug
     const campaign = await prisma.campaign.findUnique({
-      where: { slug },
+      where: { slug }
       include: {
         brand: true
       }
@@ -32,7 +32,7 @@ export async function GET(
     if (!campaign) {
       console.log('❌ Campaign not found for slug:', slug)
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' },
+        { success: false, error: 'Campaign not found' }
         { status: 404 }
       )
     }
@@ -53,15 +53,15 @@ export async function GET(
       
       if (influencerData) {
         influencer = {
-          id: influencerData.id,
-          name: influencerData.name,
-          email: influencerData.email,
-          avatar: influencerData.avatar || '/avatars/prague_fashionista_1750324937394.jpg',
+          id: influencerData.id
+          name: influencerData.name
+          email: influencerData.email
+          avatar: influencerData.avatar || '/avatars/prague_fashionista_1750324937394.jpg'
           bio: influencerData.bio, // Bez mock fallback - použij jen skutečná data
-          followers: '125K',
-          instagram: null,
-          tiktok: null,
-          youtube: null,
+          followers: '125K'
+          instagram: null
+          tiktok: null
+          youtube: null
           slug: influencerData.slug
         }
         console.log('✅ Found influencer:', influencerData.name)
@@ -78,16 +78,16 @@ export async function GET(
       // First try to get influencer's selected products
       const influencerProducts = await prisma.influencerProduct.findMany({
         where: {
-          influencerId: influencer.id,
+          influencerId: influencer.id
           isActive: true
-        },
+        }
         include: {
           product: true
         }
       })
       
       if (influencerProducts.length > 0) {
-        console.log('✅ Found influencer selected products:', influencerProducts.length)
+        console.log('✅ Found influencer selected product:', influencerProducts.length)
         
         // Extract products and build recommendations map
         products = influencerProducts
@@ -101,15 +101,15 @@ export async function GET(
           }
         })
         
-        console.log('📝 Found recommendations for products:', Object.keys(productRecommendations).length)
+        console.log('📝 Found recommendations for product:', Object.keys(productRecommendations).length)
       } else {
         console.log('⚠️ No selected products found, falling back to brand products')
         // Fallback to brand products if influencer hasn't selected any
         products = await prisma.product.findMany({
           where: {
-            brandId: campaign.brandId,
+            brandId: campaign.brandId
             isAvailable: true
-          },
+          }
           take: 10
         })
       }
@@ -117,9 +117,9 @@ export async function GET(
       // No influencer, get brand products
       products = await prisma.product.findMany({
         where: {
-          brandId: campaign.brandId,
+          brandId: campaign.brandId
           isAvailable: true
-        },
+        }
         take: 10
       })
     }
@@ -141,40 +141,40 @@ export async function GET(
     }
 
     console.log('✅ Campaign found:', campaign.id)
-    console.log('✅ Found products:', products.length)
+    console.log('✅ Found product:', products.length)
     console.log('✅ Influencer data:', influencer ? influencer.name : 'None')
     
     return NextResponse.json({
-      success: true,
+      success: true
       campaign: {
-        id: campaign.id,
-        slug: campaign.slug,
-        name: campaign.name,
-        description: campaign.description,
-        startDate: campaign.startDate.toISOString(),
-        endDate: campaign.endDate.toISOString(),
-        status: campaign.status,
-        isActive: campaign.isActive,
-        brand: campaign.brand,
-        expectedReach: campaign.expectedReach,
-        budgetAllocated: campaign.budgetAllocated,
-        currency: campaign.currency,
-        influencerIds: campaign.influencerIds,
-        targetCountries: campaign.targetCountries,
-        createdAt: campaign.createdAt.toISOString(),
-        updatedAt: campaign.updatedAt.toISOString(),
-        influencer: influencer,
-        products: products.map(product => ({
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
+        id: campaign.id
+        slug: campaign.slug
+        name: campaign.name
+        description: campaign.description
+        startDate: campaign.startDate.toISOString()
+        endDate: campaign.endDate.toISOString()
+        status: campaign.status
+        isActive: campaign.isActive
+        brand: campaign.brand
+        expectedReach: campaign.expectedReach
+        budgetAllocated: campaign.budgetAllocated
+        currency: campaign.currency
+        influencerIds: campaign.influencerIds
+        targetCountries: campaign.targetCountries
+        createdAt: campaign.createdAt.toISOString()
+        updatedAt: campaign.updatedAt.toISOString()
+        influencer: influencer
+        product: products.map(product => ({
+          id: product.id
+          name: product.name
+          description: product.description
+          price: product.price
           discountedPrice: product.price * 0.8, // 20% discount
-          images: parseArrayField(product.images),
-          brand: product.brand_name || campaign.brand.name,
-          category: product.category,
-          sizes: parseArrayField(product.sizes),
-          colors: parseArrayField(product.colors),
+          images: parseArrayField(product.images)
+          brand: product.brand_name || campaign.brand.name
+          category: product.category
+          sizes: parseArrayField(product.sizes)
+          colors: parseArrayField(product.colors)
           recommendation: (productRecommendations as any)[product.id] || null // Přidáno recommendation
         }))
       }
@@ -183,7 +183,7 @@ export async function GET(
   } catch (error) {
     console.error('❌ Error fetching campaign by slug:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch campaign' },
+      { success: false, error: 'Failed to fetch campaign' }
       { status: 500 }
     )
   }

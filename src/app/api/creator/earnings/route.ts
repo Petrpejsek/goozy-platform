@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     // Get all commissions for this influencer
     const commissions = await prisma.commission.findMany({
-      where: { influencerId },
+      where: { influencerId }
       include: {
         order: {
           include: {
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
             }
           }
         }
-      },
+      }
       orderBy: { createdAt: 'desc' }
     })
 
@@ -103,14 +103,14 @@ export async function GET(req: NextRequest) {
       .toISOString().split('T')[0]
 
     const earnings = {
-      totalEarnings,
-      currentMonth: thisMonthEarnings,
-      pendingPayout,
-      totalSent,
-      totalOrders,
-      averageOrderValue,
-      commissionRate,
-      lastPayout,
+      totalEarnings
+      currentMonth: thisMonthEarnings
+      pendingPayout
+      totalSent
+      totalOrders
+      averageOrderValue
+      commissionRate
+      lastPayout
       nextPayout
     }
 

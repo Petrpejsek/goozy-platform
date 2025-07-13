@@ -30,16 +30,16 @@ export async function GET() {
     if (!brand) {
       brand = await prisma.brand.create({
         data: {
-          id: `brand-${brandApplication.id}`,
-          name: brandApplication.brandName,
-          email: brandApplication.email,
-          phone: brandApplication.phone,
-          description: brandApplication.description,
-          website: brandApplication.website,
-          isApproved: true,
-          isActive: true,
-          targetCountries: '[]',
-          createdAt: new Date(),
+          id: `brand-${brandApplication.id}`
+          name: brandApplication.brandName
+          email: brandApplication.email
+          phone: brandApplication.phone
+          description: brandApplication.description
+          website: brandApplication.website
+          isApproved: true
+          isActive: true
+          targetCountries: '[]'
+          createdAt: new Date()
           updatedAt: new Date()
         }
       })
@@ -49,12 +49,12 @@ export async function GET() {
     // Načíst kampaně pro tento brand
     const campaigns = await prisma.campaign.findMany({
       where: {
-        brandId: brand.id,
+        brandId: brand.id
         isActive: true
-      },
+      }
       include: {
-        brands: true
-      },
+        brand: true
+      }
       orderBy: {
         createdAt: 'desc'
       }
@@ -69,13 +69,13 @@ export async function GET() {
         let influencer = null
         if (campaign.influencerIds) {
           influencer = await prisma.influencer.findFirst({
-            where: { id: campaign.influencerIds },
+            where: { id: campaign.influencerIds }
             select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-              slug: true,
+              id: true
+              name: true
+              email: true
+              avatar: true
+              slug: true
               commissionRate: true
             }
           })
@@ -84,7 +84,7 @@ export async function GET() {
         // Počet produktů v kampani (zatím přes všechny produkty brandu)
         const productCount = await prisma.product.count({
           where: {
-            brandId: brand.id,
+            brandId: brand.id
             isAvailable: true
           }
         })
@@ -103,23 +103,23 @@ export async function GET() {
         }
 
         return {
-          id: campaign.id,
-          slug: campaign.slug,
-          name: campaign.name,
-          description: campaign.description,
-          startDate: campaign.startDate.toISOString(),
-          endDate: campaign.endDate.toISOString(),
-          status: campaign.status,
-          expectedReach: campaign.expectedReach || 0,
-          budgetAllocated: campaign.budgetAllocated || 0,
-          currency: campaign.currency,
-          targetCountries: targetCountries,
-          createdAt: campaign.createdAt.toISOString(),
-          influencer: influencer,
+          id: campaign.id
+          slug: campaign.slug
+          name: campaign.name
+          description: campaign.description
+          startDate: campaign.startDate.toISOString()
+          endDate: campaign.endDate.toISOString()
+          status: campaign.status
+          expectedReach: campaign.expectedReach || 0
+          budgetAllocated: campaign.budgetAllocated || 0
+          currency: campaign.currency
+          targetCountries: targetCountries
+          createdAt: campaign.createdAt.toISOString()
+          influencer: influencer
           stats: {
-            productCount,
-            totalOrders,
-            totalRevenue,
+            productCount
+            totalOrders
+            totalRevenue
             conversionRate
           }
         }
@@ -133,21 +133,21 @@ export async function GET() {
     const totalCommissionPaid = 0
 
     const stats = {
-      totalCampaigns: campaigns.length,
-      activeCampaigns: totalActiveCampaigns,
-      totalReach,
+      totalCampaigns: campaigns.length
+      activeCampaigns: totalActiveCampaigns
+      totalReach
       totalCommissionPaid
     }
 
     console.log(`✅ [CAMPAIGNS] Loaded campaigns for: ${brand.name}`)
     
     return NextResponse.json({
-      success: true,
-      campaigns: campaignsWithStats,
-      stats,
+      success: true
+      campaigns: campaignsWithStats
+      stats
       brand: {
-        id: brand.id,
-        name: brand.name,
+        id: brand.id
+        name: brand.name
         email: brand.email
       }
     })
@@ -155,7 +155,7 @@ export async function GET() {
   } catch (error) {
     console.error('❌ [CAMPAIGNS] Error loading campaigns:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }

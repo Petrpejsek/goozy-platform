@@ -5,8 +5,8 @@ import { z } from 'zod'
 import jwt from 'jsonwebtoken'
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Invalid email')
+  password: z.string().min(1, 'Password is required')
 })
 
 export async function POST(request: NextRequest) {
@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     const creator = await prisma.influencer.findFirst({
       where: { 
         email: validatedData.email, 
-        isApproved: true,
+        isApproved: true
         isActive: true
-      },
+      }
     })
 
     if (!creator) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       
       // Check if there is a pending or rejected application
       const application = await prisma.influencerApplication.findFirst({
-        where: { email: validatedData.email },
+        where: { email: validatedData.email }
         orderBy: { createdAt: 'desc' }
       })
       if (application) {
@@ -69,21 +69,21 @@ export async function POST(request: NextRequest) {
     // Vytvoření JWT tokenu
     const token = jwt.sign(
       { 
-        id: creator.id,
-        email: creator.email,
-        name: creator.name,
+        id: creator.id
+        email: creator.email
+        name: creator.name
         type: 'creator'
-      },
-      process.env.JWT_SECRET || 'fallback-secret-key',
+      }
+      process.env.JWT_SECRET || 'fallback-secret-key'
       { expiresIn: '7d' }
     )
 
     return NextResponse.json({
-      message: 'Login successful.',
-      token,
+      message: 'Login successful.'
+      token
       creator: {
-        id: creator.id,
-        name: creator.name,
+        id: creator.id
+        name: creator.name
         email: creator.email
       }
     }, { status: 200 })
@@ -93,13 +93,13 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.errors[0].message }
         { status: 400 }
       )
     }
 
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_default', {
-  apiVersion: '2024-06-20',
+  apiVersion: '2024-06-20'
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!signature || !webhookSecret) {
       console.error('Missing Stripe signature or webhook secret');
       return NextResponse.json(
-        { error: 'Webhook signature missing' },
+        { error: 'Webhook signature missing' }
         { status: 400 }
       );
     }
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
       return NextResponse.json(
-        { error: 'Invalid signature' },
+        { error: 'Invalid signature' }
         { status: 400 }
       );
     }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json(
-      { error: 'Webhook handler failed' },
+      { error: 'Webhook handler failed' }
       { status: 500 }
     );
   }
@@ -138,9 +138,9 @@ async function mockOrderProcessing(paymentIntentId: string, status: string) {
   // This would be replaced with actual database operations
   // Example:
   // await prisma.order.update({
-  //   where: { paymentIntentId },
+  //   where: { paymentIntentId }
   //   data: { 
-  //     paymentStatus: status,
+  //     paymentStatus: status
   //     updatedAt: new Date()
   //   }
   // });

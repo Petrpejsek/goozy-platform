@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
 
     // Return default customization if none exists
     const defaultCustomization = {
-      theme: 'modern',
-      background: 'white',
+      theme: 'modern'
+      background: 'white'
       heroLayout: 'horizontal'
     }
 
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ [CUSTOMIZATION] Get error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }
@@ -94,36 +94,36 @@ export async function POST(request: NextRequest) {
     // if (existingCustomization) {
     //   // Update existing customization
     //   await prisma.influencer.update({
-    //     where: { id: existingCustomization.id },
+    //     where: { id: existingCustomization.id }
     //     data: {
-    //       theme: theme || existingCustomization.theme,
-    //       background: background || existingCustomization.background,
-    //       heroLayout: heroLayout || existingCustomization.heroLayout,
-    //       customSettings: customSettings || existingCustomization.customSettings,
+    //       theme: theme || existingCustomization.theme
+    //       background: background || existingCustomization.background
+    //       heroLayout: heroLayout || existingCustomization.heroLayout
+    //       customSettings: customSettings || existingCustomization.customSettings
     //     }
     //   })
     // } else {
     //   // Create new customization
     //   await prisma.influencercustomization.create({
     //     data: {
-    //       influencerId: decoded.id,
-    //       theme: theme || 'default',
-    //       background: background || '#ffffff',
-    //       heroLayout: heroLayout || 'standard',
-    //       customSettings: customSettings || '{}',
+    //       influencerId: decoded.id
+    //       theme: theme || 'default'
+    //       background: background || '#ffffff'
+    //       heroLayout: heroLayout || 'standard'
+    //       customSettings: customSettings || '{}'
     //     }
     //   })
     // }
 
     return NextResponse.json({
-      message: 'Customization saved successfully',
+      message: 'Customization saved successfully'
       customization: { theme, background, heroLayout, customSettings }
     }, { status: 200 })
 
   } catch (error) {
     console.error('❌ [CUSTOMIZATION] Save error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error' }
       { status: 500 }
     )
   }

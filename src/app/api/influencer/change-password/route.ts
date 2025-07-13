@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Update password in database
     await prisma.influencer.update({
-      where: { id: influencer.id },
+      where: { id: influencer.id }
       data: { password: hashedNewPassword }
     })
 

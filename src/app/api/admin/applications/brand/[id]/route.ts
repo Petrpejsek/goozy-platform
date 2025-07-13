@@ -3,12 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const updateApplicationSchema = z.object({
-  action: z.enum(['approve', 'reject', 'add_notes']),
+  action: z.enum(['approve', 'reject', 'add_notes'])
   notes: z.string().optional()
 })
 
 export async function PATCH(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -26,7 +26,7 @@ export async function PATCH(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' },
+        { error: 'Application not found' }
         { status: 404 }
       )
     }
@@ -44,14 +44,14 @@ export async function PATCH(
       // Update status and optionally notes
       const newStatus = action === 'approve' ? 'approved' : 'rejected'
       updateData = {
-        status: newStatus,
+        status: newStatus
         notes: notes || application.notes
       }
       message = `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully`
     }
     
     const updatedApplication = await prisma.brandApplication.update({
-      where: { id: applicationId },
+      where: { id: applicationId }
       data: updateData
     })
     
@@ -59,7 +59,7 @@ export async function PATCH(
     // TODO: We can also create a record in Brand table
     
     return NextResponse.json({
-      message,
+      message
       application: updatedApplication
     })
     
@@ -68,20 +68,20 @@ export async function PATCH(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid data', details: error.errors },
+        { error: 'Invalid data', details: error.errors }
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: 'Server error' }
       { status: 500 }
     )
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -96,7 +96,7 @@ export async function DELETE(
     
     if (!application) {
       return NextResponse.json(
-        { error: 'Application not found' },
+        { error: 'Application not found' }
         { status: 404 }
       )
     }
@@ -114,7 +114,7 @@ export async function DELETE(
     console.error('Error deleting application:', error)
     
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: 'Server error' }
       { status: 500 }
     )
   }

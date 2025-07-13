@@ -44,31 +44,31 @@ export async function GET(req: NextRequest) {
     // In future, this will query: prisma.payment_methods.findMany({ where: { influencerId } })
     const defaultPaymentMethods = [
       {
-        id: '1',
-        type: 'paypal',
-        name: 'PayPal',
-        details: testMode ? 'test@example.com' : (influencerId || 'Not configured'),
+        id: '1'
+        type: 'paypal'
+        name: 'PayPal'
+        details: testMode ? 'test@example.com' : (influencerId || 'Not configured')
         isDefault: true
-      },
+      }
       {
-        id: '2',
-        type: 'bank',
-        name: 'Bank Transfer',
-        details: 'Not configured',
+        id: '2'
+        type: 'bank'
+        name: 'Bank Transfer'
+        details: 'Not configured'
         isDefault: false
-      },
+      }
       {
-        id: '3',
-        type: 'wise',
-        name: 'Wise',
-        details: 'Not configured',
+        id: '3'
+        type: 'wise'
+        name: 'Wise'
+        details: 'Not configured'
         isDefault: false
-      },
+      }
       {
-        id: '4',
-        type: 'revolut',
-        name: 'Revolut',
-        details: 'Not configured',
+        id: '4'
+        type: 'revolut'
+        name: 'Revolut'
+        details: 'Not configured'
         isDefault: false
       }
     ]
@@ -115,16 +115,16 @@ export async function POST(req: NextRequest) {
     // For now, just return success since table doesn't exist yet
     // In future, this will create: prisma.payment_methods.create()
     const newPaymentMethod = {
-      id: Date.now().toString(),
-      type,
-      name,
-      details,
+      id: Date.now().toString()
+      type
+      name
+      details
       isDefault: isDefault || false
     }
 
     return NextResponse.json({ 
       success: true, 
-      paymentMethod: newPaymentMethod,
+      paymentMethod: newPaymentMethod
       message: 'Payment method added successfully'
     })
 

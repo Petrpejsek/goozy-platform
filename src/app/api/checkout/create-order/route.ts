@@ -4,35 +4,35 @@ import { applySecurityMiddleware } from '@/lib/security';
 
 // Validation schemas
 const AddressSchema = z.object({
-  firstName: z.string().min(1, 'Jméno je povinné'),
-  lastName: z.string().min(1, 'Příjmení je povinné'),
-  email: z.string().email('Neplatný email'),
-  phone: z.string().min(9, 'Telefon musí mít alespoň 9 číslic'),
-  street: z.string().min(1, 'Ulice je povinná'),
-  city: z.string().min(1, 'Město je povinné'),
-  postalCode: z.string().min(5, 'PSČ musí mít alespoň 5 číslic'),
-  country: z.string().min(2, 'Země je povinná'),
+  firstName: z.string().min(1, 'Jméno je povinné')
+  lastName: z.string().min(1, 'Příjmení je povinné')
+  email: z.string().email('Neplatný email')
+  phone: z.string().min(9, 'Telefon musí mít alespoň 9 číslic')
+  street: z.string().min(1, 'Ulice je povinná')
+  city: z.string().min(1, 'Město je povinné')
+  postalCode: z.string().min(5, 'PSČ musí mít alespoň 5 číslic')
+  country: z.string().min(2, 'Země je povinná')
 });
 
 const CreateOrderSchema = z.object({
   cartItems: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    price: z.number().positive(),
-    quantity: z.number().positive(),
-    supplier: z.string(),
-    image: z.string().optional(),
-    description: z.string().optional(),
-  })),
-  billingAddress: AddressSchema,
-  shippingAddress: AddressSchema,
-  paymentIntentId: z.string().min(1, 'Payment Intent ID je povinné'),
-  campaignSlug: z.string().optional(),
-  appliedCampaigns: z.array(z.string()).optional(),
-  shippingMethod: z.string().min(1, 'Způsob dopravy je povinný'),
-  totalAmount: z.number().positive(),
-  shippingCost: z.number().min(0),
-  taxAmount: z.number().min(0),
+    id: z.string()
+    name: z.string()
+    price: z.number().positive()
+    quantity: z.number().positive()
+    supplier: z.string()
+    image: z.string().optional()
+    description: z.string().optional()
+  }))
+  billingAddress: AddressSchema
+  shippingAddress: AddressSchema
+  paymentIntentId: z.string().min(1, 'Payment Intent ID je povinné')
+  campaignSlug: z.string().optional()
+  appliedCampaigns: z.array(z.string()).optional()
+  shippingMethod: z.string().min(1, 'Způsob dopravy je povinný')
+  totalAmount: z.number().positive()
+  shippingCost: z.number().min(0)
+  taxAmount: z.number().min(0)
 });
 
 // EU countries for shipping calculation
@@ -45,15 +45,15 @@ const EU_COUNTRIES = [
 // Shipping costs by supplier and destination
 const SHIPPING_COSTS = {
   EU: {
-    'supplier-1': 5.99,
-    'supplier-2': 7.99,
-    'supplier-3': 4.99,
+    'supplier-1': 5.99
+    'supplier-2': 7.99
+    'supplier-3': 4.99
     'default': 6.99
-  },
+  }
   NON_EU: {
-    'supplier-1': 12.99,
-    'supplier-2': 15.99,
-    'supplier-3': 11.99,
+    'supplier-1': 12.99
+    'supplier-2': 15.99
+    'supplier-3': 11.99
     'default': 14.99
   }
 };
@@ -99,10 +99,10 @@ async function createOrderInDatabase(orderData: any) {
   // This would be implemented with your database
   // For now, return a mock order ID
   return {
-    id: `order_${Date.now()}`,
-    orderNumber: `ORD-${Date.now().toString().slice(-6)}`,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
+    id: `order_${Date.now()}`
+    orderNumber: `ORD-${Date.now().toString().slice(-6)}`
+    status: 'pending'
+    createdAt: new Date().toISOString()
     ...orderData
   };
 }
@@ -113,7 +113,7 @@ async function sendOrderConfirmationEmail(order: any) {
   
   // Mock email sending
   return {
-    sent: true,
+    sent: true
     messageId: `msg_${Date.now()}`
   };
 }
@@ -122,14 +122,14 @@ export async function POST(request: NextRequest) {
   // Apply security middleware
   const securityResult = await applySecurityMiddleware(request, {
     rateLimits: {
-      requests: 10,
+      requests: 10
       windowMs: 60000, // 1 minute
     }
   });
 
   if (!securityResult.allowed) {
     return NextResponse.json(
-      { error: securityResult.reason },
+      { error: securityResult.reason }
       { status: securityResult.status }
     );
   }
@@ -141,14 +141,14 @@ export async function POST(request: NextRequest) {
     const validatedData = CreateOrderSchema.parse(body);
     
     const {
-      cartItems,
-      billingAddress,
-      shippingAddress,
-      paymentIntentId,
-      campaignSlug,
-      appliedCampaigns,
-      shippingMethod,
-      totalAmount,
+      cartItems
+      billingAddress
+      shippingAddress
+      paymentIntentId
+      campaignSlug
+      appliedCampaigns
+      shippingMethod
+      totalAmount
     } = validatedData;
 
     // Calculate shipping and tax
@@ -165,10 +165,10 @@ export async function POST(request: NextRequest) {
     if (Math.abs(totalAmount - expectedTotal) > 0.01) {
       return NextResponse.json(
         { 
-          error: 'Total amount mismatch',
-          expected: expectedTotal,
+          error: 'Total amount mismatch'
+          expected: expectedTotal
           received: totalAmount 
-        },
+        }
         { status: 400 }
       );
     }
@@ -178,9 +178,9 @@ export async function POST(request: NextRequest) {
       const supplier = item.supplier || 'default';
       if (!groups[supplier]) {
         groups[supplier] = {
-          supplier,
-          items: [],
-          subtotal: 0,
+          supplier
+          items: []
+          subtotal: 0
           shippingCost: (SHIPPING_COSTS as any)[
             EU_COUNTRIES.includes(shippingAddress.country) ? 'EU' : 'NON_EU'
           ][supplier] || (SHIPPING_COSTS as any)[
@@ -195,24 +195,24 @@ export async function POST(request: NextRequest) {
 
     // Create order data
     const orderData = {
-      paymentIntentId,
-      status: 'pending',
-      subtotal,
-      shippingCost: calculatedShipping,
-      taxAmount: calculatedTax,
-      totalAmount,
-      currency: 'EUR',
-      billingAddress,
-      shippingAddress,
-      shippingMethod,
-      items: cartItems,
-      supplierGroups: Object.values(supplierGroups),
-      campaignSlug,
-      appliedCampaigns: appliedCampaigns || [],
+      paymentIntentId
+      status: 'pending'
+      subtotal
+      shippingCost: calculatedShipping
+      taxAmount: calculatedTax
+      totalAmount
+      currency: 'EUR'
+      billingAddress
+      shippingAddress
+      shippingMethod
+      items: cartItems
+      supplierGroups: Object.values(supplierGroups)
+      campaignSlug
+      appliedCampaigns: appliedCampaigns || []
       metadata: {
-        userAgent: request.headers.get('user-agent'),
-        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        createdAt: new Date().toISOString(),
+        userAgent: request.headers.get('user-agent')
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+        createdAt: new Date().toISOString()
       }
     };
 
@@ -226,17 +226,17 @@ export async function POST(request: NextRequest) {
 
     // Return success response
     return NextResponse.json({
-      success: true,
+      success: true
       order: {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        status: order.status,
-        totalAmount: order.totalAmount,
-        currency: 'EUR',
-        supplierGroups: order.supplierGroups,
+        id: order.id
+        orderNumber: order.orderNumber
+        status: order.status
+        totalAmount: order.totalAmount
+        currency: 'EUR'
+        supplierGroups: order.supplierGroups
         estimatedDelivery: {
-          min: 3,
-          max: 7,
+          min: 3
+          max: 7
           unit: 'days'
         }
       }
@@ -248,21 +248,21 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { 
-          error: 'Validation failed',
+          error: 'Validation failed'
           details: error.errors.map(err => ({
-            field: err.path.join('.'),
+            field: err.path.join('.')
             message: err.message
           }))
-        },
+        }
         { status: 400 }
       );
     }
 
     return NextResponse.json(
       { 
-        error: 'Failed to create order',
+        error: 'Failed to create order'
         message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
-      },
+      }
       { status: 500 }
     );
   }

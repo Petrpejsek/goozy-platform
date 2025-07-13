@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 
 // PATCH - Stop campaign (set end date to now and status to inactive)
 export async function PATCH(
-  request: NextRequest,
+  request: NextRequest
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -14,7 +14,7 @@ export async function PATCH(
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'No authorization token provided' },
+        { success: false, error: 'No authorization token provided' }
         { status: 401 }
       )
     }
@@ -31,7 +31,7 @@ export async function PATCH(
       if (!influencerId) {
         console.error('❌ [STOP-CAMPAIGN] No influencer ID found in token')
         return NextResponse.json(
-          { success: false, error: 'Invalid token - missing user ID' },
+          { success: false, error: 'Invalid token - missing user ID' }
           { status: 401 }
         )
       }
@@ -39,7 +39,7 @@ export async function PATCH(
       console.log('✅ [STOP-CAMPAIGN] Token authentication successful for:', decoded)
     } catch (error) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
+        { success: false, error: 'Invalid or expired token' }
         { status: 401 }
       )
     }
@@ -51,7 +51,7 @@ export async function PATCH(
 
     if (!campaign) {
       return NextResponse.json(
-        { success: false, error: 'Campaign not found' },
+        { success: false, error: 'Campaign not found' }
         { status: 404 }
       )
     }
@@ -59,7 +59,7 @@ export async function PATCH(
     // Check if influencer owns this campaign
     if (campaign.influencerIds !== influencerId) {
       return NextResponse.json(
-        { success: false, error: 'Access denied - not your campaign' },
+        { success: false, error: 'Access denied - not your campaign' }
         { status: 403 }
       )
     }
@@ -71,25 +71,25 @@ export async function PATCH(
     
     if (now < startDate) {
       return NextResponse.json(
-        { success: false, error: 'Cannot stop campaign that hasn\'t started yet' },
+        { success: false, error: 'Cannot stop campaign that hasn\'t started yet' }
         { status: 400 }
       )
     }
 
     if (now > endDate) {
       return NextResponse.json(
-        { success: false, error: 'Campaign has already ended' },
+        { success: false, error: 'Campaign has already ended' }
         { status: 400 }
       )
     }
 
     // Stop the campaign by setting end date to now and status to inactive
     const updatedCampaign = await prisma.campaign.update({
-      where: { id },
+      where: { id }
       data: {
-        endDate: now,
-        status: 'inactive',
-        isActive: false,
+        endDate: now
+        status: 'inactive'
+        isActive: false
         updatedAt: now
       }
     })
@@ -97,11 +97,11 @@ export async function PATCH(
     console.log('✅ Campaign stopped successfully:', id)
 
     return NextResponse.json({
-      success: true,
+      success: true
       campaign: {
-        id: updatedCampaign.id,
-        status: updatedCampaign.status,
-        endDate: updatedCampaign.endDate.toISOString(),
+        id: updatedCampaign.id
+        status: updatedCampaign.status
+        endDate: updatedCampaign.endDate.toISOString()
         isActive: updatedCampaign.isActive
       }
     })
@@ -109,7 +109,7 @@ export async function PATCH(
   } catch (error) {
     console.error('❌ Error stopping campaign:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to stop campaign' },
+      { success: false, error: 'Failed to stop campaign' }
       { status: 500 }
     )
   }

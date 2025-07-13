@@ -38,7 +38,7 @@ export async function PUT(request: NextRequest) {
       name, 
       phone, 
       bio, 
-      avatar,
+      avatar
       profile, 
       socialNetworks, 
       contentCategories 
@@ -49,12 +49,12 @@ export async function PUT(request: NextRequest) {
     // Aktualizovat základní údaje influencera
     console.log('🔄 [PROFILE-UPDATE] Updating basic influencer data...')
     const updatedInfluencer = await prisma.influencer.update({
-      where: { id: influencerId },
+      where: { id: influencerId }
       data: {
-        name: name || undefined,
-        phone: phone || undefined,
-        bio: bio || undefined,
-        avatar: avatar || undefined,
+        name: name || undefined
+        phone: phone || undefined
+        bio: bio || undefined
+        avatar: avatar || undefined
       }
     })
     console.log('✅ [PROFILE-UPDATE] Basic data updated')
@@ -62,20 +62,20 @@ export async function PUT(request: NextRequest) {
     // Aktualizovat nebo vytvořit profil
     if (profile && (profile.age || profile.gender || profile.location)) {
       console.log('🔄 [PROFILE-UPDATE] Updating profile data...')
-      await prisma.influencerprofiles.upsert({
-        where: { influencerId },
+      await prisma.influencerProfile.upsert({
+        where: { influencerId }
         update: {
-          age: profile.age || null,
-          gender: profile.gender || null,
-          location: profile.location || null,
-        },
+          age: profile.age || null
+          gender: profile.gender || null
+          location: profile.location || null
+        }
         create: {
-          id: randomUUID(),
-          influencerId,
-          age: profile.age || null,
-          gender: profile.gender || null,
-          location: profile.location || null,
-          updatedAt: new Date(),
+          id: randomUUID()
+          influencerId
+          age: profile.age || null
+          gender: profile.gender || null
+          location: profile.location || null
+          updatedAt: new Date()
         }
       })
       console.log('✅ [PROFILE-UPDATE] Profile data updated')
@@ -113,11 +113,11 @@ export async function PUT(request: NextRequest) {
 
         await prisma.influencerSocial.createMany({
           data: socialNetworks.map(social => ({
-            id: randomUUID(),
-            influencerId,
-            platform: social.platform,
-            username: social.username,
-            url: social.url || generateSocialUrl(social.platform, social.username),
+            id: randomUUID()
+            influencerId
+            platform: social.platform
+            username: social.username
+            url: social.url || generateSocialUrl(social.platform, social.username)
             followers: social.followers || 0 // Default hodnota
           }))
         })
@@ -137,8 +137,8 @@ export async function PUT(request: NextRequest) {
       if (contentCategories.length > 0) {
         await prisma.influencerCategory.createMany({
           data: contentCategories.map(category => ({
-            id: randomUUID(),
-            influencerId,
+            id: randomUUID()
+            influencerId
             category
           }))
         })
@@ -157,7 +157,7 @@ export async function PUT(request: NextRequest) {
     console.error('❌ [PROFILE-UPDATE] Error:', error)
     console.error('❌ [PROFILE-UPDATE] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' }
       { status: 500 }
     )
   }

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       
       // Verify influencer exists in influencers table
       const influencer = await prisma.influencer.findUnique({
-        where: { id: influencerId },
+        where: { id: influencerId }
         select: { id: true, name: true }
       })
       
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencerData = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true, name: true }
         })
         if (!influencerData?.id) {
@@ -59,24 +59,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Get selected products
-    const selectedProducts = await prisma.influencerproducts.findMany({
+    const selectedProducts = await prisma.influencerProduct.findMany({
       where: {
-        influencerId: influencerId,
+        influencerId: influencerId
         isActive: true
-      },
+      }
       include: {
-        products: {
+        product: {
           include: {
-            brands: {
+            brand: {
               select: {
-                id: true,
-                name: true,
+                id: true
+                name: true
                 logo: true
               }
             }
           }
         }
-      },
+      }
       orderBy: {
         addedAt: 'desc'
       }
@@ -84,21 +84,21 @@ export async function GET(request: NextRequest) {
 
     // Transform data for frontend
     const products = selectedProducts.map(sp => ({
-      ...sp.products,
-      images: JSON.parse(sp.product.images || '[]'),
-      sizes: JSON.parse(sp.product.sizes || '[]'),
-      colors: JSON.parse(sp.product.colors || '[]'),
-      brand: sp.product.brands,
+      ...sp.product
+      images: JSON.parse(sp.product.images || '[]')
+      sizes: JSON.parse(sp.product.sizes || '[]')
+      colors: JSON.parse(sp.product.colors || '[]')
+      brand: sp.product.brand
       addedAt: sp.addedAt
     }))
 
     return NextResponse.json({
-      products,
+      products
       count: products.length
     })
 
   } catch (error) {
-    console.error('Error loading selected products:', error)
+    console.error('Error loading selected product:', error)
     return NextResponse.json({ error: 'Failed to load selected products' }, { status: 500 })
   }
 }
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       
       // Verify influencer exists in influencers table
       const influencer = await prisma.influencer.findUnique({
-        where: { id: influencerId },
+        where: { id: influencerId }
         select: { id: true, name: true }
       })
       
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencerData = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true, name: true }
         })
         if (!influencerData?.id) {
@@ -174,29 +174,29 @@ export async function POST(request: NextRequest) {
       // Add products to selection (or reactivate)
       for (const productId of productIds) {
         // First try to find existing record
-        const existing = await prisma.influencerproducts.findFirst({
+        const existing = await prisma.influencerProduct.findFirst({
           where: {
-            influencerId: influencerId,
+            influencerId: influencerId
             productId: productId
           }
         })
 
         if (existing) {
           // Update existing
-          await prisma.influencerproducts.update({
-            where: { id: existing.id },
+          await prisma.influencerProduct.update({
+            where: { id: existing.id }
             data: {
-              isActive: true,
+              isActive: true
               addedAt: new Date()
             }
                       })
         } else {
           // Create new
-          await prisma.influencerproducts.create({
+          await prisma.influencerProduct.create({
             data: {
-              id: randomUUID(),
-              influencerId: influencerId,
-              productId: productId,
+              id: randomUUID()
+              influencerId: influencerId
+              productId: productId
               isActive: true
             }
           })
@@ -204,28 +204,28 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ 
-        message: `${productIds.length} products added to selection`,
-        action: 'add',
+        message: `${productIds.length} products added to selection`
+        action: 'add'
         count: productIds.length
       })
 
     } else if (action === 'remove') {
       // Remove products from selection (deactivate)
-      await prisma.influencerproducts.updateMany({
+      await prisma.influencerProduct.updateMany({
         where: {
-          influencerId: influencerId,
+          influencerId: influencerId
           productId: {
             in: productIds
           }
-        },
+        }
         data: {
           isActive: false
         }
       })
 
       return NextResponse.json({ 
-        message: `${productIds.length} products removed from selection`,
-        action: 'remove',
+        message: `${productIds.length} products removed from selection`
+        action: 'remove'
         count: productIds.length
       })
 
@@ -233,11 +233,11 @@ export async function POST(request: NextRequest) {
       // Set complete selection (overwrite current selection)
       
       // 1. Deactivate all current selections
-      await prisma.influencerproducts.updateMany({
+      await prisma.influencerProduct.updateMany({
         where: {
-          influencerId: influencerId,
+          influencerId: influencerId
           isActive: true
-        },
+        }
         data: {
           isActive: false
         }
@@ -246,29 +246,29 @@ export async function POST(request: NextRequest) {
       // 2. Activate new products
       for (const productId of productIds) {
         // First try to find existing record
-        const existing = await prisma.influencerproducts.findFirst({
+        const existing = await prisma.influencerProduct.findFirst({
           where: {
-            influencerId: influencerId,
+            influencerId: influencerId
             productId: productId
           }
         })
 
         if (existing) {
           // Update existing
-          await prisma.influencerproducts.update({
-            where: { id: existing.id },
+          await prisma.influencerProduct.update({
+            where: { id: existing.id }
             data: {
-              isActive: true,
+              isActive: true
               addedAt: new Date()
             }
                       })
         } else {
           // Create new
-          await prisma.influencerproducts.create({
+          await prisma.influencerProduct.create({
             data: {
-              id: randomUUID(),
-              influencerId: influencerId,
-              productId: productId,
+              id: randomUUID()
+              influencerId: influencerId
+              productId: productId
               isActive: true
             }
           })
@@ -276,8 +276,8 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ 
-        message: `Selection updated - ${productIds.length} products`,
-        action: 'set',
+        message: `Selection updated - ${productIds.length} products`
+        action: 'set'
         count: productIds.length
       })
 
@@ -288,8 +288,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ [PRODUCTS-POST] Error updating product selection:', error)
     console.error('❌ [PRODUCTS-POST] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : 'No stack trace',
+      message: error instanceof Error ? error.message : 'Unknown error'
+      stack: error instanceof Error ? error.stack : 'No stack trace'
       name: error instanceof Error ? error.name : 'Unknown error type'
     })
     return NextResponse.json({ error: 'Failed to update product selection' }, { status: 500 })
@@ -324,7 +324,7 @@ export async function DELETE(request: NextRequest) {
       
       // Verify influencer exists in influencers table
       const influencer = await prisma.influencer.findUnique({
-        where: { id: influencerId },
+        where: { id: influencerId }
         select: { id: true, name: true }
       })
       
@@ -338,7 +338,7 @@ export async function DELETE(request: NextRequest) {
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         const influencerData = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true, name: true }
         })
         if (!influencerData?.id) {
@@ -352,18 +352,18 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Deactivate all selected products
-    const result = await prisma.influencerproducts.updateMany({
+    const result = await prisma.influencerProduct.updateMany({
       where: {
-        influencerId: influencerId,
+        influencerId: influencerId
         isActive: true
-      },
+      }
       data: {
         isActive: false
       }
     })
 
     return NextResponse.json({ 
-      message: `All products removed from selection`,
+      message: `All products removed from selection`
       count: result.count
     })
 

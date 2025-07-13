@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         console.log('🔄 [INFLUENCER-ME] Trying base64 fallback for email:', email)
         
         const influencerByEmail = await prisma.influencer.findUnique({
-          where: { email },
+          where: { email }
           select: { id: true, email: true }
         })
         
@@ -64,22 +64,22 @@ export async function GET(request: NextRequest) {
 
     // Get influencer with all related data
     const influencer = await prisma.influencer.findUnique({
-      where: { id: influencerId },
+      where: { id: influencerId }
       include: {
-        influencerSocial: true,
-        influencerCategory: true,
-        influencer_profiles: true,
-        influencerProduct: {
+        socialNetworks: true
+        contentCategories: true
+        profile: true
+        selectedProducts: {
           include: {
-            products: true
+            product: true
           }
-        },
-        orders: {
+        }
+        order: {
           where: {
             status: 'completed'
           }
-        },
-        commissions: true
+        }
+        commission: true
       }
     })
 
@@ -90,33 +90,33 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const totalEarnings = influencer.commissions.reduce((sum, commission) => sum + commission.amount, 0)
-    const activeProducts = influencer.influencerProduct.length
-    const totalOrders = influencer.order.length
-    const totalFollowers = influencer.influencerSocial.reduce((sum, social) => sum + (social.followers || 0), 0)
+    const activeProducts = influencer.selectedProducts.length
+    const totalOrders = influencer.orders.length
+    const totalFollowers = influencer.socialNetworks.reduce((sum, social) => sum + (social.followers || 0), 0)
 
     // Get main social network for followers display
-    const mainSocial = influencer.influencerSocial.find(s => s.platform === 'instagram') 
-      || influencer.influencerSocial[0]
+    const mainSocial = influencer.socialNetworks.find(s => s.platform === 'instagram') 
+      || influencer.socialNetworks[0]
 
     const response = {
       influencer: {
-        id: influencer.id,
-        name: influencer.name,
-        email: influencer.email,
-        phone: influencer.phone,
-        slug: influencer.slug,
-        avatar: influencer.avatar,
-        bio: influencer.bio,
-        followers: mainSocial ? formatFollowers(mainSocial.followers) : '0',
-        totalEarnings: totalEarnings,
-        activeProducts: activeProducts,
-        totalOrders: totalOrders,
+        id: influencer.id
+        name: influencer.name
+        email: influencer.email
+        phone: influencer.phone
+        slug: influencer.slug
+        avatar: influencer.avatar
+        bio: influencer.bio
+        followers: mainSocial ? formatFollowers(mainSocial.followers) : '0'
+        totalEarnings: totalEarnings
+        activeProducts: activeProducts
+        totalOrders: totalOrders
         commissionRate: Math.round(influencer.commissionRate * 100), // Convert to percentage
-        socialNetworks: influencer.influencerSocial,
-        contentCategories: influencer.influencerCategory,
-        profile: influencer.influencer_profiles,
-        isActive: influencer.isActive,
-        isApproved: influencer.isApproved,
+        socialNetworks: influencer.socialNetworks
+        contentCategories: influencer.contentCategories
+        profile: influencer.profile
+        isActive: influencer.isActive
+        isApproved: influencer.isApproved
         onboardingStatus: influencer.onboardingStatus
       }
     }

@@ -6,14 +6,14 @@ export async function GET() {
     // Get all unique categories from available products
     const categories = await prisma.product.findMany({
       where: {
-        isAvailable: true,
+        isAvailable: true
         stockQuantity: {
           gt: 0
         }
-      },
+      }
       select: {
         category: true
-      },
+      }
       distinct: ['category']
     })
 
@@ -22,8 +22,8 @@ export async function GET() {
       categories.map(async (cat) => {
         const count = await prisma.product.count({
           where: {
-            category: cat.category,
-            isAvailable: true,
+            category: cat.category
+            isAvailable: true
             stockQuantity: {
               gt: 0
             }
@@ -31,7 +31,7 @@ export async function GET() {
         })
         
         return {
-          name: cat.category,
+          name: cat.category
           count
         }
       })
@@ -41,7 +41,7 @@ export async function GET() {
     categoriesWithCount.sort((a, b) => b.count - a.count)
 
     return NextResponse.json({
-      success: true,
+      success: true
       data: {
         categories: categoriesWithCount
       }
@@ -53,7 +53,7 @@ export async function GET() {
       { 
         success: false, 
         error: 'Failed to load categories' 
-      },
+      }
       { status: 500 }
     )
   }
