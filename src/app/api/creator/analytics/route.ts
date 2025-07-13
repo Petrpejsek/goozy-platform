@@ -46,12 +46,11 @@ export async function GET(req: NextRequest) {
       include: {
         orders: {
           include: {
-            orderItem: {
+            items: {
               include: {
-                products: true
+                product: true
               }
-            },
-            commissions: true
+            }
           }
         }
       }
