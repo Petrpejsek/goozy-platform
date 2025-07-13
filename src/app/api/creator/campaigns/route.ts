@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
         })
 
         // Get influencer products count
-        const productCount = await prisma.influencerproducts.count({
+        const productCount = await prisma.influencerProduct.count({
           where: {
             influencerId: influencerId,
             isActive: true
