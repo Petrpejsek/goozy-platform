@@ -256,7 +256,7 @@ export default async function PartnerDetailPage({ params }: Props) {
                     href={`/admin/products?brand=${partner.id}`}
                     className="text-blue-600 hover:text-blue-800 font-medium"
                   >
-                    View all {partner.product.length} products →
+                    View all {partner.products.length} products →
                   </Link>
                 </div>
               )}
