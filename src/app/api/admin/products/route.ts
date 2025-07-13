@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date()
       },
       include: {
-        brands: {
+        brand: {
           select: {
             id: true,
             name: true
