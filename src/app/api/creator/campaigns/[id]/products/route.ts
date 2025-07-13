@@ -212,7 +212,7 @@ export async function POST(
     console.log('🔄 Updating campaign products:', id, productIds.length)
 
     // Remove all current selections for this influencer
-    await prisma.influencerproducts.deleteMany({
+    await prisma.influencerProduct.deleteMany({
       where: {
         influencerId: influencerId
       }
@@ -228,7 +228,7 @@ export async function POST(
         addedAt: new Date()
       }))
 
-      await prisma.influencerproducts.createMany({
+      await prisma.influencerProduct.createMany({
         data: newSelections
       })
     }
