@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get influencer by ID
-    const influencer = await prisma.influencers.findUnique({
+    const influencer = await prisma.influencer.findUnique({
       where: { id: decoded.id }
     })
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const hashedNewPassword = await bcrypt.hash(newPassword, 12)
 
     // Update password in database
-    await prisma.influencers.update({
+    await prisma.influencer.update({
       where: { id: influencer.id },
       data: { password: hashedNewPassword }
     })

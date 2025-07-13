@@ -47,7 +47,7 @@ export async function GET(
       
       console.log('🔍 Looking for influencer with ID:', influencerId)
       
-      const influencerData = await prisma.influencers.findUnique({
+      const influencerData = await prisma.influencer.findUnique({
         where: { id: influencerId }
       })
       

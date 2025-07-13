@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const validatedData = loginSchema.parse(body)
     
     // FIXED: Najdeme creatora v hlavní tabulce influencers místo aplikací
-    const creator = await prisma.influencers.findFirst({
+    const creator = await prisma.influencer.findFirst({
       where: { 
         email: validatedData.email, 
         isApproved: true,

@@ -68,7 +68,7 @@ export async function GET() {
         // Najít influencera pro tuto kampaň
         let influencer = null
         if (campaign.influencerIds) {
-          influencer = await prisma.influencers.findFirst({
+          influencer = await prisma.influencer.findFirst({
             where: { id: campaign.influencerIds },
             select: {
               id: true,

@@ -48,7 +48,7 @@ export async function PUT(request: NextRequest) {
 
     // Aktualizovat základní údaje influencera
     console.log('🔄 [PROFILE-UPDATE] Updating basic influencer data...')
-    const updatedInfluencer = await prisma.influencers.update({
+    const updatedInfluencer = await prisma.influencer.update({
       where: { id: influencerId },
       data: {
         name: name || undefined,

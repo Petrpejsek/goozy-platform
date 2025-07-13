@@ -142,7 +142,7 @@ export async function PATCH(
     if ((action === 'approve' || action === 'approved') && updateData.status === 'approved') {
       try {
         // Check if influencer already exists
-        const existingInfluencer = await prisma.influencers.findUnique({
+        const existingInfluencer = await prisma.influencer.findUnique({
           where: { email: application.email }
         })
         
@@ -157,13 +157,13 @@ export async function PATCH(
           let counter = 1
           
           // Check for slug uniqueness
-          while (await prisma.influencers.findUnique({ where: { slug } })) {
+          while (await prisma.influencer.findUnique({ where: { slug } })) {
             slug = `${baseSlug}-${counter}`
             counter++
           }
           
           // Create influencer account
-          const newInfluencer = await prisma.influencers.create({
+          const newInfluencer = await prisma.influencer.create({
             data: {
               id: crypto.randomUUID(),
               email: application.email,

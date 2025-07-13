@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       // Fallback: the token might just be base64-encoded influencer email
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
-        const influencer = await prisma.influencers.findUnique({
+        const influencer = await prisma.influencer.findUnique({
           where: { email },
           select: { id: true }
         })

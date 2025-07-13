@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       influencerId = decoded.userId || decoded.influencerId || decoded.id
       
       // Verify influencer exists in influencers table
-      const influencer = await prisma.influencers.findUnique({
+      const influencer = await prisma.influencer.findUnique({
         where: { id: influencerId },
         select: { id: true, name: true }
       })
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       // Fallback: try to find influencer by email (base64 encoded in cookie)
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
-        const influencerData = await prisma.influencers.findUnique({
+        const influencerData = await prisma.influencer.findUnique({
           where: { email },
           select: { id: true, name: true }
         })
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       influencerId = decoded.userId || decoded.influencerId || decoded.id
       
       // Verify influencer exists in influencers table
-      const influencer = await prisma.influencers.findUnique({
+      const influencer = await prisma.influencer.findUnique({
         where: { id: influencerId },
         select: { id: true, name: true }
       })
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       // Fallback: try to find influencer by email (base64 encoded in cookie)
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
-        const influencerData = await prisma.influencers.findUnique({
+        const influencerData = await prisma.influencer.findUnique({
           where: { email },
           select: { id: true, name: true }
         })
@@ -323,7 +323,7 @@ export async function DELETE(request: NextRequest) {
       influencerId = decoded.userId || decoded.influencerId || decoded.id
       
       // Verify influencer exists in influencers table
-      const influencer = await prisma.influencers.findUnique({
+      const influencer = await prisma.influencer.findUnique({
         where: { id: influencerId },
         select: { id: true, name: true }
       })
@@ -337,7 +337,7 @@ export async function DELETE(request: NextRequest) {
       // Fallback: try to find influencer by email (base64 encoded in cookie)
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
-        const influencerData = await prisma.influencers.findUnique({
+        const influencerData = await prisma.influencer.findUnique({
           where: { email },
           select: { id: true, name: true }
         })

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       influencerId = decoded.userId || decoded.influencerId || decoded.id
       
       // Get full influencer data from database
-      influencerData = await prisma.influencers.findUnique({
+      influencerData = await prisma.influencer.findUnique({
         where: { id: influencerId },
         select: {
           id: true,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       // Fallback: try to find influencer by email (base64 encoded in cookie)
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
-        influencerData = await prisma.influencers.findUnique({
+        influencerData = await prisma.influencer.findUnique({
           where: { email },
           select: {
             id: true,
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
       // Fallback: try to find influencer by email (base64 encoded in cookie)
       try {
         const email = Buffer.from(token, 'base64').toString('utf-8')
-        const influencerData = await prisma.influencers.findUnique({
+        const influencerData = await prisma.influencer.findUnique({
           where: { email },
           select: { id: true }
         })

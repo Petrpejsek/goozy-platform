@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         const email = Buffer.from(token, 'base64').toString('utf-8')
         console.log('🔄 [CREATOR-ME] Trying base64 fallback for email:', email)
         
-        const creatorByEmail = await prisma.influencers.findUnique({
+        const creatorByEmail = await prisma.influencer.findUnique({
           where: { email },
           select: { id: true, email: true }
         })
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get creator with all related data
-    const creator = await prisma.influencers.findUnique({
+    const creator = await prisma.influencer.findUnique({
       where: { id: creatorId },
       include: {
         influencer_socials: true,

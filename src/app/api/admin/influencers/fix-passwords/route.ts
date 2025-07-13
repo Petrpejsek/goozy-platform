@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     console.log('🔧 [FIX-PASSWORDS] Opravuji hesla pro existující influencery...')
     
     // Najdi všechny influencery bez hesla
-    const influencersWithoutPassword = await prisma.influencers.findMany({
+    const influencersWithoutPassword = await prisma.influencer.findMany({
       where: {
         password: null
       }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Aktualizuj influencer s heslem z aplikace
-        await prisma.influencers.update({
+        await prisma.influencer.update({
           where: { id: influencer.id },
           data: { password: originalApplication.password }
         })

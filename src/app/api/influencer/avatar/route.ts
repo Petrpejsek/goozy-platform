@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get influencer
-    const influencer = await prisma.influencers.findUnique({
+    const influencer = await prisma.influencer.findUnique({
       where: { id: decoded.id }
     })
 
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     // Update database only for avatar uploads
     if (uploadType === 'avatar') {
-      await prisma.influencers.update({
+      await prisma.influencer.update({
         where: { id: influencer.id },
         data: { avatar: fileUrl }
       })

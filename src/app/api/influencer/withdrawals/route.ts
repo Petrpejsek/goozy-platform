@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       influencerId = decoded.id
 
       // Get influencer to verify existence
-      const influencer = await prisma.influencers.findUnique({
+      const influencer = await prisma.influencer.findUnique({
         where: { id: influencerId }
       })
 
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     const { amount, paymentMethodId } = await req.json()
 
     // Get influencer to verify existence
-    const influencer = await prisma.influencers.findUnique({
+    const influencer = await prisma.influencer.findUnique({
       where: { id: influencerId }
     })
 

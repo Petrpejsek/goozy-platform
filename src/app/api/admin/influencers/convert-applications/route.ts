@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     for (const application of approvedApplications) {
       try {
         // Zkontroluj, jestli už influencer s tímto emailem neexistuje
-        const existingInfluencer = await prisma.influencers.findUnique({
+        const existingInfluencer = await prisma.influencer.findUnique({
           where: { email: application.email }
         })
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           + '-' + Math.random().toString(36).substring(2, 7)
 
         // Vytvoř nový influencer záznam
-        const newInfluencer = await prisma.influencers.create({
+        const newInfluencer = await prisma.influencer.create({
           data: {
             id: Date.now().toString() + Math.random().toString(),
             name: application.name,
