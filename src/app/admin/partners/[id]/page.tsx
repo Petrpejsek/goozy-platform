@@ -40,8 +40,8 @@ export default async function PartnerDetailPage({ params }: Props) {
   }
 
   // Statistiky partnera
-  const totalProductValue = partner.product.reduce((sum, product) => sum + product.price, 0)
-  const avgProductPrice = partner.product.length > 0 ? totalProductValue / partner.product.length : 0
+  const totalProductValue = partner.products.reduce((sum, product) => sum + product.price, 0)
+  const avgProductPrice = partner.products.length > 0 ? totalProductValue / partner.products.length : 0
 
   return (
     <div>
