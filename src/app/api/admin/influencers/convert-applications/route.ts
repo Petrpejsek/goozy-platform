@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
         // Vytvoř sociální sítě pro influencera  
         if (application.instagram) {
-          await prisma.influencer_socials.create({
+          await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (application.tiktok) {
-          await prisma.influencer_socials.create({
+          await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (application.youtube) {
-          await prisma.influencer_socials.create({
+          await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (application.facebook) {
-          await prisma.influencer_socials.create({
+          await prisma.influencerSocial.create({
             data: {
               id: Date.now().toString() + Math.random().toString(),
               influencerId: newInfluencer.id,

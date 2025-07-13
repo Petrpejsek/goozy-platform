@@ -244,7 +244,7 @@ export async function PATCH(
           
           // Create all social networks at once
           if (socialNetworks.length > 0) {
-            await prisma.influencer_socials.createMany({
+            await prisma.influencerSocial.createMany({
               data: socialNetworks
             })
           }

@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     const influencer = await prisma.influencer.findUnique({
       where: { id: influencerId },
       include: {
-        influencer_socials: true,
+        influencerSocial: true,
         influencer_categories: true,
         influencer_profiles: true,
         influencer_products: {
@@ -92,11 +92,11 @@ export async function GET(request: NextRequest) {
     const totalEarnings = influencer.commissions.reduce((sum, commission) => sum + commission.amount, 0)
     const activeProducts = influencer.influencer_products.length
     const totalOrders = influencer.orders.length
-    const totalFollowers = influencer.influencer_socials.reduce((sum, social) => sum + (social.followers || 0), 0)
+    const totalFollowers = influencer.influencerSocial.reduce((sum, social) => sum + (social.followers || 0), 0)
 
     // Get main social network for followers display
-    const mainSocial = influencer.influencer_socials.find(s => s.platform === 'instagram') 
-      || influencer.influencer_socials[0]
+    const mainSocial = influencer.influencerSocial.find(s => s.platform === 'instagram') 
+      || influencer.influencerSocial[0]
 
     const response = {
       influencer: {
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         activeProducts: activeProducts,
         totalOrders: totalOrders,
         commissionRate: Math.round(influencer.commissionRate * 100), // Convert to percentage
-        socialNetworks: influencer.influencer_socials,
+        socialNetworks: influencer.influencerSocial,
         contentCategories: influencer.influencer_categories,
         profile: influencer.influencer_profiles,
         isActive: influencer.isActive,

@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest) {
     if (socialNetworks && Array.isArray(socialNetworks)) {
       console.log('🔄 [PROFILE-UPDATE] Updating social networks...')
       // Smazat existující sociální sítě
-      await prisma.influencer_socials.deleteMany({
+      await prisma.influencerSocial.deleteMany({
         where: { influencerId }
       })
 
@@ -111,7 +111,7 @@ export async function PUT(request: NextRequest) {
           }
         }
 
-        await prisma.influencer_socials.createMany({
+        await prisma.influencerSocial.createMany({
           data: socialNetworks.map(social => ({
             id: randomUUID(),
             influencerId,
