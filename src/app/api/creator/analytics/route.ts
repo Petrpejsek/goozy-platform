@@ -50,7 +50,8 @@ export async function GET(req: NextRequest) {
               include: {
                 product: true
               }
-            }
+            },
+            commissions: true
           }
         }
       }
